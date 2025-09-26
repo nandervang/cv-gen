@@ -1,32 +1,21 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# CV Generation System Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. shadcn/ui Component Excellence
+Every UI component must extend shadcn/ui patterns with TypeScript safety; Components must support forwardRef, CVA variants, and accessibility; Use Radix UI primitives as foundation; Follow shadcn naming conventions and theming system; Create compound components for complex UI patterns
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Supabase Full-Stack Integration
+Use official Supabase UI Library components for rapid development; Implement proper Row Level Security (RLS) policies for all data access; Create type-safe database models using generated Supabase types; Support real-time subscriptions with proper cleanup; Handle authentication flows with session management
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Performance-First Animation (NON-NEGOTIABLE)
+All animations must achieve 60fps with GPU acceleration; Use Framer Motion for complex interactions, CSS for micro-interactions; Implement prefers-reduced-motion accessibility support; Optimize re-renders with proper React patterns; Clean up animation listeners and observers
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Type-Safe Development
+TypeScript strict mode enforced throughout codebase; Generate and use Supabase database types; Create proper interfaces for all component props and API responses; Implement runtime validation with Zod schemas; No any types allowed in production code
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Accessibility & User Experience
+WCAG 2.1 AA compliance mandatory for all components; Proper keyboard navigation and focus management; Screen reader support with ARIA labels and announcements; Responsive design with mobile-first approach; Error boundaries and loading states for all async operations
 
 ## [SECTION_2_NAME]
 <!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->

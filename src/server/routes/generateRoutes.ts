@@ -1,111 +1,54 @@
 import { Router } from 'express'
-import { CVGenerationService } from '../services/CVGenerationService'
+import { validateCVData } from '../middleware/validation'
+import { cvGenerationService } from '../services/cvGenerationService'
 
 const router = Router()
-const generationService = new CVGenerationService()
 
-// POST /api/generate - Generate CV file
-router.post('/', async (req, res) => {
-  try {
-    const { cvId, templateId, format = 'pdf', options = {} } = req.body
-    
-    if (!cvId || !templateId) {
-      return res.status(400).json({
-        success: false,
-        error: { message: 'CV ID and Template ID are required' },
-        timestamp: new Date().toISOString()
-      })
-    }
-    
-    if (!['pdf', 'html', 'docx'].includes(format)) {
-      return res.status(400).json({
-        success: false,
-        error: { message: 'Invalid format. Supported: pdf, html, docx' },
-        timestamp: new Date().toISOString()
-      })
-    }
-    
-    const result = await generationService.generateCV({
-      cvId,
-      templateId,
-      format,
-      options
+// Handle method checking first
+router.use('/', (req, res, next) => {
+  if (req.method !== 'POST') {
+    return res.status(405).json({
+      success: false,
+      error: {
+        code: 'METHOD_NOT_ALLOWED',
+        message: `Method ${req.method} not allowed. Only POST is supported.`
+      },
+      timestamp: new Date().toISOString()
     })
+  }
+  next()
+})
+
+// POST /api/generate - Generate CV file from simple payload
+router.post('/', validateCVData, async (req, res) => {
+  console.log('Generate route hit with body:', req.body)
+  try {
+    const { name, title, format = 'pdf', template = 'modern' } = req.body
     
-    res.status(201).json({
+    const fileUrl = await cvGenerationService.generateCV(
+      { name, title },
+      template,
+      format
+    )
+    
+    res.status(200).json({
       success: true,
-      data: result,
-      message: 'CV generation started successfully',
+      data: {
+        fileUrl,
+        format,
+        template,
+        generatedAt: new Date().toISOString()
+      },
       timestamp: new Date().toISOString()
     })
   } catch (error: any) {
     console.error('Generation error:', error)
     res.status(500).json({
       success: false,
-      error: { message: error.message || 'Failed to generate CV' },
-      timestamp: new Date().toISOString()
-    })
-  }
-})
-
-// POST /api/generate/preview - Generate preview HTML
-router.post('/preview', async (req, res) => {
-  try {
-    const { cvId, templateId, options = {} } = req.body
-    
-    if (!cvId || !templateId) {
-      return res.status(400).json({
-        success: false,
-        error: { message: 'CV ID and Template ID are required' },
-        timestamp: new Date().toISOString()
-      })
-    }
-    
-    const html = await generationService.generatePreview({
-      cvId,
-      templateId,
-      options
-    })
-    
-    res.status(200).json({
-      success: true,
-      data: { html },
-      message: 'Preview generated successfully',
-      timestamp: new Date().toISOString()
-    })
-  } catch (error: any) {
-    console.error('Preview generation error:', error)
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || 'Failed to generate preview' },
-      timestamp: new Date().toISOString()
-    })
-  }
-})
-
-// GET /api/generate/:id - Get generation status
-router.get('/:id', async (req, res) => {
-  try {
-    const { id } = req.params
-    const result = await generationService.getGenerationStatus(id)
-    
-    if (!result) {
-      return res.status(404).json({
-        success: false,
-        error: { message: 'Generation not found' },
-        timestamp: new Date().toISOString()
-      })
-    }
-    
-    res.status(200).json({
-      success: true,
-      data: result,
-      timestamp: new Date().toISOString()
-    })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || 'Failed to get generation status' },
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: error.message || 'Failed to generate CV'
+      },
       timestamp: new Date().toISOString()
     })
   }

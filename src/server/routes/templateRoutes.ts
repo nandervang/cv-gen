@@ -1,74 +1,57 @@
 import { Router } from 'express'
-import { ServerTemplateAPI } from '../api/templateAPI'
 
 const router = Router()
 
-// GET /api/templates - List all templates
+// Static template definitions
+const templates = [
+  {
+    id: 'modern',
+    name: 'Modern Professional',
+    description: 'Clean, minimalist design with modern typography and layout',
+    type: 'modern',
+    industryFocus: 'Technology, Design, Consulting',
+    features: ['Clean layout', 'Modern typography', 'Color accent', 'Professional styling'],
+    isPremium: false,
+    previewUrl: '/templates/modern/preview.png'
+  },
+  {
+    id: 'classic',
+    name: 'Classic Executive',
+    description: 'Traditional professional format suitable for corporate environments',
+    type: 'classic',
+    industryFocus: 'Finance, Legal, Corporate',
+    features: ['Traditional layout', 'Conservative styling', 'Professional fonts', 'Formal structure'],
+    isPremium: false,
+    previewUrl: '/templates/classic/preview.png'
+  },
+  {
+    id: 'creative',
+    name: 'Creative Portfolio',
+    description: 'Dynamic design with creative elements for artistic professionals',
+    type: 'creative',
+    industryFocus: 'Creative, Media, Marketing',
+    features: ['Creative layout', 'Visual elements', 'Unique typography', 'Artistic styling'],
+    isPremium: false,
+    previewUrl: '/templates/creative/preview.png'
+  }
+]
+
+// GET /api/templates - List all available templates
 router.get('/', async (_req, res) => {
   try {
-    const result = await ServerTemplateAPI.getTemplates()
-    
-    res.status(result.status).json({
-      success: result.status < 400,
-      data: result.data,
-      error: result.error ? { message: result.error } : undefined,
+    res.status(200).json({
+      success: true,
+      data: templates,
+      message: 'Templates retrieved successfully',
       timestamp: new Date().toISOString()
     })
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      error: { message: error.message || 'Failed to fetch templates' },
-      timestamp: new Date().toISOString()
-    })
-  }
-})
-
-// GET /api/templates/:id - Get specific template
-router.get('/:id', async (req, res) => {
-  try {
-    const { id } = req.params
-    const result = await ServerTemplateAPI.getTemplate(id)
-    
-    res.status(result.status).json({
-      success: result.status < 400,
-      data: result.data,
-      error: result.error ? { message: result.error } : undefined,
-      timestamp: new Date().toISOString()
-    })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || 'Failed to fetch template' },
-      timestamp: new Date().toISOString()
-    })
-  }
-})
-
-// GET /api/templates/type/:type - Get templates by type
-router.get('/type/:type', async (req, res) => {
-  try {
-    const { type } = req.params as { type: 'modern' | 'classic' | 'creative' | 'technical' }
-    
-    if (!['modern', 'classic', 'creative', 'technical'].includes(type)) {
-      return res.status(400).json({
-        success: false,
-        error: { message: 'Invalid template type' },
-        timestamp: new Date().toISOString()
-      })
-    }
-    
-    const result = await ServerTemplateAPI.getTemplatesByType(type)
-    
-    res.status(result.status).json({
-      success: result.status < 400,
-      data: result.data,
-      error: result.error ? { message: result.error } : undefined,
-      timestamp: new Date().toISOString()
-    })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || 'Failed to fetch templates by type' },
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: error.message || 'Failed to fetch templates'
+      },
       timestamp: new Date().toISOString()
     })
   }

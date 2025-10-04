@@ -1,355 +1,416 @@
-import puppeteer, { type Browser, type PDFOptions } from 'puppeteer'
-import { ServerCVAPI } from '../api/cvAPI'
-import { ServerTemplateAPI } from '../api/templateAPI'
-import { serverSupabase } from '../lib/supabase'
+import puppeteer from 'puppeteer';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
+import type { SimpleCVData } from '../types/cv';
 
-interface GenerationRequest {
-  cvId: string
-  templateId: string
-  format: 'pdf' | 'html' | 'docx'
-  options?: {
-    paperSize?: 'A4' | 'Letter'
-    margin?: { top: string; right: string; bottom: string; left: string }
-    orientation?: 'portrait' | 'landscape'
-  }
+// HTML escaping function for security
+function escapeHtml(text: string): string {
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  };
+  return text.replace(/[&<>"']/g, (m) => map[m]);
 }
 
-interface GenerationResult {
-  id: string
-  status: 'pending' | 'processing' | 'completed' | 'failed'
-  fileUrl?: string
-  downloadUrl?: string
-  format: string
-  createdAt: string
-}
-
-export class CVGenerationService {
-  private browser: puppeteer.Browser | null = null
-
-  constructor() {
-    this.initializeBrowser()
-  }
-
-  private async initializeBrowser() {
-    try {
-      this.browser = await puppeteer.launch({
-        headless: true,
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-accelerated-2d-canvas',
-          '--no-first-run',
-          '--no-zygote',
-          '--disable-gpu'
-        ]
-      })
-      console.log('✅ Puppeteer browser initialized')
-    } catch (error) {
-      console.error('❌ Failed to initialize Puppeteer browser:', error)
-    }
-  }
-
-  async generateCV(request: GenerationRequest): Promise<GenerationResult> {
-    try {
-      // Create generation record
-      const { data: generation, error } = await serverSupabase
-        .from('cv_generations')
-        .insert({
-          cv_profile_id: request.cvId,
-          template_id: request.templateId,
-          generation_config: request.options || {},
-          content_data: {},
-          output_format: request.format,
-          generation_status: 'pending'
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      // Update status to processing
-      await serverSupabase
-        .from('cv_generations')
-        .update({ generation_status: 'processing' })
-        .eq('id', generation.id)
-
-      // Generate the CV file
-      const fileUrl = await this.processGeneration(generation.id, request)
-
-      // Update with completion
-      await serverSupabase
-        .from('cv_generations')
-        .update({ 
-          generation_status: 'completed',
-          file_url: fileUrl
-        })
-        .eq('id', generation.id)
-
-      return {
-        id: generation.id,
-        status: 'completed',
-        fileUrl,
-        downloadUrl: fileUrl,
-        format: request.format,
-        createdAt: generation.created_at
-      }
-    } catch (error: any) {
-      console.error('CV Generation Error:', error)
-      throw new Error(`Generation failed: ${error.message}`)
-    }
-  }
-
-  async generatePreview(request: Omit<GenerationRequest, 'format'>): Promise<string> {
-    try {
-      // Fetch CV data
-      const cvResponse = await CVAPI.getCV(request.cvId)
-      if (cvResponse.error || !cvResponse.data) {
-        throw new Error('CV not found')
-      }
-
-      // Fetch template
-      const templateResponse = await TemplateAPI.getTemplate(request.templateId)
-      if (templateResponse.error || !templateResponse.data) {
-        throw new Error('Template not found')
-      }
-
-      // Generate HTML (basic for now - will enhance with actual templates)
-      const html = this.renderBasicTemplate(cvResponse.data, templateResponse.data)
-      return html
-    } catch (error: any) {
-      console.error('Preview Generation Error:', error)
-      throw new Error(`Preview failed: ${error.message}`)
-    }
-  }
-
-  private async processGeneration(generationId: string, request: GenerationRequest): Promise<string> {
-    try {
-      // Fetch CV data
-      const cvResponse = await CVAPI.getCV(request.cvId)
-      if (cvResponse.error || !cvResponse.data) {
-        throw new Error('CV not found')
-      }
-
-      // Fetch template
-      const templateResponse = await TemplateAPI.getTemplate(request.templateId)
-      if (templateResponse.error || !templateResponse.data) {
-        throw new Error('Template not found')
-      }
-
-      // Generate HTML
-      const html = this.renderBasicTemplate(cvResponse.data, templateResponse.data)
-
-      if (request.format === 'html') {
-        return await this.uploadToStorage(html, `${generationId}.html`, 'text/html')
-      } else if (request.format === 'pdf') {
-        const pdfBuffer = await this.htmlToPdf(html, request.options)
-        return await this.uploadToStorage(pdfBuffer, `${generationId}.pdf`, 'application/pdf')
-      } else {
-        throw new Error('DOCX format not yet implemented')
-      }
-    } catch (error: any) {
-      // Update generation status to failed
-      await serverSupabase
-        .from('cv_generations')
-        .update({ generation_status: 'failed' })
-        .eq('id', generationId)
-      
-      throw error
-    }
-  }
-
-  private renderBasicTemplate(cvData: any, template: any): string {
-    const styles = template.styling_config || {}
-    const primaryColor = styles.primary_color || '#2563eb'
-    
-    return `
+// Template-specific HTML generation
+function generateModernHTML(data: SimpleCVData): string {
+  const safeName = escapeHtml(data.name);
+  const safeTitle = escapeHtml(data.title);
+  
+  return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${cvData.title} - CV</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-      line-height: 1.6; 
-      color: #1f2937; 
-      background: white;
-    }
-    .cv-container { 
-      max-width: 210mm; 
-      margin: 0 auto; 
-      padding: 20mm; 
-      background: white; 
-      min-height: 297mm;
-    }
-    .header { 
-      border-bottom: 3px solid ${primaryColor}; 
-      padding-bottom: 20px; 
-      margin-bottom: 30px; 
-    }
-    .name { 
-      font-size: 32px; 
-      font-weight: bold; 
-      color: ${primaryColor}; 
-      margin-bottom: 8px; 
-    }
-    .title-role { 
-      font-size: 18px; 
-      color: #6b7280; 
-      margin-bottom: 15px; 
-    }
-    .section { 
-      margin-bottom: 25px; 
-    }
-    .section-title { 
-      font-size: 20px; 
-      font-weight: bold; 
-      color: ${primaryColor}; 
-      margin-bottom: 15px; 
-      border-bottom: 1px solid #e5e7eb; 
-      padding-bottom: 5px; 
-    }
-    .placeholder { 
-      color: #9ca3af; 
-      font-style: italic; 
-    }
-    @media print { 
-      .cv-container { padding: 0; margin: 0; } 
-      body { print-color-adjust: exact; }
-    }
-    @page { margin: 10mm; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional CV for ${safeName}, ${safeTitle}">
+    <title>CV - ${safeName}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .cv-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+        .name {
+            font-size: 3em;
+            font-weight: 300;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+        .title {
+            font-size: 1.4em;
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        .content {
+            padding: 40px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+    </style>
 </head>
 <body>
-  <div class="cv-container">
-    <div class="header">
-      <div class="name">${cvData.title}</div>
-      <div class="title-role">Professional CV</div>
+    <div class="cv-container">
+        <div class="header">
+            <h1 class="name">${safeName}</h1>
+            <p class="title">${safeTitle}</p>
+        </div>
+        <div class="content">
+            <div class="section">
+                <h2 class="section-title">Professional Profile</h2>
+                <p>This CV was generated using the modern template. Additional sections and content can be added through the full CV management system.</p>
+            </div>
+        </div>
     </div>
-    
-    <div class="section">
-      <div class="section-title">Summary</div>
-      <div class="placeholder">
-        A dedicated professional with expertise in their field, committed to excellence and continuous growth.
-      </div>
-    </div>
-    
-    <div class="section">
-      <div class="section-title">Experience</div>
-      <div class="placeholder">
-        Professional experience will be displayed here based on CV content sections.
-      </div>
-    </div>
-    
-    <div class="section">
-      <div class="section-title">Education</div>
-      <div class="placeholder">
-        Educational background and qualifications.
-      </div>
-    </div>
-    
-    <div class="section">
-      <div class="section-title">Skills</div>
-      <div class="placeholder">
-        Key skills and competencies.
-      </div>
-    </div>
-    
-    <div style="margin-top: 40px; text-align: center; color: #9ca3af; font-size: 12px;">
-      Generated by CV Generation System • ${new Date().toLocaleDateString()}
-    </div>
-  </div>
 </body>
-</html>`
-  }
+</html>`;
+}
 
-  private async htmlToPdf(html: string, options?: any): Promise<Buffer> {
-    if (!this.browser) {
-      await this.initializeBrowser()
-    }
+function generateClassicHTML(data: SimpleCVData): string {
+  const safeName = escapeHtml(data.name);
+  const safeTitle = escapeHtml(data.title);
+  
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV - ${safeName}</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+            color: #000;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            background: #f9f9f9;
+        }
+        .cv-container {
+            background: white;
+            padding: 60px;
+            border: 1px solid #ddd;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px double #000;
+            padding-bottom: 30px;
+            margin-bottom: 40px;
+        }
+        .name {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        .title {
+            font-size: 1.2em;
+            margin: 15px 0 0 0;
+            font-style: italic;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="cv-container">
+        <div class="header">
+            <h1 class="name">${safeName}</h1>
+            <p class="title">${safeTitle}</p>
+        </div>
+        <div class="section">
+            <h2 class="section-title">Professional Summary</h2>
+            <p>This CV was generated using the classic template. A traditional and professional presentation suitable for conservative industries and formal applications.</p>
+        </div>
+    </div>
+</body>
+</html>`;
+}
 
-    if (!this.browser) {
-      throw new Error('Failed to initialize browser for PDF generation')
-    }
+function generateCreativeHTML(data: SimpleCVData): string {
+  const safeName = escapeHtml(data.name);
+  const safeTitle = escapeHtml(data.title);
+  
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV - ${safeName}</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .cv-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.03) 10px,
+                rgba(255,255,255,0.03) 20px
+            );
+            animation: move 20s linear infinite;
+        }
+        @keyframes move {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        .name {
+            font-size: 3.5em;
+            font-weight: 300;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+        .title {
+            font-size: 1.4em;
+            margin: 15px 0 0 0;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        .content {
+            padding: 40px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        }
+        .section-title {
+            font-size: 1.6em;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="cv-container">
+        <div class="header">
+            <h1 class="name">${safeName}</h1>
+            <p class="title">${safeTitle}</p>
+        </div>
+        <div class="content">
+            <div class="section">
+                <h2 class="section-title">Creative Profile</h2>
+                <p>This CV showcases a creative and dynamic approach, perfect for design, marketing, and innovative industries. The animated background and modern styling reflect creativity and attention to detail.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
+}
 
-    const page = await this.browser.newPage()
+// PDF generation using Puppeteer
+async function generatePDF(html: string): Promise<Buffer> {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
+  
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
     
-    try {
-      await page.setContent(html, { waitUntil: 'networkidle0' })
-      
-      const pdfOptions: puppeteer.PDFOptions = {
-        format: options?.paperSize || 'A4',
-        margin: options?.margin || {
-          top: '10mm',
-          right: '10mm',
-          bottom: '10mm',
-          left: '10mm'
-        },
-        printBackground: true,
-        preferCSSPageSize: true
+    const pdf = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '20mm',
+        right: '20mm',
+        bottom: '20mm',
+        left: '20mm'
       }
-      
-      const pdfBuffer = await page.pdf(pdfOptions)
-      return pdfBuffer
-    } finally {
-      await page.close()
-    }
+    });
+    
+    return Buffer.from(pdf);
+  } finally {
+    await browser.close();
   }
+}
 
-  private async uploadToStorage(data: string | Buffer, fileName: string, contentType: string): Promise<string> {
+// DOCX generation using docx library
+async function generateDOCX(data: SimpleCVData): Promise<Buffer> {
+  const doc = new Document({
+    sections: [{
+      properties: {},
+      children: [
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: data.name,
+              bold: true,
+              size: 32,
+            }),
+          ],
+          heading: HeadingLevel.TITLE,
+          spacing: {
+            after: 200,
+          },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: data.title,
+              italics: true,
+              size: 24,
+            }),
+          ],
+          spacing: {
+            after: 400,
+          },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Professional Summary",
+              bold: true,
+              size: 20,
+            }),
+          ],
+          heading: HeadingLevel.HEADING_1,
+          spacing: {
+            before: 200,
+            after: 200,
+          },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "This CV was generated using the CV Generation API. Additional sections and detailed content can be added through the full CV management system.",
+            }),
+          ],
+          spacing: {
+            after: 200,
+          },
+        }),
+      ],
+    }],
+  });
+
+  return await Packer.toBuffer(doc);
+}
+
+// Main generation service
+export class CVGenerationService {
+  async generateCV(data: SimpleCVData, templateId: string, format: 'pdf' | 'docx' | 'html'): Promise<string> {
     try {
-      const { error } = await serverSupabase.storage
-        .from('cv-files')
-        .upload(`generated/${fileName}`, data, {
-          contentType,
-          upsert: true
-        })
+      // Generate HTML based on template
+      let html: string;
+      switch (templateId) {
+        case 'modern':
+          html = generateModernHTML(data);
+          break;
+        case 'classic':
+          html = generateClassicHTML(data);
+          break;
+        case 'creative':
+          html = generateCreativeHTML(data);
+          break;
+        default:
+          html = generateModernHTML(data); // Default fallback
+      }
 
-      if (error) throw error
-
-      // Get public URL
-      const { data: urlData } = serverSupabase.storage
-        .from('cv-files')
-        .getPublicUrl(`generated/${fileName}`)
-
-      return urlData.publicUrl
-    } catch (error: any) {
-      console.error('Storage upload error:', error)
-      throw new Error(`Failed to upload file: ${error.message}`)
-    }
-  }
-
-  async getGenerationStatus(generationId: string): Promise<GenerationResult | null> {
-    try {
-      const { data, error } = await serverSupabase
-        .from('cv_generations')
-        .select('*')
-        .eq('id', generationId)
-        .single()
-
-      if (error || !data) return null
-
-      return {
-        id: data.id,
-        status: data.generation_status,
-        fileUrl: data.file_url,
-        downloadUrl: data.file_url,
-        format: data.output_format,
-        createdAt: data.created_at
+      // Return based on format
+      switch (format) {
+        case 'html':
+          return `data:text/html;base64,${Buffer.from(html).toString('base64')}`;
+        
+        case 'pdf':
+          const pdfBuffer = await generatePDF(html);
+          return `data:application/pdf;base64,${pdfBuffer.toString('base64')}`;
+        
+        case 'docx':
+          const docxBuffer = await generateDOCX(data);
+          return `data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,${docxBuffer.toString('base64')}`;
+        
+        default:
+          throw new Error(`Unsupported format: ${format}`);
       }
     } catch (error) {
-      console.error('Error fetching generation status:', error)
-      return null
-    }
-  }
-
-  async cleanup() {
-    if (this.browser) {
-      await this.browser.close()
-      this.browser = null
+      console.error('CV generation error:', error);
+      throw new Error(`Failed to generate CV: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 }
+
+export const cvGenerationService = new CVGenerationService();

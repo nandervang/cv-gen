@@ -47,7 +47,38 @@
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+## Constitution Check
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+
+**API Design Excellence Check**:
+- [ ] RESTful endpoint design with consistent resource naming
+- [ ] Standardized response format with success/error wrappers
+- [ ] Comprehensive input validation with descriptive errors
+- [ ] Rate limiting strategy defined for all endpoints
+
+**Type-Safe Server Development Check**:
+- [ ] TypeScript strict mode maintained throughout backend
+- [ ] Server-side Supabase types generated and used
+- [ ] All API interfaces properly typed
+- [ ] No `any` types in production code paths
+
+**Performance-First Server Architecture Check**:
+- [ ] Response time targets defined (<500ms for 90% requests)
+- [ ] Database query optimization strategy planned
+- [ ] Memory-efficient PDF generation approach outlined
+- [ ] Horizontal scaling considerations documented
+
+**Security & Data Protection Check**:
+- [ ] Security middleware stack defined (Helmet, CORS, rate limiting)
+- [ ] RLS policies planned for data access
+- [ ] Input sanitization strategy documented
+- [ ] File storage security measures outlined
+
+**Document Generation Standards Check**:
+- [ ] Multiple export formats supported (PDF, DOCX, HTML)
+- [ ] File size optimization targets defined
+- [ ] Template system architecture planned
+- [ ] Version control for templates considered
 
 ## Project Structure
 

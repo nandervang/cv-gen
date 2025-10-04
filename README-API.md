@@ -202,9 +202,3 @@ Ready for deployment to:
 ## 📄 License
 
 MIT License - see LICENSE file for details.
-      },
-      // other options...
-    },
-  },
-])
-```

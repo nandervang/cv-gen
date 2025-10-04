@@ -28,7 +28,13 @@
 ---
 
 ## ⚡ Quick Guidelines
-- ✅ Focus on WHAT users need and WHY
+- ✅ Focus on WHAT API endpoints need and WHY
+- ✅ Define request/response contracts and data flows
+- ✅ Specify file generation requirements and formats
+- ✅ Include security and performance requirements
+- ❌ Avoid implementation details (Express vs Fastify, specific libraries)
+- ❌ Skip frontend UI specifications (testing UI only)
+- ❌ Don't define internal code structure or patterns
 - ❌ Avoid HOW to implement (no tech stack, APIs, code structure)
 - 👥 Written for business stakeholders, not developers
 

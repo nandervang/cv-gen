@@ -43,38 +43,49 @@
 - Paths shown below assume single project - adjust based on plan.md structure
 
 ## Phase 3.1: Setup
-- [ ] T001 Create project structure per implementation plan
-- [ ] T002 Initialize [language] project with [framework] dependencies
-- [ ] T003 [P] Configure linting and formatting tools
+- [ ] T001 Create Express API server structure per implementation plan
+- [ ] T002 Initialize TypeScript backend with Express, Puppeteer, Supabase dependencies
+- [ ] T003 [P] Configure security middleware (Helmet, CORS, rate limiting)
+- [ ] T004 [P] Configure TypeScript strict mode and linting for server code
 
-## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
+## Phase 3.2: API Contract Tests (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
-- [ ] T004 [P] Contract test POST /api/users in tests/contract/test_users_post.py
-- [ ] T005 [P] Contract test GET /api/users/{id} in tests/contract/test_users_get.py
-- [ ] T006 [P] Integration test user registration in tests/integration/test_registration.py
-- [ ] T007 [P] Integration test auth flow in tests/integration/test_auth.py
+- [ ] T005 [P] Contract test POST /api/cvs in tests/contract/test_cvs_post.js
+- [ ] T006 [P] Contract test GET /api/cvs/{id} in tests/contract/test_cvs_get.js
+- [ ] T007 [P] Contract test GET /api/templates in tests/contract/test_templates_get.js
+- [ ] T008 [P] Contract test POST /api/generate in tests/contract/test_generate_post.js
+- [ ] T009 [P] Integration test CV creation workflow in tests/integration/test_cv_workflow.js
+- [ ] T010 [P] Integration test PDF generation in tests/integration/test_pdf_generation.js
 
-## Phase 3.3: Core Implementation (ONLY after tests are failing)
-- [ ] T008 [P] User model in src/models/user.py
-- [ ] T009 [P] UserService CRUD in src/services/user_service.py
-- [ ] T010 [P] CLI --create-user in src/cli/user_commands.py
-- [ ] T011 POST /api/users endpoint
-- [ ] T012 GET /api/users/{id} endpoint
-- [ ] T013 Input validation
-- [ ] T014 Error handling and logging
+## Phase 3.3: Core API Implementation (ONLY after tests are failing)
+- [ ] T011 [P] CV data model in src/server/models/CVModel.ts
+- [ ] T012 [P] Template data model in src/server/models/TemplateModel.ts
+- [ ] T013 [P] CVService CRUD operations in src/server/services/CVService.ts
+- [ ] T014 [P] CV Generation Service in src/server/services/CVGenerationService.ts
+- [ ] T015 POST /api/cvs endpoint implementation
+- [ ] T016 GET /api/cvs/{id} endpoint implementation
+- [ ] T017 GET /api/templates endpoint implementation
+- [ ] T018 POST /api/generate endpoint implementation
+- [ ] T019 Input validation middleware
+- [ ] T020 Error handling and structured logging
 
-## Phase 3.4: Integration
-- [ ] T015 Connect UserService to DB
-- [ ] T016 Auth middleware
-- [ ] T017 Request/response logging
-- [ ] T018 CORS and security headers
+## Phase 3.4: Document Generation & Storage
+- [ ] T021 Puppeteer PDF generation service integration
+- [ ] T022 DOCX generation capability (if required)
+- [ ] T023 HTML export functionality
+- [ ] T024 Supabase Storage integration for generated files
+- [ ] T025 File cleanup and lifecycle management
+- [ ] T026 Template rendering system
 
-## Phase 3.5: Polish
-- [ ] T019 [P] Unit tests for validation in tests/unit/test_validation.py
-- [ ] T020 Performance tests (<200ms)
-- [ ] T021 [P] Update docs/api.md
-- [ ] T022 Remove duplication
-- [ ] T023 Run manual-testing.md
+## Phase 3.5: Security & Performance
+- [ ] T027 Database connection optimization and pooling
+- [ ] T028 Rate limiting implementation for generation endpoints
+- [ ] T029 File access security with signed URLs
+- [ ] T030 Memory optimization for Puppeteer processes
+- [ ] T031 [P] Performance tests for API response times
+- [ ] T032 [P] Load testing for concurrent CV generation
+- [ ] T033 [P] Update API documentation
+- [ ] T034 Security audit and vulnerability scanning
 
 ## Dependencies
 - Tests (T004-T007) before implementation (T008-T014)

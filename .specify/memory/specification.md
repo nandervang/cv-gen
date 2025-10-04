@@ -4,20 +4,29 @@
 
 Build a comprehensive CV Generation System that enables users to create, customize, and manage professional CVs with multiple templates, rich text editing, version control, and seamless integration with Supabase for data management and real-time collaboration.
 
+## Clarifications
+
+### Session 2025-10-04
+- Q: Primary Backend API Consumers → A: Single external frontend (consultant manager app) with simple testing frontend
+- Q: Authentication & User Management → A: API key authentication from consultant manager app only
+- Q: Template Storage & Management → A: Static templates in codebase, no database storage
+- Q: File Generation & Storage Strategy → A: Generate files on-demand, return direct download links (no storage)
+- Q: Data Persistence & CV Management → A: CV data passed as payload in each generation request
+
 ## Core Features
 
 ### CV Generation Engine
 - **Multiple Professional Templates**: Modern, Classic, Creative, and Technical layouts
 - **Dynamic Content Generation**: Pull from user profiles, experiences, and skills
 - **Export Formats**: PDF, DOCX, HTML with optimized file sizes (<2MB)
+- **On-Demand Generation**: Files generated in real-time and streamed directly to client
 - **Real-time Preview**: Live updates during editing with sub-100ms response time
-- **Batch Generation**: Create multiple CV versions for different job applications
 
 ### Advanced Template System
-- **Industry-Focused Designs**: Templates optimized for tech, consulting, creative, academic sectors  
-- **Customizable Styling**: Color schemes, fonts, spacing, and layout configurations
-- **Template Marketplace**: Share and discover community-created templates
-- **Version Control**: Track template modifications and variations
+- **Industry-Focused Designs**: Static templates optimized for tech, consulting, creative, academic sectors stored in codebase
+- **Customizable Styling**: Color schemes, fonts, spacing, and layout configurations via API parameters
+- **Template Catalog**: Predefined professional templates served via API endpoints
+- **Version Control**: Template modifications tracked through code versioning
 - **Responsive Layouts**: Templates that work across different page sizes and formats
 
 ### Rich Text Editor & User Experience
@@ -28,26 +37,26 @@ Build a comprehensive CV Generation System that enables users to create, customi
 - **Mobile-Responsive**: Full editing capabilities on tablets and mobile devices
 - **Keyboard Shortcuts**: Power-user shortcuts for efficient editing
 
-### Comprehensive Versioning System
-- **Complete History Tracking**: Every change recorded with timestamps and user attribution
-- **Side-by-Side Comparison**: Visual diff tool for comparing CV versions
-- **Rollback Capabilities**: Restore to any previous state with one click
-- **Branching Support**: Create variations for different job applications or industries
-- **Export Metadata**: Include version information and change logs in exports
+### Document Generation Features
+- **Template Selection**: Choose from predefined professional templates via API
+- **Dynamic Styling**: Customize colors, fonts, and layout through generation parameters
+- **Format Options**: Export in PDF, DOCX, or HTML formats with optimized output
+- **Real-time Processing**: Generate documents on-demand with sub-5-second response times
+- **Quality Assurance**: Consistent formatting and professional appearance across all templates
 
-### Supabase Full-Stack Integration
-- **Authentication System**: Secure user registration, login, and profile management
-- **Structured Data Storage**: Optimized schema for CV content, templates, and metadata
-- **Real-time Collaboration**: Live editing with presence indicators and conflict resolution
-- **File Storage Integration**: Secure upload and CDN delivery for generated documents
-- **Row-Level Security**: Granular access control for user data and shared content
+### Minimal Backend Infrastructure
+- **API Key Validation**: Secure authentication for consultant manager app access
+- **Template Management**: Static template serving with caching
+- **Document Processing**: Puppeteer-based PDF generation with memory optimization
+- **Error Handling**: Comprehensive error responses and logging
+- **Performance Monitoring**: Request tracking and generation metrics
 
 ### Comprehensive API Layer
-- **CV Management**: Full CRUD operations for CV creation, reading, updating, deletion
-- **Template Services**: Manage template library, customizations, and marketplace
-- **Version Control API**: Track changes, create branches, and manage history
-- **Export Services**: Generate files in multiple formats with job queuing
-- **Search & Discovery**: Full-text search across CVs, templates, and content
+- **Template Services**: Serve static template catalog and styling options to consultant manager app
+- **Document Generation**: Process CV data payload and generate files in multiple formats (PDF, DOCX, HTML)
+- **Preview Services**: Generate real-time previews from CV data payload
+- **Testing Interface**: Simple frontend for API development and validation
+- **Health Monitoring**: Status endpoints for service health and template availability
 
 ### In-App Wiki & Documentation System
 - **Rich Documentation Platform**: Comprehensive user guides and tutorials
@@ -73,7 +82,7 @@ Build a comprehensive CV Generation System that enables users to create, customi
 - **Internationalization**: Multi-language support and RTL text handling
 
 ### Security & Privacy
-- **Data Encryption**: End-to-end encryption for sensitive user information
+- **API Key Authentication**: Secure API key validation for consultant manager app access
 - **Access Control**: Role-based permissions and sharing controls
 - **Audit Logging**: Complete activity tracking for compliance
 - **GDPR Compliance**: Data portability and deletion capabilities

@@ -109,4 +109,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.error('❌ Failed to start server:', error)
     process.exit(1)
   })
+} else {
+  // For tsx execution, start immediately
+  console.log('🔧 Starting server with tsx...')
+  startAPIServer().catch((error) => {
+    console.error('❌ Failed to start server:', error)
+    process.exit(1)
+  })
 }

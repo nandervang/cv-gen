@@ -1,0 +1,284 @@
+openapi: 3.0.3
+info:
+  title: CV Generation API
+  description: Stateless API for generating professional CVs from simple payload data
+  version: 1.0.0
+  contact:
+    name: CV Generation Service
+servers:
+  - url: http://localhost:3001
+    description: Development server
+  - url: https://cv-gen-api.railway.app
+    description: Production server
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: Verify API service status
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "CV Generation API is running"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                    example: "1.0.0"
+
+  /api/templates:
+    get:
+      summary: Get Available Templates
+      description: Retrieve list of available CV templates
+      responses:
+        '200':
+          description: Template list retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CVTemplate'
+                  timestamp:
+                    type: string
+                    format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /api/generate:
+    post:
+      summary: Generate CV
+      description: Generate CV file from payload data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimpleCVData'
+            examples:
+              basic:
+                summary: Basic CV generation
+                value:
+                  name: "John Doe"
+                  title: "Senior Software Engineer"
+              with_template:
+                summary: CV with specific template
+                value:
+                  name: "Jane Smith"
+                  title: "UX Designer"
+                  template: "creative"
+                  format: "pdf"
+      responses:
+        '200':
+          description: CV generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerationResponse'
+            examples:
+              pdf_success:
+                summary: PDF generated successfully
+                value:
+                  success: true
+                  data:
+                    fileUrl: "data:application/pdf;base64,JVBERi0xLjQ..."
+                    format: "pdf"
+                    template: "modern"
+                    generatedAt: "2025-10-04T12:00:00Z"
+                  timestamp: "2025-10-04T12:00:00Z"
+        '400':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_name:
+                  summary: Missing required name field
+                  value:
+                    success: false
+                    error:
+                      code: "MISSING_NAME"
+                      message: "Name field is required"
+                    timestamp: "2025-10-04T12:00:00Z"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Generation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                pdf_failed:
+                  summary: PDF generation error
+                  value:
+                    success: false
+                    error:
+                      code: "PDF_GENERATION_FAILED"
+                      message: "Failed to generate PDF document"
+                    timestamp: "2025-10-04T12:00:00Z"
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    SimpleCVData:
+      type: object
+      required:
+        - name
+        - title
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: "^[a-zA-Z\\s\\-\\']+$"
+          description: "Person's full name"
+          example: "John Doe"
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: "Professional title or position"
+          example: "Senior Software Engineer"
+        template:
+          type: string
+          enum: ["modern", "classic", "creative"]
+          default: "modern"
+          description: "Template identifier"
+          example: "modern"
+        format:
+          type: string
+          enum: ["pdf", "docx", "html"]
+          default: "pdf"
+          description: "Output file format"
+          example: "pdf"
+
+    CVTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "modern"
+        name:
+          type: string
+          example: "Modern Professional"
+        description:
+          type: string
+          example: "Clean, minimal design with accent colors"
+        previewUrl:
+          type: string
+          nullable: true
+          example: null
+
+    GenerationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            fileUrl:
+              type: string
+              description: "Base64 encoded file data URL or download link"
+            format:
+              type: string
+              enum: ["pdf", "docx", "html"]
+            template:
+              type: string
+            generatedAt:
+              type: string
+              format: date-time
+        error:
+          $ref: '#/components/schemas/Error'
+        timestamp:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          $ref: '#/components/schemas/Error'
+        timestamp:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          enum: 
+            - "MISSING_NAME"
+            - "MISSING_TITLE"
+            - "INVALID_TEMPLATE"
+            - "INVALID_FORMAT"
+            - "PDF_GENERATION_FAILED"
+            - "DOCX_GENERATION_FAILED"
+            - "HTML_GENERATION_FAILED"
+            - "UNAUTHORIZED"
+            - "RATE_LIMIT_EXCEEDED"
+        message:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Invalid or missing API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "UNAUTHORIZED"
+              message: "Invalid API key"
+            timestamp: "2025-10-04T12:00:00Z"
+
+    RateLimited:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "RATE_LIMIT_EXCEEDED"
+              message: "Too many requests, please try again later"
+            timestamp: "2025-10-04T12:00:00Z"

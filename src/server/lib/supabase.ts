@@ -1,13 +1,19 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// Server-side Supabase configuration
+const supabaseUrl = process.env.SUPABASE_URL || 'https://eloldmdciulxzwsnlvci.supabase.co'
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsb2xkbWRjaXVseHp3c25sdmNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwMDkxMDYsImV4cCI6MjA2MDU4NTEwNn0.gh9vAFWK_kmkpYYC5NOgi4rs4lSQY7KhMs6UqPuX5nI'
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error('Missing Supabase environment variables for server')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const serverSupabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
 
 // Database types for CV system
 export interface CVProfile {
@@ -56,28 +62,4 @@ export interface CVGeneration {
   generation_status: 'pending' | 'processing' | 'completed' | 'failed'
   created_at: string
   updated_at: string
-}
-
-// Database types for wiki system
-export interface WikiArticle {
-  id: string
-  title: string
-  content: object // Tiptap JSON content
-  category: string
-  tags: string[]
-  author_id: string
-  created_at: string
-  updated_at: string
-  published: boolean
-  slug: string
-  views: number
-  likes: number
-}
-
-export interface WikiCategory {
-  id: string
-  name: string
-  description: string
-  color: string
-  created_at: string
 }

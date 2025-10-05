@@ -1,66 +1,153 @@
-# CV Generation System Specification
+# CV Generation Backend API Specification
 
 ## Overview
 
-The CV Generation System is a comprehensive platform for creating, managing, and versioning professional CVs with multiple templates, rich text editing capabilities, and robust data storage.
+The CV Generation Backend API is a comprehensive RESTful service for creating, managing, and generating professional CVs with multiple templates and formats. The system includes a minimal React UI for testing and development.
 
-## Core Features
+## Current Implementation Status (October 2025)
 
-### 1. CV Generation
-- **Multiple Templates**: Support for different CV layouts and styles
-- **Dynamic Content**: Pull from user profile data and experiences
-- **Format Export**: Generate PDFs, DOCX, and HTML formats
-- **Real-time Preview**: Live preview during editing
+### ✅ **COMPLETED COMPONENTS**
 
-### 2. Template System
-- **Template Types**: 
-  - Modern Professional
-  - Classic Executive
-  - Creative Portfolio
-  - Technical Specialist
-- **Customization**: Color schemes, fonts, layouts
-- **Industry Focus**: Templates optimized for different industries
+#### Backend Infrastructure
+- **Express API Server**: Complete with middleware, error handling, rate limiting
+- **Database Schema**: Templates, content sections, generation tracking tables
+- **CV Generation Service**: Puppeteer-based PDF generation with HTML templates
+- **Server APIs**: Dedicated server-side Supabase clients and API classes
+- **Route Handlers**: Complete CRUD operations for CVs and templates
+- **Template System**: 4 template types with styling configurations
 
-### 3. Versioning System
-- **Version Control**: Track changes to CV content over time
-- **Snapshot Management**: Save and restore previous versions
-- **Comparison Tools**: Compare different versions side-by-side
-- **Rollback Capability**: Revert to previous versions
+#### Files Created
+```
+src/server/
+├── index.ts                     # Main Express server
+├── routes/
+│   ├── cvRoutes.ts             # CV CRUD endpoints
+│   ├── templateRoutes.ts       # Template management
+│   └── generateRoutes.ts       # CV generation endpoints
+├── services/
+│   └── CVGenerationService.ts  # Puppeteer PDF generation
+├── api/
+│   ├── cvAPI.ts               # Server-side CV operations
+│   └── templateAPI.ts         # Server-side template operations
+└── lib/
+    └── supabase.ts           # Server Supabase configuration
+```
 
-### 4. Rich Text Editor
-- **WYSIWYG Interface**: What you see is what you get editing
-- **Formatting Options**: Bold, italic, lists, headings, links
-- **Content Blocks**: Structured sections for experience, education, skills
-- **Auto-save**: Automatic saving of content changes
+#### Database Migrations Ready
+- `template-system-migration.sql` - Creates template tables and default templates
+- `basic-cv-schema.sql` - Basic CV profile structure (already applied)
 
-### 5. Data Storage (Supabase)
-- **User Profiles**: Personal information and preferences
-- **CV Content**: Structured storage of CV data
-- **Templates**: Template definitions and configurations
-- **Version History**: Complete audit trail of changes
-- **File Storage**: Generated CV files and assets
+### 🔧 **KNOWN ISSUES TO RESOLVE**
 
-### 6. API Endpoints
-- **Fetch CV**: Retrieve CV data and metadata
-- **Create CV**: Generate new CV instances
-- **Update Content**: Modify existing CV content
-- **Template Management**: CRUD operations for templates
-- **Version Control**: Manage CV versions and history
+1. **Server Startup Issue**: Server logs successful startup but exits immediately
+   - Likely module resolution or async initialization problem
+   - All code is syntactically correct and compiles
 
-## Technical Architecture
+2. **Database Migration Needed**: Template tables not yet created in Supabase
+   - Need to run `template-system-migration.sql` in Supabase SQL editor
 
-### Frontend
-- **Framework**: React with TypeScript
+### 🎯 **NEXT SESSION TASKS**
+
+1. **Debug Server Startup** (Priority 1)
+   - Investigate why server exits after logging successful startup
+   - Check for unhandled promises or module loading issues
+   - Verify port availability and process lifecycle
+
+2. **Database Setup** (Priority 2)
+   - Execute `template-system-migration.sql` in Supabase
+   - Verify template data is inserted correctly
+   - Test Supabase connectivity from server
+
+3. **API Testing** (Priority 3)
+   - Test all endpoints with curl/Postman
+   - Verify CV generation functionality
+   - Test PDF generation pipeline
+
+4. **Frontend Integration** (Priority 4)
+   - Update React components to use API endpoints
+   - Replace direct Supabase calls with API calls
+   - Test full stack integration
+
+## Architecture
+
+### Backend API
+- **Framework**: Node.js with Express/Fastify (embedded in Vite)
+- **Database**: Supabase PostgreSQL
+- **Authentication**: Supabase Auth via API keys
+- **CV Generation**: Puppeteer/Playwright for PDF generation
+- **Template Engine**: React components rendering to HTML/CSS
+- **File Storage**: Supabase Storage for generated files
+
+### Testing UI
+- **Framework**: React with TypeScript (minimal for testing)
 - **UI Library**: shadcn/ui components
 - **Styling**: Tailwind CSS
-- **Editor**: Tiptap rich text editor
-- **State Management**: React hooks and context
+- **Purpose**: Test API endpoints and preview generated CVs
 
-### Backend
-- **Database**: Supabase PostgreSQL
-- **Authentication**: Supabase Auth
-- **File Storage**: Supabase Storage
-- **Real-time**: Supabase Realtime subscriptions
+### CV Generation Stack
+- **HTML/CSS**: Modern responsive layouts with CSS Grid/Flexbox
+- **PDF Generation**: Puppeteer for high-quality PDF output
+- **Template System**: React-based templates with stunning designs
+- **Export Formats**: PDF, HTML, DOCX (via conversion)
+
+## API Endpoints
+
+### CV Management
+```
+GET    /api/cvs              # List all CVs for user
+POST   /api/cvs              # Create new CV
+GET    /api/cvs/:id          # Get specific CV
+PUT    /api/cvs/:id          # Update CV content
+DELETE /api/cvs/:id          # Delete CV
+```
+
+### Template Management
+```
+GET    /api/templates        # List available templates
+GET    /api/templates/:id    # Get specific template
+GET    /api/templates/type/:type  # Get templates by type
+```
+
+### CV Generation
+```
+POST   /api/generate         # Generate CV file
+GET    /api/generate/:id     # Get generation status
+GET    /api/files/:id        # Download generated file
+POST   /api/preview          # Generate preview HTML
+```
+
+### Content Sections
+```
+GET    /api/cvs/:id/sections # Get CV sections
+POST   /api/cvs/:id/sections # Add section to CV
+PUT    /api/sections/:id     # Update section
+DELETE /api/sections/:id     # Delete section
+```
+
+## Response Formats
+
+### Standard API Response
+```json
+{
+  "success": true,
+  "data": {...},
+  "message": "Operation completed successfully",
+  "timestamp": "2025-10-02T10:30:00Z"
+}
+```
+
+### Error Response
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid input data",
+    "details": {...}
+  },
+  "timestamp": "2025-10-02T10:30:00Z"
+}
+```
 
 ### Data Models
 

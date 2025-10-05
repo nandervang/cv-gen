@@ -1,4 +1,4 @@
-import { supabase, type CVProfile } from '../lib/supabase-server'
+import { serverSupabase, type CVProfile } from '../lib/supabase'
 
 // API Response types
 export interface APIResponse<T> {
@@ -15,19 +15,14 @@ export interface UpdateCVRequest {
   title?: string
 }
 
-// CV API class for centralized endpoint management
-export class CVAPI {
+// Server-side CV API class
+export class ServerCVAPI {
   /**
    * GET /api/cvs - Fetch all CVs for the authenticated user
    */
   static async getCVs(): Promise<APIResponse<CVProfile[]>> {
     try {
-      const { data: user } = await supabase.auth.getUser()
-      if (!user.user) {
-        return { error: 'Not authenticated', status: 401 }
-      }
-
-      const { data, error } = await supabase
+      const { data, error } = await serverSupabase
         .from('cv_profiles')
         .select('*')
         .order('updated_at', { ascending: false })
@@ -46,12 +41,7 @@ export class CVAPI {
    */
   static async getCV(id: string): Promise<APIResponse<CVProfile>> {
     try {
-      const { data: user } = await supabase.auth.getUser()
-      if (!user.user) {
-        return { error: 'Not authenticated', status: 401 }
-      }
-
-      const { data, error } = await supabase
+      const { data, error } = await serverSupabase
         .from('cv_profiles')
         .select('*')
         .eq('id', id)
@@ -74,22 +64,17 @@ export class CVAPI {
   /**
    * POST /api/cvs - Create a new CV
    */
-  static async createCV(request: CreateCVRequest): Promise<APIResponse<CVProfile>> {
+  static async createCV(request: CreateCVRequest, userId: string): Promise<APIResponse<CVProfile>> {
     try {
-      const { data: user } = await supabase.auth.getUser()
-      if (!user.user) {
-        return { error: 'Not authenticated', status: 401 }
-      }
-
       if (!request.title?.trim()) {
         return { error: 'Title is required', status: 400 }
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await serverSupabase
         .from('cv_profiles')
         .insert({
           title: request.title.trim(),
-          user_id: user.user.id
+          user_id: userId
         })
         .select()
         .single()
@@ -108,11 +93,6 @@ export class CVAPI {
    */
   static async updateCV(id: string, request: UpdateCVRequest): Promise<APIResponse<CVProfile>> {
     try {
-      const { data: user } = await supabase.auth.getUser()
-      if (!user.user) {
-        return { error: 'Not authenticated', status: 401 }
-      }
-
       if (request.title !== undefined && !request.title?.trim()) {
         return { error: 'Title cannot be empty', status: 400 }
       }
@@ -126,7 +106,7 @@ export class CVAPI {
         return { error: 'No valid fields to update', status: 400 }
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await serverSupabase
         .from('cv_profiles')
         .update(updateData)
         .eq('id', id)
@@ -152,12 +132,7 @@ export class CVAPI {
    */
   static async deleteCV(id: string): Promise<APIResponse<null>> {
     try {
-      const { data: user } = await supabase.auth.getUser()
-      if (!user.user) {
-        return { error: 'Not authenticated', status: 401 }
-      }
-
-      const { error } = await supabase
+      const { error } = await serverSupabase
         .from('cv_profiles')
         .delete()
         .eq('id', id)
@@ -169,46 +144,5 @@ export class CVAPI {
       console.error('Error deleting CV:', error)
       return { error: error.message || 'Failed to delete CV', status: 500 }
     }
-  }
-
-  /**
-   * GET /api/cvs/search?query=... - Search CVs by title
-   */
-  static async searchCVs(query: string): Promise<APIResponse<CVProfile[]>> {
-    try {
-      const { data: user } = await supabase.auth.getUser()
-      if (!user.user) {
-        return { error: 'Not authenticated', status: 401 }
-      }
-
-      if (!query.trim()) {
-        return this.getCVs() // Return all CVs if no query
-      }
-
-      const { data, error } = await supabase
-        .from('cv_profiles')
-        .select('*')
-        .ilike('title', `%${query.trim()}%`)
-        .order('updated_at', { ascending: false })
-
-      if (error) throw error
-
-      return { data: data || [], status: 200 }
-    } catch (error: any) {
-      console.error('Error searching CVs:', error)
-      return { error: error.message || 'Failed to search CVs', status: 500 }
-    }
-  }
-}
-
-// Hook for easy React integration
-export function useCVAPI() {
-  return {
-    getCVs: CVAPI.getCVs,
-    getCV: CVAPI.getCV,
-    createCV: CVAPI.createCV,
-    updateCV: CVAPI.updateCV,
-    deleteCV: CVAPI.deleteCV,
-    searchCVs: CVAPI.searchCVs,
   }
 }

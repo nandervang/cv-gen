@@ -3,15 +3,17 @@
 import { useState } from 'react'
 import { CVManager } from './components/cv/CVManager'
 import { AuthComponent } from './components/auth/AuthComponent'
+import CVGeneratorTest from './components/CVGeneratorTest'
 import { type CVProfile } from './lib/supabase'
 import { Button } from './components/ui/button'
 import { Card, CardContent, CardDescription, CardTitle } from './components/ui/card'
-import { ArrowLeft, Sparkles } from 'lucide-react'
+import { ArrowLeft, Sparkles, TestTube } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 function App() {
   const [user, setUser] = useState<SupabaseUser | null>(null)
   const [selectedCV, setSelectedCV] = useState<CVProfile | null>(null)
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'test'>('dashboard')
 
   // Simple CV detail view (MVP - just shows title for now)
   const CVDetailView = ({ cv }: { cv: CVProfile }) => (
@@ -65,6 +67,36 @@ function App() {
     )
   }
 
+  // Show CV Test page
+  if (activeTab === 'test') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Header with navigation */}
+        <div className="border-b bg-gradient-to-r from-white to-gray-100/50">
+          <div className="max-w-7xl mx-auto px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" onClick={() => setActiveTab('dashboard')}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+                    <TestTube className="h-4 w-4 text-white" />
+                  </div>
+                  <h1 className="text-2xl font-bold">CV Generation API Test</h1>
+                </div>
+              </div>
+              <AuthComponent onAuthChange={setUser} />
+            </div>
+          </div>
+        </div>
+        
+        <CVGeneratorTest />
+      </div>
+    )
+  }
+
   // Show main CV dashboard
   return (
     <div className="min-h-screen bg-gray-50">
@@ -88,6 +120,14 @@ function App() {
                 Create and manage professional CVs with ease
               </p>
             </div>
+            <Button 
+              onClick={() => setActiveTab('test')}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <TestTube className="h-4 w-4" />
+              Test API
+            </Button>
           </div>
         </div>
       </div>

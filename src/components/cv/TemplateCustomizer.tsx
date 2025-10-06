@@ -85,11 +85,7 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
   const fetchCustomizationOptions = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/customization/options', {
-        headers: {
-          'X-API-Key': import.meta.env.VITE_API_KEY || 'dev-api-key-12345'
-        }
-      });
+      const response = await fetch('/api/customization/options');
 
       if (!response.ok) {
         throw new Error('Failed to fetch customization options');

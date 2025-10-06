@@ -450,7 +450,9 @@ export default function EnhancedCVTest() {
                       <p className="text-blue-700 text-sm mb-2">{selectedTemplateInfo.description}</p>
                       <div className="text-xs space-y-1">
                         <div><strong>Industry Focus:</strong> {selectedTemplateInfo.industryFocus}</div>
-                        <div><strong>Features:</strong> {selectedTemplateInfo.features.join(', ')}</div>
+                        {selectedTemplateInfo.features && (
+                          <div><strong>Features:</strong> {selectedTemplateInfo.features.join(', ')}</div>
+                        )}
                       </div>
                     </div>
                   );
@@ -584,12 +586,16 @@ export default function EnhancedCVTest() {
                   <p className="text-sm text-gray-600 mb-2">{template.description}</p>
                   <div className="text-xs space-y-1">
                     <div><strong>Industry:</strong> {template.industryFocus}</div>
-                    <div><strong>Features:</strong></div>
-                    <ul className="ml-2 space-y-0.5">
-                      {template.features.map((feature, index) => (
-                        <li key={index}>• {feature}</li>
-                      ))}
-                    </ul>
+                    {template.features && template.features.length > 0 && (
+                      <>
+                        <div><strong>Features:</strong></div>
+                        <ul className="ml-2 space-y-0.5">
+                          {template.features.map((feature, index) => (
+                            <li key={index}>• {feature}</li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}

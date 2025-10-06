@@ -180,23 +180,23 @@ export default function EnhancedCVTest() {
   const fetchTemplates = async () => {
     setIsLoadingTemplates(true);
     try {
-      const apiKey = import.meta.env.VITE_CV_API_KEY;
-      const apiUrl = import.meta.env.VITE_CV_API_URL || 'http://localhost:3001';
+      const apiUrl = import.meta.env.VITE_CV_API_URL || window.location.origin;
 
-      const response = await fetch(`${apiUrl}/api/templates`, {
-        method: 'GET',
-        headers: {
-          'X-API-Key': apiKey,
-        },
-      });
+      console.log('Fetching templates from:', apiUrl);
+
+      const response = await fetch(`${apiUrl}/api/templates`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      if (data.success) {
+      console.log('API Response:', data); // Debug logging
+      if (data.success && Array.isArray(data.data)) {
         setAvailableTemplates(data.data);
+      } else {
+        console.error('Invalid API response:', data);
+        setAvailableTemplates([]);
       }
     } catch (error) {
       console.error('Failed to fetch templates:', error);
@@ -231,14 +231,12 @@ export default function EnhancedCVTest() {
         )
       };
 
-      const apiKey = import.meta.env.VITE_CV_API_KEY;
-      const apiUrl = import.meta.env.VITE_CV_API_URL || 'http://localhost:3001';
+      const apiUrl = import.meta.env.VITE_CV_API_URL || window.location.origin;
 
       const response = await fetch(`${apiUrl}/api/generate/complete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-Key': apiKey,
         },
         body: JSON.stringify(payload),
       });
@@ -280,14 +278,12 @@ export default function EnhancedCVTest() {
             format
           };
 
-          const apiKey = import.meta.env.VITE_CV_API_KEY;
-          const apiUrl = import.meta.env.VITE_CV_API_URL || 'http://localhost:3001';
+          const apiUrl = import.meta.env.VITE_CV_API_URL || window.location.origin;
 
           const response = await fetch(`${apiUrl}/api/generate/complete`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'X-API-Key': apiKey,
             },
             body: JSON.stringify(payload),
           });

@@ -66,7 +66,6 @@ export const BatchTester: React.FC<BatchTesterProps> = ({ cvData, selectedTempla
     setFormatResults(null);
 
     try {
-      const apiKey = import.meta.env.VITE_CV_API_KEY || 'dev-api-key-12345';
       const apiUrl = getApiUrl('');
 
       const payload = {
@@ -78,7 +77,6 @@ export const BatchTester: React.FC<BatchTesterProps> = ({ cvData, selectedTempla
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-Key': apiKey,
         },
         body: JSON.stringify(payload),
       });
@@ -103,14 +101,12 @@ export const BatchTester: React.FC<BatchTesterProps> = ({ cvData, selectedTempla
     setComprehensiveResults(null);
 
     try {
-      const apiKey = import.meta.env.VITE_CV_API_KEY || 'dev-api-key-12345';
       const apiUrl = getApiUrl('');
 
       const response = await fetch(`${apiUrl}/api/batch/comprehensive`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-Key': apiKey,
         },
         body: JSON.stringify(cvData),
       });

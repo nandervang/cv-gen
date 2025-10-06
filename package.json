@@ -7,7 +7,8 @@
     "dev": "vite",
     "dev:api": "tsx src/server/index.ts",
     "dev:full": "concurrently \"npm run dev:api\" \"npm run dev\"",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && npm run build:functions",
+    "build:functions": "mkdir -p dist/netlify/functions && cp -r netlify/functions/* dist/netlify/functions/",
     "build:api": "tsc src/server/index.ts --outDir dist/server",
     "start": "node server.mjs",
     "start:api": "node dist/server/index.js",
@@ -46,6 +47,7 @@
     "react-dom": "^19.1.1",
     "react-markdown": "^10.1.0",
     "rehype-highlight": "^7.0.2",
+    "serverless-http": "^4.0.0",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7"
   },

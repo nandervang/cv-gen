@@ -1,0 +1,77 @@
+{
+  "personalInfo": {
+    "name": "John Doe",
+    "title": "Senior Frontend Developer",
+    "email": "john.doe@example.com",
+    "phone": "+1 (555) 123-4567",
+    "location": "San Francisco, CA"
+  },
+  "summary": {
+    "introduction": "Experienced frontend developer with 8+ years of expertise in React, TypeScript, and modern web technologies. Passionate about creating user-centric applications and leading high-performing teams.",
+    "highlights": [
+      "8+ years of frontend development experience",
+      "Expert in React, TypeScript, and modern JavaScript",
+      "Proven track record of leading high-performing teams",
+      "Strong focus on user experience and performance optimization"
+    ]
+  },
+  "projects": [
+    {
+      "period": "2022-01 - present",
+      "type": "Senior Frontend Developer",
+      "title": "Tech Corp - SaaS Platform",
+      "description": "Led frontend architecture for flagship SaaS platform serving 100K+ users. Implemented micro-frontend architecture reducing load times by 40%.",
+      "technologies": ["React", "TypeScript", "Next.js", "GraphQL", "Docker", "AWS"],
+      "achievements": [
+        "Reduced application load time by 40% through code splitting and lazy loading",
+        "Led team of 5 developers in agile environment",
+        "Implemented comprehensive testing strategy with 95% code coverage"
+      ]
+    },
+    {
+      "period": "2020-03 - 2021-12",
+      "type": "Frontend Developer",
+      "title": "Startup Inc - Web Applications",
+      "description": "Built responsive web applications using React and modern JavaScript. Collaborated with UX/UI designers to implement pixel-perfect designs.",
+      "technologies": ["React", "JavaScript", "CSS3", "Node.js", "MongoDB"],
+      "achievements": [
+        "Developed 3 major product features from concept to deployment",
+        "Improved mobile performance by 35% through optimization"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "period": "2014 - 2018",
+      "degree": "Bachelor of Science in Computer Science",
+      "institution": "Stanford University"
+    }
+  ],
+  "competencies": [
+    {
+      "category": "Expert",
+      "skills": [
+        {"name": "React", "level": "expert"},
+        {"name": "TypeScript", "level": "expert"},
+        {"name": "JavaScript", "level": "expert"}
+      ]
+    },
+    {
+      "category": "Advanced",
+      "skills": [
+        {"name": "Next.js", "level": "advanced"},
+        {"name": "GraphQL", "level": "advanced"},
+        {"name": "Node.js", "level": "advanced"}
+      ]
+    }
+  ],
+  "certifications": [
+    {
+      "year": "2023",
+      "title": "AWS Certified Solutions Architect",
+      "issuer": "Amazon Web Services"
+    }
+  ],
+  "template": "modern",
+  "format": "html"
+}

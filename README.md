@@ -5,10 +5,11 @@ A comprehensive RESTful API for creating, managing, and generating professional 
 ## 🚀 Features
 
 - **RESTful API** for CV management and generation
-- **Multiple CV Templates** (Modern, Classic, Creative, Technical)
+- **Multiple CV Templates** (Frank Digital, Modern, Classic, Creative)
 - **PDF Generation** using Puppeteer with high-quality output
+- **Complete CV Data Structure** supporting projects, education, certifications, skills
 - **Template Customization** with styling configurations
-- **File Storage** via Supabase Storage
+- **Multiple Output Formats** (PDF, HTML, DOCX)
 - **Rate Limiting** and security middleware
 - **Testing UI** for API development and testing
 
@@ -22,31 +23,65 @@ Frontend (React + Tailwind)  →  Backend API (Express)  →  Database (Supabase
                                  File Storage (Supabase)
 ```
 
+## 📖 Documentation
+
+- **[Payload Documentation](README-PAYLOAD.md)** - Complete CV data structure and API payload format
+- **[API Specification](docs/specification.md)** - Detailed API documentation
+- **[Implementation Plan](specs/001-backend-api-stateless-generation/plan.md)** - Technical implementation details
+
 ## 📁 Project Structure
 
 ```
 src/
 ├── components/              # React UI components (testing interface)
+│   └── cv/
+│       ├── CVManager.tsx    # Basic CV management
+│       └── EnhancedCVTest.tsx # Frank Digital template testing
 ├── server/                  # Backend API server
 │   ├── index.ts            # Main Express server
 │   ├── routes/             # API route handlers
 │   ├── services/           # Business logic (PDF generation)
-│   ├── api/                # Server-side API classes
+│   ├── templates/          # CV template rendering
+│   │   ├── frank-digital.ts # Frank Digital template
+│   │   ├── modern.ts       # Modern template
+│   │   └── mock-data.ts    # Test data
+│   ├── types/              # TypeScript interfaces
 │   └── lib/                # Server utilities
-├── api/                    # Client-side API classes
-├── lib/                    # Shared utilities
-└── templates/              # CV template components
+└── specs/                  # Technical specifications
 ```
+
+## 🎨 CV Templates
+
+### Frank Digital Template
+Based on the Frank_Digital_AB_Niklas_Andervang_CV_2025.pdf example:
+- **Features**: Company branding, profile image, technology tags, dotted section dividers
+- **Style**: Purple accents (#6366f1), Inter font, single-column layout
+- **Best for**: Consulting firms, digital agencies, modern tech companies
+
+### Modern Template
+- **Features**: Clean layout, structured sections, professional typography
+- **Style**: Blue accents, minimal design, centered header
+- **Best for**: Corporate environments, general business
+
+### Classic Template
+- **Features**: Traditional layout, conservative styling
+- **Style**: Black and white, serif typography, formal structure
+- **Best for**: Legal, academic, government positions
+
+### Creative Template
+- **Features**: Dynamic backgrounds, artistic layout, animations
+- **Style**: Colorful gradients, modern typography
+- **Best for**: Design, marketing, creative industries
 
 ## 🚦 Current Status
 
 ### ✅ Completed
-- Express API server with all routes
-- CV Generation Service with Puppeteer
-- Database schema and migrations
-- Template system architecture
-- Server-side Supabase integration
-- Rate limiting and security middleware
+- Enhanced CV data structure with complete template support
+- Frank Digital template implementation (HTML/DOCX)
+- Modern template with responsive design
+- CVGenerationService supporting both simple and complete data
+- EnhancedCVTest component for testing full payload
+- Comprehensive payload documentation
 
 ### 🔧 In Progress
 - Server startup debugging (exits immediately)
@@ -56,8 +91,8 @@ src/
 ### 📋 Next Steps
 1. Debug server startup issue
 2. Run database migrations
-3. Test API endpoints
-4. Update frontend to use API
+3. Test API endpoints with complete payload
+4. Add DOCX generation library integration
 
 ## 🛠️ Setup Instructions
 
@@ -107,58 +142,95 @@ npm run dev:api
 npm run dev
 ```
 
-**Full Stack (both together):**
-```bash
-npm run dev:full
-```
+**Test Enhanced CV Generation:**
+1. Navigate to the Enhanced CV Test component
+2. Use Frank Digital mock data (pre-filled)
+3. Generate PDF, HTML, or DOCX
+4. Download and review output
 
 ## 📚 API Documentation
 
-### Authentication
-Currently using Supabase anonymous access. Production should implement proper auth.
+### CV Data Structures
+
+#### Simple CV Data (Basic Generation)
+```typescript
+{
+  "name": "John Doe",
+  "title": "Software Developer",
+  "template": "modern",
+  "format": "pdf"
+}
+```
+
+#### Complete CV Data (Enhanced Generation)
+```typescript
+{
+  "personalInfo": {
+    "name": "Niklas Andervang",
+    "title": "Senior front-end/fullstack utvecklare",
+    "email": "niklas@example.se",
+    "phone": "+46 70 123 45 67"
+  },
+  "summary": {
+    "introduction": "Professional introduction...",
+    "highlights": ["Key achievement 1", "Key achievement 2"],
+    "specialties": ["React", "TypeScript", "WCAG"]
+  },
+  "projects": [
+    {
+      "period": "2024 - pågående",
+      "type": "Frontend utvecklare",
+      "title": "AI Project",
+      "description": "Project description...",
+      "technologies": ["React", "TypeScript", "Docker"]
+    }
+  ],
+  "template": "frank-digital",
+  "format": "pdf"
+}
+```
+
+See **[README-PAYLOAD.md](README-PAYLOAD.md)** for complete data structure documentation.
 
 ### Base URL
 ```
 http://localhost:3001/api
 ```
 
-### Endpoints
+### Key Endpoints
 
-#### Health Check
+#### Enhanced CV Generation
 ```http
-GET /health
+POST /api/generate/complete
+Content-Type: application/json
+
+# Complete CV data payload (see README-PAYLOAD.md)
 ```
 
-#### CV Management
+#### Simple CV Generation
 ```http
-GET    /api/cvs              # List all CVs
-POST   /api/cvs              # Create new CV
-GET    /api/cvs/:id          # Get specific CV
-PUT    /api/cvs/:id          # Update CV
-DELETE /api/cvs/:id          # Delete CV
+POST /api/generate
+Content-Type: application/json
+
+# Simple CV data payload
 ```
 
 #### Templates
 ```http
 GET /api/templates           # List available templates
-GET /api/templates/:id       # Get specific template
-GET /api/templates/type/:type # Get templates by type
-```
-
-#### CV Generation
-```http
-POST /api/generate           # Generate CV file (PDF/HTML)
-POST /api/generate/preview   # Generate preview HTML
-GET  /api/generate/:id       # Get generation status
 ```
 
 ### Response Format
 ```json
 {
   "success": true,
-  "data": {...},
-  "message": "Operation completed",
-  "timestamp": "2025-10-02T10:30:00Z"
+  "data": {
+    "fileUrl": "data:application/pdf;base64,JVBERi0xLjQ...",
+    "format": "pdf",
+    "template": "frank-digital",
+    "generatedAt": "2025-10-04T10:30:00Z"
+  },
+  "timestamp": "2025-10-04T10:30:00Z"
 }
 ```
 
@@ -186,11 +258,11 @@ GET  /api/generate/:id       # Get generation status
 
 ## 📝 Development Notes
 
-- **TypeScript**: Strict mode enabled
-- **Linting**: ESLint configuration
-- **PDF Generation**: Uses Puppeteer with A4 format
-- **File Storage**: Supabase Storage bucket 'cv-files'
-- **Rate Limiting**: 100 requests/15min, 10 generations/5min
+- **TypeScript**: Strict mode enabled with comprehensive type definitions
+- **Templates**: Frank Digital template based on real-world CV example
+- **PDF Generation**: Uses Puppeteer with A4 format, print-optimized styling
+- **Data Structure**: Supports complete professional profiles with projects, education, skills
+- **Testing**: EnhancedCVTest component with Frank Digital mock data
 
 ## 🚀 Deployment
 
@@ -202,9 +274,3 @@ Ready for deployment to:
 ## 📄 License
 
 MIT License - see LICENSE file for details.
-      },
-      // other options...
-    },
-  },
-])
-```

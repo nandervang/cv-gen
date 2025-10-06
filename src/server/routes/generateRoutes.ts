@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { validateCVData } from '../middleware/validation'
-import { cvGenerationService } from '../services/cvGenerationService'
+import { cvGenerationService } from '../services/CVGenerationService.js'
+import type { CompleteCVData } from '../types/cv.js'
 
 const router = Router()
 
@@ -25,11 +26,23 @@ router.post('/', validateCVData, async (req, res) => {
   try {
     const { name, title, format = 'pdf', template = 'modern' } = req.body
     
-    const fileUrl = await cvGenerationService.generateCV(
-      { name, title },
+    // Create a simplified CompleteCVData object for basic generation
+    const cvData = {
+      personalInfo: {
+        name,
+        title,
+        email: '',
+        phone: ''
+      },
+      summary: {
+        introduction: `Professional ${title}`,
+        highlights: []
+      },
       template,
       format
-    )
+    }
+    
+    const fileUrl = await cvGenerationService.generateCompleteCV(cvData)
     
     res.status(200).json({
       success: true,
@@ -48,6 +61,49 @@ router.post('/', validateCVData, async (req, res) => {
       error: {
         code: 'INTERNAL_SERVER_ERROR',
         message: error.message || 'Failed to generate CV'
+      },
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+// POST /api/generate/complete - Generate CV file from complete payload
+router.post('/complete', async (req, res) => {
+  console.log('Complete generate route hit with body keys:', Object.keys(req.body))
+  try {
+    const cvData = req.body as CompleteCVData
+    
+    // Basic validation for required fields
+    if (!cvData.personalInfo?.name || !cvData.personalInfo?.title) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'personalInfo.name and personalInfo.title are required'
+        },
+        timestamp: new Date().toISOString()
+      })
+    }
+    
+    const fileUrl = await cvGenerationService.generateCompleteCV(cvData)
+    
+    res.status(200).json({
+      success: true,
+      data: {
+        fileUrl,
+        format: cvData.format || 'pdf',
+        template: cvData.template || 'frank-digital',
+        generatedAt: new Date().toISOString()
+      },
+      timestamp: new Date().toISOString()
+    })
+  } catch (error: any) {
+    console.error('Complete generation error:', error)
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: error.message || 'Failed to generate complete CV'
       },
       timestamp: new Date().toISOString()
     })

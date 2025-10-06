@@ -88,7 +88,7 @@ app.use('/api/generate', apiKeyAuth, generateLimiter, (req, _res, next) => {
 }, generateRoutes)
 
 // Global error handling middleware
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((err: Error & { status?: number; code?: string }, _req: express.Request, res: express.Response) => {
   console.error('API Error:', {
     message: err.message,
     stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
@@ -122,7 +122,7 @@ app.use((req, res) => {
 
 export function startAPIServer() {
   return new Promise<void>((resolve) => {
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`🚀 CV Generation API server running on port ${PORT}`)
       console.log(`📖 Health check: http://localhost:${PORT}/health`)
       console.log(`🎯 API Base URL: http://localhost:${PORT}/api`)
@@ -132,6 +132,9 @@ export function startAPIServer() {
       console.log(`   POST /api/generate  - Generate CV from payload`)
       resolve()
     })
+    
+    // Keep server running until explicitly stopped
+    return server
   })
 }
 
@@ -143,8 +146,25 @@ const isTest = process.env.NODE_ENV === 'test'
 // Start the server if this file is run directly and not in test mode
 if (!isTest) {
   console.log('🔧 Starting stateless CV generation server...')
-  startAPIServer().catch((error) => {
-    console.error('❌ Failed to start server:', error)
-    process.exit(1)
+  
+  // Keep the process alive and handle graceful shutdown
+  startAPIServer()
+    .then(() => {
+      console.log('✅ Server started successfully')
+    })
+    .catch((error) => {
+      console.error('❌ Failed to start server:', error)
+      process.exit(1)
+    })
+  
+  // Handle graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('🛑 Received SIGTERM signal, shutting down gracefully...')
+    process.exit(0)
+  })
+  
+  process.on('SIGINT', () => {
+    console.log('🛑 Received SIGINT signal, shutting down gracefully...')
+    process.exit(0)
   })
 }

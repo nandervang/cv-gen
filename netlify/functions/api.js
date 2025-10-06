@@ -3,13 +3,6 @@ import serverless from 'serverless-http';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import morgan from 'morgan';
-
-// Import your existing routes
-import { cvRoutes } from '../../src/server/routes/cvRoutes.js';
-import { templateRoutes } from '../../src/server/routes/templateRoutes.js';
-import { generateRoutes } from '../../src/server/routes/generateRoutes.js';
-import { customizationRoutes } from '../../src/server/routes/customizationRoutes.js';
 
 const app = express();
 
@@ -48,11 +41,6 @@ const limiter = rateLimit({
 
 app.use('/api', limiter);
 
-// Logging
-if (process.env.NODE_ENV !== 'production') {
-  app.use(morgan('dev'));
-}
-
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -80,11 +68,148 @@ const validateApiKey = (req, res, next) => {
 // Apply API key validation to protected routes
 app.use('/api', validateApiKey);
 
-// Routes
-app.use('/api/cvs', cvRoutes);
-app.use('/api/templates', templateRoutes);
-app.use('/api/customization', customizationRoutes);
-app.use('/api', generateRoutes);
+// Simple mock responses for now to test connectivity
+app.get('/api/templates', (req, res) => {
+  res.json({
+    success: true,
+    data: [
+      {
+        id: 'frank-digital',
+        name: 'Frank Digital',
+        description: 'Professional template based on Frank Digital CV design',
+        templateType: 'professional',
+        industryFocus: 'technology',
+        isPremium: false,
+        isActive: true
+      },
+      {
+        id: 'modern',
+        name: 'Modern Professional',
+        description: 'Clean, modern design perfect for tech professionals',
+        templateType: 'modern',
+        industryFocus: 'technology',
+        isPremium: false,
+        isActive: true
+      },
+      {
+        id: 'classic',
+        name: 'Classic Executive',
+        description: 'Traditional corporate design for executive positions',
+        templateType: 'classic',
+        industryFocus: 'business',
+        isPremium: false,
+        isActive: true
+      },
+      {
+        id: 'creative',
+        name: 'Creative Portfolio',
+        description: 'Artistic design for creative professionals',
+        templateType: 'creative',
+        industryFocus: 'creative',
+        isPremium: false,
+        isActive: true
+      }
+    ]
+  });
+});
+
+app.get('/api/customization/options', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      colorSchemes: [
+        'blue-professional', 'green-tech', 'purple-creative', 'red-dynamic',
+        'orange-warm', 'teal-modern', 'indigo-corporate', 'pink-creative',
+        'gray-minimal', 'emerald-fresh', 'amber-energetic', 'rose-elegant'
+      ],
+      fontFamilies: ['inter', 'roboto', 'open-sans', 'lato', 'georgia', 'times'],
+      fontSizes: ['small', 'medium', 'large'],
+      spacings: ['compact', 'normal', 'relaxed']
+    }
+  });
+});
+
+app.post('/api/generate/complete', (req, res) => {
+  // Mock CV generation response
+  res.json({
+    success: true,
+    data: {
+      fileUrl: 'https://example.com/mock-cv.pdf',
+      format: 'pdf',
+      generatedAt: new Date().toISOString(),
+      template: req.body.template || 'modern'
+    }
+  });
+});
+
+app.post('/api/batch/formats', (req, res) => {
+  // Mock batch generation response
+  res.json({
+    success: true,
+    data: {
+      summary: {
+        total: 3,
+        successful: 3,
+        failed: 0
+      },
+      results: {
+        pdf: {
+          success: true,
+          fileUrl: 'https://example.com/mock-cv.pdf',
+          generatedAt: new Date().toISOString()
+        },
+        html: {
+          success: true,
+          fileUrl: 'https://example.com/mock-cv.html',
+          generatedAt: new Date().toISOString()
+        },
+        docx: {
+          success: true,
+          fileUrl: 'https://example.com/mock-cv.docx',
+          generatedAt: new Date().toISOString()
+        }
+      }
+    }
+  });
+});
+
+app.post('/api/batch/comprehensive', (req, res) => {
+  // Mock comprehensive batch response
+  res.json({
+    success: true,
+    data: {
+      summary: {
+        totalTemplates: 4,
+        totalFormats: 3,
+        totalGenerated: 12,
+        successful: 12,
+        failed: 0
+      },
+      results: {
+        'frank-digital': {
+          pdf: { success: true, fileUrl: 'https://example.com/frank-digital.pdf' },
+          html: { success: true, fileUrl: 'https://example.com/frank-digital.html' },
+          docx: { success: true, fileUrl: 'https://example.com/frank-digital.docx' }
+        },
+        modern: {
+          pdf: { success: true, fileUrl: 'https://example.com/modern.pdf' },
+          html: { success: true, fileUrl: 'https://example.com/modern.html' },
+          docx: { success: true, fileUrl: 'https://example.com/modern.docx' }
+        },
+        classic: {
+          pdf: { success: true, fileUrl: 'https://example.com/classic.pdf' },
+          html: { success: true, fileUrl: 'https://example.com/classic.html' },
+          docx: { success: true, fileUrl: 'https://example.com/classic.docx' }
+        },
+        creative: {
+          pdf: { success: true, fileUrl: 'https://example.com/creative.pdf' },
+          html: { success: true, fileUrl: 'https://example.com/creative.html' },
+          docx: { success: true, fileUrl: 'https://example.com/creative.docx' }
+        }
+      }
+    }
+  });
+});
 
 // Error handling
 app.use((error, req, res, _next) => {

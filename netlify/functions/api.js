@@ -1,6 +1,6 @@
 // Helper functions for content generation
 function generateHTMLContent(cvData) {
-  const { personalInfo, summary, projects } = cvData;
+  const { personalInfo, summary, projects, education, certifications, competencies, languages } = cvData;
   
   return `<!DOCTYPE html>
 <html lang="sv">
@@ -17,9 +17,11 @@ function generateHTMLContent(cvData) {
         .contact span { margin-right: 20px; }
         .section { margin-bottom: 30px; }
         .section h3 { color: #1e40af; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; margin-bottom: 15px; }
-        .project { background: #f8fafc; padding: 15px; margin-bottom: 15px; border-radius: 5px; border-left: 4px solid #3b82f6; }
+        .item { background: #f8fafc; padding: 15px; margin-bottom: 15px; border-radius: 5px; border-left: 4px solid #3b82f6; }
         .period { color: #666; font-style: italic; }
         .tech-tag { background: #e0e7ff; color: #3730a3; padding: 2px 6px; margin: 2px; border-radius: 4px; font-size: 0.8em; }
+        .skills { display: flex; flex-wrap: wrap; gap: 8px; }
+        .skill { background: #f0f9ff; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; }
     </style>
 </head>
 <body>
@@ -35,17 +37,49 @@ function generateHTMLContent(cvData) {
     ${summary ? `<div class="section">
         <h3>Professionell Sammanfattning</h3>
         <p>${summary.introduction || ''}</p>
-        ${summary.highlights ? `<ul>${summary.highlights.map(h => `<li>${h}</li>`).join('')}</ul>` : ''}
+        ${summary.highlights ? `<h4>Höjdpunkter:</h4><ul>${summary.highlights.map(h => `<li>${h}</li>`).join('')}</ul>` : ''}
+        ${summary.specialties ? `<h4>Specialiteter:</h4><ul>${summary.specialties.map(s => `<li>${s}</li>`).join('')}</ul>` : ''}
     </div>` : ''}
 
     ${projects?.length ? `<div class="section">
         <h3>Projekt</h3>
-        ${projects.map(p => `<div class="project">
+        ${projects.map(p => `<div class="item">
             <h4>${p.title || 'N/A'} <span class="period">(${p.period || 'N/A'})</span></h4>
             <p><strong>${p.type || ''}</strong></p>
             <p>${p.description || ''}</p>
-            ${p.technologies ? `<div>${p.technologies.map(t => `<span class="tech-tag">${t}</span>`).join('')}</div>` : ''}
+            ${p.technologies ? `<div class="skills">${p.technologies.map(t => `<span class="tech-tag">${t}</span>`).join('')}</div>` : ''}
         </div>`).join('')}
+    </div>` : ''}
+
+    ${education?.length ? `<div class="section">
+        <h3>Utbildning</h3>
+        ${education.map(e => `<div class="item">
+            <h4>${e.degree || 'N/A'} <span class="period">(${e.period || 'N/A'})</span></h4>
+            <p>${e.institution || 'N/A'}</p>
+        </div>`).join('')}
+    </div>` : ''}
+
+    ${certifications?.length ? `<div class="section">
+        <h3>Certifieringar</h3>
+        ${certifications.map(c => `<div class="item">
+            <h4>${c.title || 'N/A'} <span class="period">(${c.year || 'N/A'})</span></h4>
+            <p>${c.issuer || 'N/A'}</p>
+        </div>`).join('')}
+    </div>` : ''}
+
+    ${competencies?.length ? `<div class="section">
+        <h3>Kompetenser</h3>
+        ${competencies.map(cat => `<div class="item">
+            <h4>${cat.category || 'N/A'}</h4>
+            ${cat.skills ? `<div class="skills">${cat.skills.map(s => `<span class="skill">${s.name} (${s.level})</span>`).join('')}</div>` : ''}
+        </div>`).join('')}
+    </div>` : ''}
+
+    ${languages?.length ? `<div class="section">
+        <h3>Språk</h3>
+        <div class="item">
+            ${languages.map(l => `<p><strong>${l.language}:</strong> ${l.proficiency}</p>`).join('')}
+        </div>
     </div>` : ''}
 
     <div style="margin-top: 40px; text-align: center; color: #666; font-size: 0.9em;">
@@ -56,11 +90,56 @@ function generateHTMLContent(cvData) {
 }
 
 function generatePDFContent(cvData) {
-  const name = cvData.personalInfo?.name || 'Unknown';
-  const title = cvData.personalInfo?.title || 'N/A';
-  const email = cvData.personalInfo?.email || '';
+  const { personalInfo, summary, projects, education, certifications, competencies, languages } = cvData;
   
-  // Simple PDF structure with actual content
+  // Build text content with all CV data
+  let textContent = `CV - ${personalInfo?.name || 'Unknown'}
+${personalInfo?.title || 'N/A'}
+${personalInfo?.email || ''}
+${personalInfo?.phone || ''}
+
+PROFESSIONELL SAMMANFATTNING
+${summary?.introduction || ''}
+
+SPECIALITETER:
+${summary?.specialties ? summary.specialties.map(s => `• ${s}`).join('\n') : ''}
+
+HÖJDPUNKTER:
+${summary?.highlights ? summary.highlights.map(h => `• ${h}`).join('\n') : ''}
+
+PROJEKT
+${projects ? projects.map(p => `
+${p.title || 'N/A'} (${p.period || 'N/A'})
+${p.type || ''}
+${p.description || ''}
+Teknologier: ${p.technologies ? p.technologies.join(', ') : 'N/A'}
+`).join('\n') : ''}
+
+UTBILDNING
+${education ? education.map(e => `
+${e.degree || 'N/A'} (${e.period || 'N/A'})
+${e.institution || 'N/A'}
+`).join('\n') : ''}
+
+CERTIFIERINGAR
+${certifications ? certifications.map(c => `
+${c.title || 'N/A'} (${c.year || 'N/A'})
+${c.issuer || 'N/A'}
+`).join('\n') : ''}
+
+KOMPETENSER
+${competencies ? competencies.map(cat => `
+${cat.category || 'N/A'}:
+${cat.skills ? cat.skills.map(s => `• ${s.name} (${s.level})`).join('\n') : ''}
+`).join('\n') : ''}
+
+SPRÅK
+${languages ? languages.map(l => `• ${l.language}: ${l.proficiency}`).join('\n') : ''}
+
+Genererat: ${new Date().toLocaleDateString('sv-SE')}
+Template: ${cvData.template || 'modern'}`;
+
+  // Simple PDF structure with comprehensive content
   const pdfContent = `%PDF-1.4
 1 0 obj
 <<
@@ -93,23 +172,13 @@ endobj
 
 4 0 obj
 <<
-/Length 400
+/Length ${textContent.length + 100}
 >>
 stream
 BT
-/F1 18 Tf
-50 720 Td
-(${name}) Tj
-0 -30 Td
-/F1 14 Tf
-(${title}) Tj
-0 -25 Td
 /F1 12 Tf
-(${email}) Tj
-0 -40 Td
-(CV genererat: ${new Date().toLocaleDateString('sv-SE')}) Tj
-0 -20 Td
-(Template: ${cvData.template || 'modern'}) Tj
+50 750 Td
+${textContent.split('\n').map((line, i) => `(${line.replace(/[()\\]/g, '\\$&')}) Tj 0 -15 Td`).join('\n')}
 ET
 endstream
 endobj
@@ -143,9 +212,9 @@ startxref
 }
 
 function generateDOCXContent(cvData) {
-  const { personalInfo, summary, projects } = cvData;
+  const { personalInfo, summary, projects, education, certifications, competencies, languages } = cvData;
   
-  return `${personalInfo?.name || 'N/A'}
+  return `CV - ${personalInfo?.name || 'N/A'}
 ${personalInfo?.title || 'N/A'}
 ${personalInfo?.email || ''}
 ${personalInfo?.phone || ''}
@@ -153,6 +222,10 @@ ${personalInfo?.phone || ''}
 PROFESSIONELL SAMMANFATTNING
 ${summary?.introduction || ''}
 
+SPECIALITETER:
+${summary?.specialties ? summary.specialties.map(s => `• ${s}`).join('\n') : ''}
+
+HÖJDPUNKTER:
 ${summary?.highlights ? summary.highlights.map(h => `• ${h}`).join('\n') : ''}
 
 PROJEKT
@@ -162,6 +235,27 @@ ${p.type || ''}
 ${p.description || ''}
 Teknologier: ${p.technologies ? p.technologies.join(', ') : 'N/A'}
 `).join('\n') : ''}
+
+UTBILDNING
+${education ? education.map(e => `
+${e.degree || 'N/A'} (${e.period || 'N/A'})
+${e.institution || 'N/A'}
+`).join('\n') : ''}
+
+CERTIFIERINGAR
+${certifications ? certifications.map(c => `
+${c.title || 'N/A'} (${c.year || 'N/A'})
+${c.issuer || 'N/A'}
+`).join('\n') : ''}
+
+KOMPETENSER
+${competencies ? competencies.map(cat => `
+${cat.category || 'N/A'}:
+${cat.skills ? cat.skills.map(s => `• ${s.name} (${s.level})`).join('\n') : ''}
+`).join('\n') : ''}
+
+SPRÅK
+${languages ? languages.map(l => `• ${l.language}: ${l.proficiency}`).join('\n') : ''}
 
 Genererat: ${new Date().toLocaleDateString('sv-SE')}
 Template: ${cvData.template || 'modern'}`;
@@ -352,6 +446,112 @@ export const handler = async (event, context) => {
             template: body.template || 'modern',
             filename: `${filename}.${format}`,
             note: 'Generated with actual CV data'
+          }
+        })
+      };
+    }
+
+    if (path === '/batch/formats' && method === 'POST') {
+      const body = JSON.parse(event.body || '{}');
+      
+      // Generate all three formats with actual CV data
+      const formats = ['pdf', 'html', 'docx'];
+      const results = {};
+      
+      for (const format of formats) {
+        let fileContent = '';
+        let mimeType = '';
+        
+        if (format === 'html') {
+          const htmlContent = generateHTMLContent(body);
+          fileContent = btoa(unescape(encodeURIComponent(htmlContent)));
+          mimeType = 'text/html';
+        } else if (format === 'pdf') {
+          const pdfContent = generatePDFContent(body);
+          fileContent = pdfContent;
+          mimeType = 'application/pdf';
+        } else if (format === 'docx') {
+          const docContent = generateDOCXContent(body);
+          fileContent = btoa(unescape(encodeURIComponent(docContent)));
+          mimeType = 'text/plain';
+        }
+        
+        results[format] = {
+          success: true,
+          fileUrl: `data:${mimeType};base64,${fileContent}`,
+          generatedAt: new Date().toISOString()
+        };
+      }
+      
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          data: {
+            summary: {
+              total: 3,
+              successful: 3,
+              failed: 0
+            },
+            results
+          }
+        })
+      };
+    }
+
+    if (path === '/batch/comprehensive' && method === 'POST') {
+      const body = JSON.parse(event.body || '{}');
+      
+      // Generate files for all templates and formats
+      const templates = ['frank-digital', 'modern', 'classic', 'creative'];
+      const formats = ['pdf', 'html', 'docx'];
+      const results = {};
+      
+      for (const templateId of templates) {
+        results[templateId] = {};
+        const templateData = { ...body, template: templateId };
+        
+        for (const format of formats) {
+          let fileContent = '';
+          let mimeType = '';
+          
+          if (format === 'html') {
+            const htmlContent = generateHTMLContent(templateData);
+            fileContent = btoa(unescape(encodeURIComponent(htmlContent)));
+            mimeType = 'text/html';
+          } else if (format === 'pdf') {
+            const pdfContent = generatePDFContent(templateData);
+            fileContent = pdfContent;
+            mimeType = 'application/pdf';
+          } else if (format === 'docx') {
+            const docContent = generateDOCXContent(templateData);
+            fileContent = btoa(unescape(encodeURIComponent(docContent)));
+            mimeType = 'text/plain';
+          }
+          
+          results[templateId][format] = {
+            success: true,
+            fileUrl: `data:${mimeType};base64,${fileContent}`,
+            generatedAt: new Date().toISOString()
+          };
+        }
+      }
+      
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          data: {
+            summary: {
+              totalTemplates: 4,
+              totalFormats: 3,
+              totalGenerated: 12,
+              successful: 12,
+              failed: 0
+            },
+            results
           }
         })
       };

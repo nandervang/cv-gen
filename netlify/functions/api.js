@@ -103,14 +103,48 @@ export const handler = async (event, context) => {
         body: JSON.stringify({
           success: true,
           data: {
-            colorSchemes: [
-              'blue-professional', 'green-tech', 'purple-creative', 'red-dynamic',
-              'orange-warm', 'teal-modern', 'indigo-corporate', 'pink-creative',
-              'gray-minimal', 'emerald-fresh', 'amber-energetic', 'rose-elegant'
+            colorSchemes: {
+              'frank-digital': [
+                { id: 'blue-professional', name: 'Professional Blue', primaryColor: '#1e40af', accentColor: '#3b82f6', description: 'Classic professional blue theme' },
+                { id: 'green-tech', name: 'Tech Green', primaryColor: '#166534', accentColor: '#22c55e', description: 'Modern tech green theme' }
+              ],
+              'modern': [
+                { id: 'purple-creative', name: 'Creative Purple', primaryColor: '#7c3aed', accentColor: '#a855f7', description: 'Creative purple theme' },
+                { id: 'teal-modern', name: 'Modern Teal', primaryColor: '#0f766e', accentColor: '#14b8a6', description: 'Modern teal theme' }
+              ],
+              'classic': [
+                { id: 'gray-minimal', name: 'Minimal Gray', primaryColor: '#374151', accentColor: '#6b7280', description: 'Minimal gray theme' },
+                { id: 'indigo-corporate', name: 'Corporate Indigo', primaryColor: '#3730a3', accentColor: '#6366f1', description: 'Corporate indigo theme' }
+              ],
+              'creative': [
+                { id: 'pink-creative', name: 'Creative Pink', primaryColor: '#be185d', accentColor: '#ec4899', description: 'Creative pink theme' },
+                { id: 'orange-warm', name: 'Warm Orange', primaryColor: '#c2410c', accentColor: '#f97316', description: 'Warm orange theme' }
+              ]
+            },
+            fontOptions: [
+              { id: 'inter', name: 'Inter', fontFamily: 'Inter', fallback: ['Arial', 'sans-serif'], category: 'sans-serif', description: 'Modern and readable' },
+              { id: 'roboto', name: 'Roboto', fontFamily: 'Roboto', fallback: ['Arial', 'sans-serif'], category: 'sans-serif', description: 'Clean and professional' },
+              { id: 'open-sans', name: 'Open Sans', fontFamily: 'Open Sans', fallback: ['Arial', 'sans-serif'], category: 'sans-serif', description: 'Friendly and approachable' },
+              { id: 'lato', name: 'Lato', fontFamily: 'Lato', fallback: ['Arial', 'sans-serif'], category: 'sans-serif', description: 'Elegant and versatile' },
+              { id: 'georgia', name: 'Georgia', fontFamily: 'Georgia', fallback: ['Times', 'serif'], category: 'serif', description: 'Traditional and authoritative' },
+              { id: 'times', name: 'Times New Roman', fontFamily: 'Times New Roman', fallback: ['Times', 'serif'], category: 'serif', description: 'Classic and formal' }
             ],
-            fontFamilies: ['inter', 'roboto', 'open-sans', 'lato', 'georgia', 'times'],
-            fontSizes: ['small', 'medium', 'large'],
-            spacings: ['compact', 'normal', 'relaxed']
+            layoutOptions: [
+              { id: 'single-column', name: 'Single Column', description: 'Traditional single column layout', supportedTemplates: ['frank-digital', 'modern', 'classic', 'creative'] },
+              { id: 'two-column', name: 'Two Column', description: 'Modern two column layout', supportedTemplates: ['modern', 'creative'] },
+              { id: 'sidebar-left', name: 'Left Sidebar', description: 'Sidebar on the left', supportedTemplates: ['modern', 'classic'] },
+              { id: 'asymmetric', name: 'Asymmetric', description: 'Creative asymmetric layout', supportedTemplates: ['creative'] }
+            ],
+            sizeOptions: [
+              { id: 'small', name: 'Small', description: 'Compact text size' },
+              { id: 'medium', name: 'Medium', description: 'Standard text size' },
+              { id: 'large', name: 'Large', description: 'Large text size for better readability' }
+            ],
+            spacingOptions: [
+              { id: 'compact', name: 'Compact', description: 'Tight spacing for more content' },
+              { id: 'normal', name: 'Normal', description: 'Standard spacing' },
+              { id: 'relaxed', name: 'Relaxed', description: 'Generous spacing for better readability' }
+            ]
           }
         })
       };

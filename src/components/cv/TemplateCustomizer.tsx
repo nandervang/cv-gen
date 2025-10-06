@@ -112,7 +112,7 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
   };
 
   const getAvailableLayouts = () => {
-    if (!options) return [];
+    if (!options || !options.layoutOptions) return [];
     return options.layoutOptions.filter(layout => 
       layout.supportedTemplates.includes(selectedTemplate)
     );

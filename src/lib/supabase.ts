@@ -1,13 +1,23 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+  console.warn('Supabase environment variables not found - using mock client for development')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Create singleton client to avoid multiple instances
+let supabaseClient: SupabaseClient | null = null
+
+export const supabase = supabaseUrl && supabaseAnonKey 
+  ? (supabaseClient ??= createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false, // Disable session persistence to avoid conflicts
+        autoRefreshToken: false
+      }
+    }))
+  : null as any // Mock client for development without Supabase
 
 // Database types for CV system
 export interface CVProfile {

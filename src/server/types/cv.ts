@@ -90,8 +90,12 @@ export interface CompleteCVData {
   styling?: {
     primaryColor?: string;           // Hex color for accents
     accentColor?: string;           // Secondary color
+    highlightColor?: string;        // Highlight color for creative templates
     fontFamily?: string;            // Font preference
-    layout?: 'single-column' | 'two-column';
+    fontSize?: 'small' | 'medium' | 'large';  // Font size preference
+    spacing?: 'compact' | 'normal' | 'relaxed';  // Content spacing
+    layout?: 'single-column' | 'two-column' | 'sidebar-left' | 'asymmetric';
+    colorScheme?: string;           // Predefined color scheme ID
   };
 }
 

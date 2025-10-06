@@ -6,6 +6,9 @@ import rateLimit from 'express-rate-limit'
 import { apiKeyAuth } from './middleware/auth'
 import { templateRoutes } from './routes/templateRoutes'
 import { generateRoutes } from './routes/generateRoutes'
+import { customizationRoutes } from './routes/customizationRoutes'
+import { previewRoutes } from './routes/previewRoutes'
+import { batchRoutes } from './routes/batchRoutes'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -30,10 +33,10 @@ app.use(morgan('combined'))
 app.use(express.json({ limit: '1mb' })) // Smaller limit for simple payloads
 app.use(express.urlencoded({ extended: true, limit: '1mb' }))
 
-// Rate limiting for general API access
+// Rate limiting for general API access (relaxed for development)
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 1000, // increased limit for development
   message: {
     success: false,
     error: {
@@ -46,10 +49,10 @@ const generalLimiter = rateLimit({
   legacyHeaders: false
 })
 
-// Stricter rate limiting for generation endpoints
+// Rate limiting for generation endpoints (relaxed for development)
 const generateLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 10, // limit each IP to 10 generations per 5 minutes
+  windowMs: 1 * 60 * 1000, // 1 minute (reduced window)
+  max: 50, // increased limit for batch testing
   message: {
     success: false,
     error: {
@@ -82,13 +85,16 @@ app.get('/health', (_req, res) => {
 
 // API Routes with authentication
 app.use('/api/templates', apiKeyAuth, templateRoutes)
+app.use('/api/customization', apiKeyAuth, customizationRoutes)
+app.use('/api/preview', apiKeyAuth, previewRoutes)
+app.use('/api/batch', apiKeyAuth, generateLimiter, batchRoutes)
 app.use('/api/generate', apiKeyAuth, generateLimiter, (req, _res, next) => {
   console.log('DEBUG: /api/generate route hit:', { method: req.method, body: req.body })
   next()
 }, generateRoutes)
 
 // Global error handling middleware
-app.use((err: Error & { status?: number; code?: string }, _req: express.Request, res: express.Response) => {
+app.use((err: Error & { status?: number; code?: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error('API Error:', {
     message: err.message,
     stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,

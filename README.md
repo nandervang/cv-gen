@@ -1,276 +1,231 @@
-# CV Generation Backend API
+# CV Generation System
 
-A comprehensive RESTful API for creating, managing, and generating professional CVs with multiple templates and formats. Built with Express, TypeScript, Supabase, and Puppeteer.
+A production-ready CV generation system built with Node.js/Express backend and React frontend. Generate professional CVs in multiple formats (HTML, PDF, DOCX) with customizable templates and comprehensive batch testing capabilities.
 
-## 🚀 Features
+## 🚀 Quick Start
 
-- **RESTful API** for CV management and generation
-- **Multiple CV Templates** (Frank Digital, Modern, Classic, Creative)
-- **PDF Generation** using Puppeteer with high-quality output
-- **Complete CV Data Structure** supporting projects, education, certifications, skills
-- **Template Customization** with styling configurations
-- **Multiple Output Formats** (PDF, HTML, DOCX)
-- **Rate Limiting** and security middleware
-- **Testing UI** for API development and testing
+```bash
+# Clone and install
+git clone https://github.com/your-username/cv-gen.git
+cd cv-gen
+npm install
+
+# Start both servers
+npm run dev:full
+
+# Test at http://localhost:5173 (frontend) and http://localhost:3001 (API)
+```
+
+## 🎯 Features
+
+### Templates & Formats
+- **4 Professional Templates**: Frank Digital, Modern, Classic, Creative
+- **3 Output Formats**: HTML, PDF, DOCX
+- **Template Customization**: 12 color schemes, 6 fonts, spacing options
+- **Preview System**: Generate template previews with sample data
+
+### API Capabilities
+- **Stateless Design**: No database dependencies for generation
+- **Batch Processing**: Generate multiple formats/templates simultaneously  
+- **Rate Limiting**: Production-ready with development-optimized limits
+- **Comprehensive Error Handling**: Structured error responses
+- **Type Safety**: Full TypeScript implementation
+
+### Testing & Development
+- **React Testing Interface**: Visual template gallery and generation testing
+- **Batch Testing**: Test all 12 template/format combinations
+- **Real-time Results**: Download links and status indicators
+- **Contract Tests**: Comprehensive API endpoint testing
+
+## � Documentation
+
+### Getting Started
+- **[Quick Setup Guide](docs/quick-setup.md)** - Get running in 5 minutes
+- **[Complete Documentation](docs/README.md)** - Full system documentation
+- **[API Specification](docs/api-specification.md)** - Detailed API reference
+
+### Integration & Deployment  
+- **[Consultant Dashboard Integration](docs/consultant-dashboard-integration.md)** - Step-by-step integration guide
+- **[Deployment Guide](docs/deployment-guide.md)** - Production deployment instructions
 
 ## 🏗️ Architecture
 
-```
-Frontend (React + Tailwind)  →  Backend API (Express)  →  Database (Supabase)
-                                        ↓
-                                 PDF Generation (Puppeteer)
-                                        ↓
-                                 File Storage (Supabase)
-```
+### Backend (Express + TypeScript - Port 3001)
+- **API Endpoints**: Templates, generation, customization, batch, preview
+- **Document Generation**: Puppeteer for PDF, custom engine for HTML/DOCX
+- **Security**: API key authentication, CORS, rate limiting, Helmet
+- **Performance**: Clustering, memory optimization, efficient processing
 
-## 📖 Documentation
+### Frontend (React + Vite - Port 5173)
+- **Testing Interface**: Comprehensive UI for API validation
+- **Component Library**: shadcn/ui with Tailwind CSS
+- **Template Gallery**: Visual template selection and customization
+- **Batch Testing**: Multi-format and multi-template testing
 
-- **[Payload Documentation](README-PAYLOAD.md)** - Complete CV data structure and API payload format
-- **[API Specification](docs/specification.md)** - Detailed API documentation
-- **[Implementation Plan](specs/001-backend-api-stateless-generation/plan.md)** - Technical implementation details
+## 🛠️ Development
 
-## 📁 Project Structure
-
-```
-src/
-├── components/              # React UI components (testing interface)
-│   └── cv/
-│       ├── CVManager.tsx    # Basic CV management
-│       └── EnhancedCVTest.tsx # Frank Digital template testing
-├── server/                  # Backend API server
-│   ├── index.ts            # Main Express server
-│   ├── routes/             # API route handlers
-│   ├── services/           # Business logic (PDF generation)
-│   ├── templates/          # CV template rendering
-│   │   ├── frank-digital.ts # Frank Digital template
-│   │   ├── modern.ts       # Modern template
-│   │   └── mock-data.ts    # Test data
-│   ├── types/              # TypeScript interfaces
-│   └── lib/                # Server utilities
-└── specs/                  # Technical specifications
-```
-
-## 🎨 CV Templates
-
-### Frank Digital Template
-Based on the Frank_Digital_AB_Niklas_Andervang_CV_2025.pdf example:
-- **Features**: Company branding, profile image, technology tags, dotted section dividers
-- **Style**: Purple accents (#6366f1), Inter font, single-column layout
-- **Best for**: Consulting firms, digital agencies, modern tech companies
-
-### Modern Template
-- **Features**: Clean layout, structured sections, professional typography
-- **Style**: Blue accents, minimal design, centered header
-- **Best for**: Corporate environments, general business
-
-### Classic Template
-- **Features**: Traditional layout, conservative styling
-- **Style**: Black and white, serif typography, formal structure
-- **Best for**: Legal, academic, government positions
-
-### Creative Template
-- **Features**: Dynamic backgrounds, artistic layout, animations
-- **Style**: Colorful gradients, modern typography
-- **Best for**: Design, marketing, creative industries
-
-## 🚦 Current Status
-
-### ✅ Completed
-- Enhanced CV data structure with complete template support
-- Frank Digital template implementation (HTML/DOCX)
-- Modern template with responsive design
-- CVGenerationService supporting both simple and complete data
-- EnhancedCVTest component for testing full payload
-- Comprehensive payload documentation
-
-### 🔧 In Progress
-- Server startup debugging (exits immediately)
-- Database migration execution
-- API endpoint testing
-
-### 📋 Next Steps
-1. Debug server startup issue
-2. Run database migrations
-3. Test API endpoints with complete payload
-4. Add DOCX generation library integration
-
-## 🛠️ Setup Instructions
-
-### Prerequisites
-- Node.js 18+
-- Supabase account and project
-- Git
-
-### Installation
-
-1. **Clone and install dependencies**
+### Scripts
 ```bash
-git clone <repository-url>
-cd cv-gen
-npm install
+npm run dev:full      # Start both API and frontend
+npm run dev:api       # API server only (port 3001)
+npm run dev          # Frontend only (port 5173)
+npm run build        # Build both projects
+npm run test         # Run all tests
+npm run lint         # Lint code
 ```
 
-2. **Environment Configuration**
-Create `.env` file:
-```env
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+### API Usage Example
+```javascript
+// Generate CV
+const response = await fetch('http://localhost:3001/api/generate/complete', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'dev-api-key-12345'
+  },
+  body: JSON.stringify({
+    personalInfo: {
+      name: 'John Doe',
+      title: 'Senior Developer', 
+      email: 'john@example.com'
+    },
+    summary: {
+      introduction: 'Experienced full-stack developer...'
+    },
+    template: 'frank-digital',
+    format: 'pdf'
+  })
+});
 
-# Server Configuration
-PORT=3001
+const result = await response.json();
+console.log('Generated CV:', result.data.fileUrl);
+```
+
+## 🎨 Available Templates
+
+### Frank Digital
+- **Type**: Corporate/Professional
+- **Best For**: Digital agencies, tech companies
+- **Features**: Clean layout, skills matrix, project showcase
+
+### Modern Professional  
+- **Type**: Modern/Minimalist
+- **Best For**: Tech professionals, startups
+- **Features**: Modern typography, clean sections, tech focus
+
+### Classic Executive
+- **Type**: Traditional/Executive  
+- **Best For**: Senior positions, traditional industries
+- **Features**: Professional layout, executive summary, formal style
+
+### Creative Portfolio
+- **Type**: Creative/Design
+- **Best For**: Designers, creative professionals
+- **Features**: Visual elements, portfolio sections, creative layout
+
+## 🔧 Configuration
+
+### Environment Variables
+```bash
+# Development
 NODE_ENV=development
+PORT=3001
+API_KEY=dev-api-key-12345
 
-# Server-side Supabase (for API)
-SUPABASE_URL=your_supabase_url
-SUPABASE_ANON_KEY=your_supabase_anon_key
+# Production (see deployment guide)
+NODE_ENV=production
+API_KEY=your-secure-production-key
+CORS_ORIGIN=https://your-consultant-dashboard.com
 ```
 
-3. **Database Setup**
-Run these migrations in your Supabase SQL editor:
-- `basic-cv-schema.sql` (already applied)
-- `template-system-migration.sql` (needs to be run)
+### Rate Limiting
+- **Development**: 1000 requests/15min (general), 50 requests/1min (generation)
+- **Production**: 100 requests/15min (general), 10 requests/5min (generation)
 
-### Development
+## 🧪 Testing
 
-**Start API Server:**
+### Available Tests
 ```bash
-npm run dev:api
+npm run test:contract     # API contract tests
+npm run test:integration  # Integration tests
+npm run test:watch       # Watch mode
 ```
 
-**Start Frontend (separate terminal):**
-```bash
-npm run dev
-```
-
-**Test Enhanced CV Generation:**
-1. Navigate to the Enhanced CV Test component
-2. Use Frank Digital mock data (pre-filled)
-3. Generate PDF, HTML, or DOCX
-4. Download and review output
-
-## 📚 API Documentation
-
-### CV Data Structures
-
-#### Simple CV Data (Basic Generation)
-```typescript
-{
-  "name": "John Doe",
-  "title": "Software Developer",
-  "template": "modern",
-  "format": "pdf"
-}
-```
-
-#### Complete CV Data (Enhanced Generation)
-```typescript
-{
-  "personalInfo": {
-    "name": "Niklas Andervang",
-    "title": "Senior front-end/fullstack utvecklare",
-    "email": "niklas@example.se",
-    "phone": "+46 70 123 45 67"
-  },
-  "summary": {
-    "introduction": "Professional introduction...",
-    "highlights": ["Key achievement 1", "Key achievement 2"],
-    "specialties": ["React", "TypeScript", "WCAG"]
-  },
-  "projects": [
-    {
-      "period": "2024 - pågående",
-      "type": "Frontend utvecklare",
-      "title": "AI Project",
-      "description": "Project description...",
-      "technologies": ["React", "TypeScript", "Docker"]
-    }
-  ],
-  "template": "frank-digital",
-  "format": "pdf"
-}
-```
-
-See **[README-PAYLOAD.md](README-PAYLOAD.md)** for complete data structure documentation.
-
-### Base URL
-```
-http://localhost:3001/api
-```
-
-### Key Endpoints
-
-#### Enhanced CV Generation
-```http
-POST /api/generate/complete
-Content-Type: application/json
-
-# Complete CV data payload (see README-PAYLOAD.md)
-```
-
-#### Simple CV Generation
-```http
-POST /api/generate
-Content-Type: application/json
-
-# Simple CV data payload
-```
-
-#### Templates
-```http
-GET /api/templates           # List available templates
-```
-
-### Response Format
-```json
-{
-  "success": true,
-  "data": {
-    "fileUrl": "data:application/pdf;base64,JVBERi0xLjQ...",
-    "format": "pdf",
-    "template": "frank-digital",
-    "generatedAt": "2025-10-04T10:30:00Z"
-  },
-  "timestamp": "2025-10-04T10:30:00Z"
-}
-```
-
-## 🐛 Known Issues
-
-1. **Server Startup**: Server logs successful startup but exits immediately
-   - All code compiles correctly
-   - Likely async initialization or module resolution issue
-
-2. **Database**: Template migration not yet executed
-   - Need to run `template-system-migration.sql`
-
-## 🔧 Troubleshooting
-
-### Server Won't Start
-1. Check if port 3001 is available
-2. Verify environment variables are set
-3. Check for TypeScript compilation errors
-4. Ensure all dependencies are installed
-
-### Database Connection Issues
-1. Verify Supabase URL and keys
-2. Check network connectivity
-3. Ensure RLS policies are correctly set
-
-## 📝 Development Notes
-
-- **TypeScript**: Strict mode enabled with comprehensive type definitions
-- **Templates**: Frank Digital template based on real-world CV example
-- **PDF Generation**: Uses Puppeteer with A4 format, print-optimized styling
-- **Data Structure**: Supports complete professional profiles with projects, education, skills
-- **Testing**: EnhancedCVTest component with Frank Digital mock data
+### Manual Testing
+1. **Frontend**: Visit http://localhost:5173 for interactive testing
+2. **API**: Use curl or Postman with provided examples
+3. **Batch Testing**: Use frontend's batch tester for comprehensive validation
 
 ## 🚀 Deployment
 
-Ready for deployment to:
-- Vercel/Netlify (Frontend)
-- Railway/Render (Backend API)
-- Supabase (Database + Storage)
+### Production Checklist
+- [ ] Update API keys and environment variables
+- [ ] Configure CORS for production domains
+- [ ] Set production rate limits
+- [ ] Set up reverse proxy (Nginx recommended)
+- [ ] Configure SSL certificates
+- [ ] Set up monitoring and logging
+- [ ] Test all endpoints in production environment
+
+See the [Deployment Guide](docs/deployment-guide.md) for detailed instructions.
+
+## 📊 Performance
+
+### Expected Performance
+- **CV Generation**: 3-8 seconds per document
+- **Batch Operations**: 20-60 seconds for all formats
+- **API Response Time**: <100ms for non-generation endpoints
+- **Memory Usage**: <1GB per Node.js instance
+
+### Optimization
+- Puppeteer browser pooling for PDF generation
+- Efficient template rendering with minimal DOM manipulation
+- Memory cleanup after each generation
+- Clustering support for production scaling
+
+## � Security
+
+### Security Features
+- API key authentication
+- CORS protection
+- Rate limiting
+- Security headers (Helmet)
+- Input validation and sanitization
+- Secure file storage with signed URLs
+
+### Best Practices
+- Store API keys securely
+- Use HTTPS in production
+- Validate all user inputs
+- Monitor for unusual usage patterns
+- Implement proper error handling
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Submit a pull request
 
 ## 📄 License
 
-MIT License - see LICENSE file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🆘 Support
+
+### Common Issues
+- **Port conflicts**: Use `pkill -f "tsx"` and `pkill -f "vite"` to clean up
+- **Puppeteer issues**: Install Chrome dependencies (see quick setup guide)
+- **Memory issues**: Monitor with `npm run dev:api` and restart if needed
+
+### Getting Help
+1. Check the [Quick Setup Guide](docs/quick-setup.md)
+2. Review [API Specification](docs/api-specification.md)
+3. See [Integration Guide](docs/consultant-dashboard-integration.md)
+4. Open an issue for bugs or feature requests
+
+---
+
+**Ready to generate professional CVs?** Start with the [Quick Setup Guide](docs/quick-setup.md) and have the system running in 5 minutes!

@@ -1,4 +1,4 @@
-import { Document, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle } from 'docx';
+import { Document, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import type { CompleteCVData } from '../types/cv.js';
 
 /**
@@ -414,6 +414,493 @@ export function generateClassicDOCX(data: CompleteCVData, config: ClassicTemplat
     )
   };
   
+  const children: Paragraph[] = [];
+  
+  // Header with name and title
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: data.personalInfo.name,
+          bold: true,
+          size: 32,
+          color: finalConfig.primaryColor.replace('#', ''),
+          font: finalConfig.serifFont,
+        }),
+      ],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 120 },
+    }),
+    
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: data.personalInfo.title || '',
+          size: 18,
+          color: finalConfig.accentColor.replace('#', ''),
+          italics: true,
+        }),
+      ],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 240 },
+    }),
+    
+    // Contact Information
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: data.personalInfo.email,
+          size: 12,
+        }),
+        ...(data.personalInfo.phone ? [
+          new TextRun({ text: ' • ', size: 12 }),
+          new TextRun({
+            text: data.personalInfo.phone,
+            size: 12,
+          }),
+        ] : []),
+        ...(data.personalInfo.location ? [
+          new TextRun({ text: ' • ', size: 12 }),
+          new TextRun({
+            text: data.personalInfo.location,
+            size: 12,
+          }),
+        ] : []),
+      ],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 360 },
+    })
+  );
+  
+  // Professional Summary
+  if (data.summary) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: 'PROFESSIONELL SAMMANFATTNING',
+            bold: true,
+            size: 16,
+            color: finalConfig.primaryColor.replace('#', ''),
+            allCaps: true,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      }),
+      
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: data.summary.introduction,
+            size: 12,
+            italics: true,
+          }),
+        ],
+        spacing: { after: 120 },
+      })
+    );
+    
+    // Add highlights if present
+    if (data.summary.highlights && data.summary.highlights.length > 0) {
+      data.summary.highlights.forEach(highlight => {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `• ${highlight}`,
+                size: 11,
+                color: finalConfig.accentColor.replace('#', ''),
+              }),
+            ],
+            spacing: { after: 60 },
+          })
+        );
+      });
+    }
+  }
+  
+  // Projects
+  if (data.projects && data.projects.length > 0) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: 'PROJEKT OCH UPPDRAG',
+            bold: true,
+            size: 16,
+            color: finalConfig.primaryColor.replace('#', ''),
+            allCaps: true,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      })
+    );
+    
+    // Add projects as formatted paragraphs instead of table for better formatting
+    data.projects.forEach(project => {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `${project.period}:  `,
+              size: 12,
+              bold: true,
+              color: finalConfig.accentColor.replace('#', ''),
+            }),
+            new TextRun({
+              text: project.title,
+              size: 14,
+              bold: true,
+              color: finalConfig.primaryColor.replace('#', ''),
+            }),
+          ],
+          spacing: { before: 120, after: 60 },
+        }),
+        
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: project.type,
+              size: 12,
+              italics: true,
+              color: finalConfig.accentColor.replace('#', ''),
+            }),
+          ],
+          spacing: { after: 60 },
+        }),
+        
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: project.description,
+              size: 12,
+            }),
+          ],
+          spacing: { after: 60 },
+        })
+      );
+      
+      if (project.technologies && project.technologies.length > 0) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Teknologier: ${project.technologies.join(', ')}`,
+                size: 11,
+                italics: true,
+                color: finalConfig.accentColor.replace('#', ''),
+              }),
+            ],
+            spacing: { after: 120 },
+          })
+        );
+      }
+    });
+  }
+  
+  // Employment
+  if (data.employment && data.employment.length > 0) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: 'ANSTÄLLNINGSHISTORIK',
+            bold: true,
+            size: 16,
+            color: finalConfig.primaryColor.replace('#', ''),
+            allCaps: true,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      })
+    );
+    
+    data.employment.forEach(job => {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `${job.period}:  `,
+              size: 12,
+              bold: true,
+              color: finalConfig.accentColor.replace('#', ''),
+            }),
+            new TextRun({
+              text: job.position,
+              size: 14,
+              bold: true,
+              color: finalConfig.primaryColor.replace('#', ''),
+            }),
+          ],
+          spacing: { before: 120, after: 60 },
+        }),
+        
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: job.company,
+              size: 12,
+              italics: true,
+              color: finalConfig.accentColor.replace('#', ''),
+            }),
+          ],
+          spacing: { after: 60 },
+        }),
+        
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: job.description,
+              size: 12,
+            }),
+          ],
+          spacing: { after: 60 },
+        })
+      );
+      
+      if (job.technologies && job.technologies.length > 0) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Teknologier: ${job.technologies.join(', ')}`,
+                size: 11,
+                italics: true,
+                color: finalConfig.accentColor.replace('#', ''),
+              }),
+            ],
+            spacing: { after: 120 },
+          })
+        );
+      }
+    });
+  }
+  
+  // Education
+  if (data.education && data.education.length > 0) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: 'UTBILDNING',
+            bold: true,
+            size: 16,
+            color: finalConfig.primaryColor.replace('#', ''),
+            allCaps: true,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      })
+    );
+    
+    data.education.forEach(edu => {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `${edu.period}:  `,
+              size: 12,
+              bold: true,
+              color: finalConfig.accentColor.replace('#', ''),
+            }),
+            new TextRun({
+              text: edu.degree,
+              size: 12,
+              bold: true,
+              color: finalConfig.primaryColor.replace('#', ''),
+            }),
+            new TextRun({
+              text: ` - ${edu.institution}`,
+              size: 12,
+              italics: true,
+              color: finalConfig.accentColor.replace('#', ''),
+            }),
+          ],
+          spacing: { after: 120 },
+        })
+      );
+      
+      if (edu.specialization) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: edu.specialization,
+                size: 11,
+                italics: true,
+              }),
+            ],
+            spacing: { after: 60 },
+          })
+        );
+      }
+    });
+  }
+  
+  // Certifications
+  if (data.certifications && data.certifications.length > 0) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: 'CERTIFIERINGAR',
+            bold: true,
+            size: 16,
+            color: finalConfig.primaryColor.replace('#', ''),
+            allCaps: true,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      })
+    );
+    
+    data.certifications.forEach(cert => {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `${cert.year}:  `,
+              size: 12,
+              bold: true,
+              color: finalConfig.accentColor.replace('#', ''),
+            }),
+            new TextRun({
+              text: cert.title,
+              size: 12,
+              bold: true,
+              color: finalConfig.primaryColor.replace('#', ''),
+            }),
+            new TextRun({
+              text: ` - ${cert.issuer}`,
+              size: 12,
+              italics: true,
+              color: finalConfig.accentColor.replace('#', ''),
+            }),
+          ],
+          spacing: { after: cert.description ? 60 : 120 },
+        })
+      );
+      
+      if (cert.description) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: cert.description,
+                size: 11,
+                italics: true,
+              }),
+            ],
+            spacing: { after: 120 },
+          })
+        );
+      }
+    });
+  }
+  
+  // Competencies
+  if (data.competencies && data.competencies.length > 0) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: 'KOMPETENSER',
+            bold: true,
+            size: 16,
+            color: finalConfig.primaryColor.replace('#', ''),
+            allCaps: true,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      })
+    );
+    
+    data.competencies.forEach(category => {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: category.category,
+              size: 14,
+              bold: true,
+              color: finalConfig.primaryColor.replace('#', ''),
+            }),
+          ],
+          spacing: { before: 120, after: 60 },
+        })
+      );
+      
+      category.skills.forEach(skill => {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `• ${skill.name}`,
+                size: 11,
+                color: finalConfig.accentColor.replace('#', ''),
+              }),
+            ],
+            spacing: { after: 40 },
+          })
+        );
+      });
+    });
+  }
+  
+  // Languages
+  if (data.languages && data.languages.length > 0) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: 'SPRÅK',
+            bold: true,
+            size: 16,
+            color: finalConfig.primaryColor.replace('#', ''),
+            allCaps: true,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      })
+    );
+    
+    data.languages.forEach(lang => {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `${lang.language}: `,
+              size: 12,
+              bold: true,
+              color: finalConfig.primaryColor.replace('#', ''),
+            }),
+            new TextRun({
+              text: lang.proficiency,
+              size: 12,
+              italics: true,
+              color: finalConfig.accentColor.replace('#', ''),
+            }),
+          ],
+          spacing: { after: 80 },
+        })
+      );
+    });
+  }
+  
   const doc = new Document({
     sections: [{
       properties: {
@@ -426,237 +913,7 @@ export function generateClassicDOCX(data: CompleteCVData, config: ClassicTemplat
           },
         },
       },
-      children: [
-        // Header with name and title
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: data.personalInfo.name,
-              bold: true,
-              size: 32,
-              color: finalConfig.primaryColor.replace('#', ''),
-              font: finalConfig.serifFont,
-            }),
-          ],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 120 },
-        }),
-        
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: data.personalInfo.title || '',
-              size: 18,
-              color: finalConfig.accentColor.replace('#', ''),
-              italics: true,
-            }),
-          ],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 240 },
-        }),
-        
-        // Contact Information
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: data.personalInfo.email,
-              size: 12,
-            }),
-            ...(data.personalInfo.phone ? [
-              new TextRun({ text: ' • ', size: 12 }),
-              new TextRun({
-                text: data.personalInfo.phone,
-                size: 12,
-              }),
-            ] : []),
-            ...(data.personalInfo.location ? [
-              new TextRun({ text: ' • ', size: 12 }),
-              new TextRun({
-                text: data.personalInfo.location,
-                size: 12,
-              }),
-            ] : []),
-          ],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 360 },
-        }),
-        
-        // Professional Summary
-        ...(data.summary ? [
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: 'PROFESSIONELL SAMMANFATTNING',
-                bold: true,
-                size: 16,
-                color: finalConfig.primaryColor.replace('#', ''),
-                allCaps: true,
-              }),
-            ],
-            alignment: AlignmentType.CENTER,
-            heading: HeadingLevel.HEADING_2,
-            spacing: { before: 240, after: 120 },
-          }),
-          
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: data.summary.introduction,
-                size: 12,
-                italics: true,
-              }),
-            ],
-            spacing: { after: 240 },
-          }),
-        ] : []),
-        
-        // Projects Table
-        ...(data.projects && data.projects.length > 0 ? [
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: 'PROJEKT OCH UPPDRAG',
-                bold: true,
-                size: 16,
-                color: finalConfig.primaryColor.replace('#', ''),
-                allCaps: true,
-              }),
-            ],
-            alignment: AlignmentType.CENTER,
-            heading: HeadingLevel.HEADING_2,
-            spacing: { before: 240, after: 120 },
-          }),
-          
-          new Table({
-            width: {
-              size: 100,
-              type: WidthType.PERCENTAGE,
-            },
-            borders: {
-              top: { style: BorderStyle.NONE },
-              bottom: { style: BorderStyle.NONE },
-              left: { style: BorderStyle.NONE },
-              right: { style: BorderStyle.NONE },
-              insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: "E5E7EB" },
-              insideVertical: { style: BorderStyle.NONE },
-            },
-            rows: data.projects.map(project => 
-              new TableRow({
-                children: [
-                  new TableCell({
-                    children: [
-                      new Paragraph({
-                        children: [
-                          new TextRun({
-                            text: project.period,
-                            size: 12,
-                            bold: true,
-                            color: finalConfig.accentColor.replace('#', ''),
-                          }),
-                        ],
-                        alignment: AlignmentType.RIGHT,
-                      }),
-                    ],
-                    width: { size: 25, type: WidthType.PERCENTAGE },
-                  }),
-                  new TableCell({
-                    children: [
-                      new Paragraph({
-                        children: [
-                          new TextRun({
-                            text: project.title,
-                            size: 14,
-                            bold: true,
-                            color: finalConfig.primaryColor.replace('#', ''),
-                          }),
-                        ],
-                        spacing: { after: 60 },
-                      }),
-                      new Paragraph({
-                        children: [
-                          new TextRun({
-                            text: project.type,
-                            size: 12,
-                            italics: true,
-                            color: finalConfig.accentColor.replace('#', ''),
-                          }),
-                        ],
-                        spacing: { after: 120 },
-                      }),
-                      new Paragraph({
-                        children: [
-                          new TextRun({
-                            text: project.description,
-                            size: 12,
-                          }),
-                        ],
-                        spacing: { after: 120 },
-                      }),
-                      ...(project.technologies && project.technologies.length > 0 ? [
-                        new Paragraph({
-                          children: [
-                            new TextRun({
-                              text: `Teknologier: ${project.technologies.join(', ')}`,
-                              size: 11,
-                              italics: true,
-                              color: finalConfig.accentColor.replace('#', ''),
-                            }),
-                          ],
-                        }),
-                      ] : []),
-                    ],
-                    width: { size: 75, type: WidthType.PERCENTAGE },
-                  }),
-                ],
-              })
-            ),
-          }),
-        ] : []),
-        
-        // Education
-        ...(data.education && data.education.length > 0 ? [
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: 'UTBILDNING',
-                bold: true,
-                size: 16,
-                color: finalConfig.primaryColor.replace('#', ''),
-                allCaps: true,
-              }),
-            ],
-            alignment: AlignmentType.CENTER,
-            heading: HeadingLevel.HEADING_2,
-            spacing: { before: 240, after: 120 },
-          }),
-          
-          ...data.education.flatMap(edu => [
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: `${edu.period}:  `,
-                  size: 12,
-                  bold: true,
-                  color: finalConfig.accentColor.replace('#', ''),
-                }),
-                new TextRun({
-                  text: edu.degree,
-                  size: 12,
-                  bold: true,
-                  color: finalConfig.primaryColor.replace('#', ''),
-                }),
-                new TextRun({
-                  text: ` - ${edu.institution}`,
-                  size: 12,
-                  italics: true,
-                  color: finalConfig.accentColor.replace('#', ''),
-                }),
-              ],
-              spacing: { after: 120 },
-            }),
-          ]),
-        ] : []),
-      ],
+      children,
     }],
   });
   

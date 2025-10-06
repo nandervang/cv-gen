@@ -557,6 +557,482 @@ export function generateCreativeDOCX(data: CompleteCVData, config: CreativeTempl
     )
   };
   
+  const children: Paragraph[] = [];
+  
+  // Header with name and title
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: data.personalInfo.name,
+          bold: true,
+          size: 36,
+          color: finalConfig.primaryColor.replace('#', ''),
+        }),
+      ],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 120 },
+    }),
+    
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: data.personalInfo.title || '',
+          size: 20,
+          color: finalConfig.accentColor.replace('#', ''),
+        }),
+      ],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 240 },
+    }),
+    
+    // Contact Information
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: 'KONTAKT',
+          bold: true,
+          size: 16,
+          color: finalConfig.primaryColor.replace('#', ''),
+          allCaps: true,
+        }),
+      ],
+      heading: HeadingLevel.HEADING_2,
+      spacing: { before: 240, after: 120 },
+    }),
+    
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: `📧 ${data.personalInfo.email}`,
+          size: 12,
+        }),
+        ...(data.personalInfo.phone ? [
+          new TextRun({ text: '  📱 ', size: 12 }),
+          new TextRun({
+            text: data.personalInfo.phone,
+            size: 12,
+          }),
+        ] : []),
+        ...(data.personalInfo.location ? [
+          new TextRun({ text: '  📍 ', size: 12 }),
+          new TextRun({
+            text: data.personalInfo.location,
+            size: 12,
+          }),
+        ] : []),
+      ],
+      spacing: { after: 240 },
+    })
+  );
+  
+  // Professional Summary
+  if (data.summary) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: 'PROFIL',
+            bold: true,
+            size: 16,
+            color: finalConfig.primaryColor.replace('#', ''),
+            allCaps: true,
+          }),
+        ],
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      }),
+      
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: data.summary.introduction,
+            size: 12,
+          }),
+        ],
+        spacing: { after: 120 },
+      })
+    );
+    
+    // Add highlights
+    if (data.summary.highlights && data.summary.highlights.length > 0) {
+      data.summary.highlights.forEach(highlight => {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `✨ ${highlight}`,
+                size: 11,
+                color: finalConfig.highlightColor.replace('#', ''),
+              }),
+            ],
+            spacing: { after: 60 },
+          })
+        );
+      });
+    }
+    
+    children.push(
+      new Paragraph({
+        spacing: { after: 120 },
+      })
+    );
+  }
+  
+  // Projects
+  if (data.projects && data.projects.length > 0) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: 'PROJEKT',
+            bold: true,
+            size: 16,
+            color: finalConfig.primaryColor.replace('#', ''),
+            allCaps: true,
+          }),
+        ],
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      })
+    );
+    
+    data.projects.forEach(project => {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: project.title,
+              bold: true,
+              size: 14,
+              color: finalConfig.primaryColor.replace('#', ''),
+            }),
+          ],
+          spacing: { before: 120, after: 60 },
+        }),
+        
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `${project.type} | ${project.period}`,
+              size: 12,
+              color: finalConfig.accentColor.replace('#', ''),
+            }),
+          ],
+          spacing: { after: 60 },
+        }),
+        
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: project.description,
+              size: 12,
+            }),
+          ],
+          spacing: { after: 60 },
+        })
+      );
+      
+      if (project.technologies && project.technologies.length > 0) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `🔧 ${project.technologies.join(' • ')}`,
+                size: 11,
+                color: finalConfig.highlightColor.replace('#', ''),
+              }),
+            ],
+            spacing: { after: 120 },
+          })
+        );
+      }
+    });
+  }
+  
+  // Employment
+  if (data.employment && data.employment.length > 0) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: 'ANSTÄLLNING',
+            bold: true,
+            size: 16,
+            color: finalConfig.primaryColor.replace('#', ''),
+            allCaps: true,
+          }),
+        ],
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      })
+    );
+    
+    data.employment.forEach(job => {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: job.position,
+              bold: true,
+              size: 14,
+              color: finalConfig.primaryColor.replace('#', ''),
+            }),
+          ],
+          spacing: { before: 120, after: 60 },
+        }),
+        
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `${job.company} | ${job.period}`,
+              size: 12,
+              color: finalConfig.accentColor.replace('#', ''),
+            }),
+          ],
+          spacing: { after: 60 },
+        }),
+        
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: job.description,
+              size: 12,
+            }),
+          ],
+          spacing: { after: 60 },
+        })
+      );
+      
+      if (job.technologies && job.technologies.length > 0) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `🔧 ${job.technologies.join(' • ')}`,
+                size: 11,
+                color: finalConfig.highlightColor.replace('#', ''),
+              }),
+            ],
+            spacing: { after: 120 },
+          })
+        );
+      }
+    });
+  }
+  
+  // Education
+  if (data.education && data.education.length > 0) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: 'UTBILDNING',
+            bold: true,
+            size: 16,
+            color: finalConfig.primaryColor.replace('#', ''),
+            allCaps: true,
+          }),
+        ],
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      })
+    );
+    
+    data.education.forEach(edu => {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `🎓 ${edu.degree}`,
+              bold: true,
+              size: 14,
+              color: finalConfig.primaryColor.replace('#', ''),
+            }),
+          ],
+          spacing: { before: 120, after: 60 },
+        }),
+        
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `${edu.institution} | ${edu.period}`,
+              size: 12,
+              color: finalConfig.accentColor.replace('#', ''),
+            }),
+          ],
+          spacing: { after: edu.specialization ? 60 : 120 },
+        })
+      );
+      
+      if (edu.specialization) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: edu.specialization,
+                size: 11,
+                italics: true,
+              }),
+            ],
+            spacing: { after: 120 },
+          })
+        );
+      }
+    });
+  }
+  
+  // Certifications
+  if (data.certifications && data.certifications.length > 0) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: 'CERTIFIERINGAR',
+            bold: true,
+            size: 16,
+            color: finalConfig.primaryColor.replace('#', ''),
+            allCaps: true,
+          }),
+        ],
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      })
+    );
+    
+    data.certifications.forEach(cert => {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `🏆 ${cert.title}`,
+              bold: true,
+              size: 14,
+              color: finalConfig.primaryColor.replace('#', ''),
+            }),
+          ],
+          spacing: { before: 120, after: 60 },
+        }),
+        
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `${cert.issuer} | ${cert.year}`,
+              size: 12,
+              color: finalConfig.accentColor.replace('#', ''),
+            }),
+          ],
+          spacing: { after: cert.description ? 60 : 120 },
+        })
+      );
+      
+      if (cert.description) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: cert.description,
+                size: 11,
+                italics: true,
+              }),
+            ],
+            spacing: { after: 120 },
+          })
+        );
+      }
+    });
+  }
+  
+  // Competencies
+  if (data.competencies && data.competencies.length > 0) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: 'KOMPETENSER',
+            bold: true,
+            size: 16,
+            color: finalConfig.primaryColor.replace('#', ''),
+            allCaps: true,
+          }),
+        ],
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      })
+    );
+    
+    data.competencies.forEach(category => {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `⚡ ${category.category}`,
+              size: 14,
+              bold: true,
+              color: finalConfig.primaryColor.replace('#', ''),
+            }),
+          ],
+          spacing: { before: 120, after: 60 },
+        })
+      );
+      
+      category.skills.forEach(skill => {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `• ${skill.name}`,
+                size: 11,
+                color: finalConfig.accentColor.replace('#', ''),
+              }),
+            ],
+            spacing: { after: 40 },
+          })
+        );
+      });
+    });
+  }
+  
+  // Languages
+  if (data.languages && data.languages.length > 0) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: 'SPRÅK',
+            bold: true,
+            size: 16,
+            color: finalConfig.primaryColor.replace('#', ''),
+            allCaps: true,
+          }),
+        ],
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 240, after: 120 },
+      })
+    );
+    
+    data.languages.forEach(lang => {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `🌍 ${lang.language}: `,
+              size: 12,
+              bold: true,
+              color: finalConfig.primaryColor.replace('#', ''),
+            }),
+            new TextRun({
+              text: lang.proficiency,
+              size: 12,
+              color: finalConfig.accentColor.replace('#', ''),
+            }),
+          ],
+          spacing: { after: 80 },
+        })
+      );
+    });
+  }
+  
   const doc = new Document({
     sections: [{
       properties: {
@@ -569,206 +1045,7 @@ export function generateCreativeDOCX(data: CompleteCVData, config: CreativeTempl
           },
         },
       },
-      children: [
-        // Header with name and title
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: data.personalInfo.name,
-              bold: true,
-              size: 36,
-              color: finalConfig.primaryColor.replace('#', ''),
-            }),
-          ],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 120 },
-        }),
-        
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: data.personalInfo.title || '',
-              size: 20,
-              color: finalConfig.accentColor.replace('#', ''),
-            }),
-          ],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 240 },
-        }),
-        
-        // Contact Information
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: 'KONTAKT',
-              bold: true,
-              size: 16,
-              color: finalConfig.primaryColor.replace('#', ''),
-              allCaps: true,
-            }),
-          ],
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 240, after: 120 },
-        }),
-        
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: `📧 ${data.personalInfo.email}`,
-              size: 12,
-            }),
-            ...(data.personalInfo.phone ? [
-              new TextRun({ text: '  📱 ', size: 12 }),
-              new TextRun({
-                text: data.personalInfo.phone,
-                size: 12,
-              }),
-            ] : []),
-            ...(data.personalInfo.location ? [
-              new TextRun({ text: '  📍 ', size: 12 }),
-              new TextRun({
-                text: data.personalInfo.location,
-                size: 12,
-              }),
-            ] : []),
-          ],
-          spacing: { after: 240 },
-        }),
-        
-        // Professional Summary
-        ...(data.summary ? [
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: 'PROFIL',
-                bold: true,
-                size: 16,
-                color: finalConfig.primaryColor.replace('#', ''),
-                allCaps: true,
-              }),
-            ],
-            heading: HeadingLevel.HEADING_2,
-            spacing: { before: 240, after: 120 },
-          }),
-          
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: data.summary.introduction,
-                size: 12,
-              }),
-            ],
-            spacing: { after: 240 },
-          }),
-        ] : []),
-        
-        // Projects
-        ...(data.projects && data.projects.length > 0 ? [
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: 'PROJEKT',
-                bold: true,
-                size: 16,
-                color: finalConfig.primaryColor.replace('#', ''),
-                allCaps: true,
-              }),
-            ],
-            heading: HeadingLevel.HEADING_2,
-            spacing: { before: 240, after: 120 },
-          }),
-          
-          ...data.projects.flatMap(project => [
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: project.title,
-                  bold: true,
-                  size: 14,
-                  color: finalConfig.primaryColor.replace('#', ''),
-                }),
-              ],
-              spacing: { before: 120, after: 60 },
-            }),
-            
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: `${project.type} | ${project.period}`,
-                  size: 12,
-                  color: finalConfig.accentColor.replace('#', ''),
-                }),
-              ],
-              spacing: { after: 120 },
-            }),
-            
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: project.description,
-                  size: 12,
-                }),
-              ],
-              spacing: { after: 120 },
-            }),
-            
-            ...(project.technologies && project.technologies.length > 0 ? [
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `🔧 ${project.technologies.join(' • ')}`,
-                    size: 11,
-                    color: finalConfig.highlightColor.replace('#', ''),
-                  }),
-                ],
-                spacing: { after: 120 },
-              }),
-            ] : []),
-          ]),
-        ] : []),
-        
-        // Education
-        ...(data.education && data.education.length > 0 ? [
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: 'UTBILDNING',
-                bold: true,
-                size: 16,
-                color: finalConfig.primaryColor.replace('#', ''),
-                allCaps: true,
-              }),
-            ],
-            heading: HeadingLevel.HEADING_2,
-            spacing: { before: 240, after: 120 },
-          }),
-          
-          ...data.education.flatMap(edu => [
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: `🎓 ${edu.degree}`,
-                  bold: true,
-                  size: 14,
-                  color: finalConfig.primaryColor.replace('#', ''),
-                }),
-              ],
-              spacing: { before: 120, after: 60 },
-            }),
-            
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: `${edu.institution} | ${edu.period}`,
-                  size: 12,
-                  color: finalConfig.accentColor.replace('#', ''),
-                }),
-              ],
-              spacing: { after: 120 },
-            }),
-          ]),
-        ] : []),
-      ],
+      children,
     }],
   });
   

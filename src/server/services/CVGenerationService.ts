@@ -1,9 +1,9 @@
 import type { SimpleCVData, CompleteCVData } from '../types/cv.js';
 import { generatePDF } from '../lib/pdf-generator.js';
-import { generateFrankDigitalHTML, generateFrankDigitalDOCX } from '../templates/frank-digital'
-import { generateModernHTML, generateModernDOCX, type ModernTemplateConfig } from '../templates/modern-simple'
-import { generateClassicHTML, generateClassicDOCX, type ClassicTemplateConfig } from '../templates/classic'
-import { generateCreativeHTML, generateCreativeDOCX, type CreativeTemplateConfig } from '../templates/creative'
+import { generateFrankDigitalHTML, generateFrankDigitalDOCX } from '../templates/frank-digital.js'
+import { generateModernHTML, generateModernDOCX, type ModernTemplateConfig } from '../templates/modern.js'
+import { generateClassicHTML, generateClassicDOCX, type ClassicTemplateConfig } from '../templates/classic.js'
+import { generateCreativeHTML, generateCreativeDOCX, type CreativeTemplateConfig } from '../templates/creative.js'
 import { Packer, Document } from 'docx';
 
 type TemplateConfig = ModernTemplateConfig | ClassicTemplateConfig | CreativeTemplateConfig;
@@ -141,12 +141,11 @@ export class CVGenerationService {
       case 'classic':
         return {
           ...baseConfig,
-          serifFont: 'Times New Roman'
+          layout: 'traditional' as const
         } as ClassicTemplateConfig;
       case 'creative':
         return {
           ...baseConfig,
-          highlightColor: '#f59e0b',
           layout: 'asymmetric' as const
         } as CreativeTemplateConfig;
       default:

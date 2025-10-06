@@ -1,8 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { TemplateCustomizer } from './TemplateCustomizer';
+import { BatchTester } from './BatchTester';
+
+// Template information interface
+interface TemplateInfo {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  industryFocus: string;
+  features: string[];
+  isPremium: boolean;
+  previewUrl: string;
+}
+
+// Generation result interface
+interface GenerationResult {
+  success: boolean;
+  data?: {
+    fileUrl: string;
+    format: string;
+    template: string;
+    generatedAt: string;
+  };
+  error?: {
+    message: string;
+  };
+}
+
+// Template customization interface
+interface TemplateCustomization {
+  templateId: string;
+  colorScheme?: string;
+  fontFamily?: string;
+  fontSize?: 'small' | 'medium' | 'large';
+  spacing?: 'compact' | 'normal' | 'relaxed';
+  layout?: string;
+  customColors?: {
+    primaryColor?: string;
+    accentColor?: string;
+    highlightColor?: string;
+  };
+}
 
 // Mock data based on Frank Digital CV
 const frankDigitalMockData = {
@@ -111,16 +154,81 @@ export default function EnhancedCVTest() {
   const [selectedTemplate, setSelectedTemplate] = useState('frank-digital');
   const [selectedFormat, setSelectedFormat] = useState<'pdf' | 'html' | 'docx'>('pdf');
   const [customData, setCustomData] = useState(frankDigitalMockData);
+  const [availableTemplates, setAvailableTemplates] = useState<TemplateInfo[]>([]);
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
+  const [isTestingAll, setIsTestingAll] = useState(false);
+  const [testResults, setTestResults] = useState<Record<string, string>>({});
+  const [templateCustomization, setTemplateCustomization] = useState<TemplateCustomization>({
+    templateId: 'frank-digital',
+    fontSize: 'medium',
+    spacing: 'normal'
+  });
+
+  // Fetch available templates on component mount
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
+
+  // Update customization when template changes
+  useEffect(() => {
+    setTemplateCustomization(prev => ({
+      ...prev,
+      templateId: selectedTemplate
+    }));
+  }, [selectedTemplate]);
+
+  const fetchTemplates = async () => {
+    setIsLoadingTemplates(true);
+    try {
+      const apiKey = import.meta.env.VITE_CV_API_KEY;
+      const apiUrl = import.meta.env.VITE_CV_API_URL || 'http://localhost:3001';
+
+      const response = await fetch(`${apiUrl}/api/templates`, {
+        method: 'GET',
+        headers: {
+          'X-API-Key': apiKey,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setAvailableTemplates(data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch templates:', error);
+    } finally {
+      setIsLoadingTemplates(false);
+    }
+  };
 
   const handleGenerate = async () => {
     setIsGenerating(true);
     setResult('');
 
     try {
+      // Convert customization to styling format
+      const styling = {
+        primaryColor: templateCustomization.customColors?.primaryColor,
+        accentColor: templateCustomization.customColors?.accentColor,
+        highlightColor: templateCustomization.customColors?.highlightColor,
+        fontFamily: templateCustomization.fontFamily,
+        fontSize: templateCustomization.fontSize,
+        spacing: templateCustomization.spacing,
+        layout: templateCustomization.layout,
+        colorScheme: templateCustomization.colorScheme
+      };
+
       const payload = {
         ...customData,
         template: selectedTemplate,
-        format: selectedFormat
+        format: selectedFormat,
+        styling: Object.fromEntries(
+          Object.entries(styling).filter(([, value]) => value !== undefined)
+        )
       };
 
       const apiKey = import.meta.env.VITE_CV_API_KEY;
@@ -139,10 +247,10 @@ export default function EnhancedCVTest() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data: GenerationResult = await response.json();
       
       if (data.success) {
-        setResult(data.data.fileUrl || data.data);
+        setResult(data.data?.fileUrl || 'Generated successfully');
       } else {
         setResult(`Error: ${data.error?.message || 'Unknown error'}`);
       }
@@ -152,6 +260,68 @@ export default function EnhancedCVTest() {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const testAllTemplates = async () => {
+    setIsTestingAll(true);
+    setTestResults({});
+    
+    const templates = ['frank-digital', 'modern', 'classic', 'creative'];
+    const formats: ('pdf' | 'html' | 'docx')[] = ['pdf', 'html', 'docx'];
+    
+    for (const template of templates) {
+      for (const format of formats) {
+        const testKey = `${template}-${format}`;
+        
+        try {
+          const payload = {
+            ...customData,
+            template,
+            format
+          };
+
+          const apiKey = import.meta.env.VITE_CV_API_KEY;
+          const apiUrl = import.meta.env.VITE_CV_API_URL || 'http://localhost:3001';
+
+          const response = await fetch(`${apiUrl}/api/generate/complete`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-API-Key': apiKey,
+            },
+            body: JSON.stringify(payload),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data: GenerationResult = await response.json();
+          
+          if (data.success) {
+            setTestResults(prev => ({
+              ...prev,
+              [testKey]: '✅ Success'
+            }));
+          } else {
+            setTestResults(prev => ({
+              ...prev,
+              [testKey]: `❌ Error: ${data.error?.message || 'Unknown error'}`
+            }));
+          }
+        } catch (error) {
+          setTestResults(prev => ({
+            ...prev,
+            [testKey]: `❌ Error: ${error instanceof Error ? error.message : 'Network error'}`
+          }));
+        }
+        
+        // Small delay between requests to avoid overwhelming the server
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+    
+    setIsTestingAll(false);
   };
 
   const handleDownload = () => {
@@ -223,36 +393,74 @@ export default function EnhancedCVTest() {
           </div>
 
           {/* Template and Format Selection */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="template">Template</Label>
-              <select
-                id="template"
-                title="Select CV Template"
-                className="w-full p-2 border border-gray-300 rounded-md"
-                value={selectedTemplate}
-                onChange={(e) => setSelectedTemplate(e.target.value)}
-              >
-                <option value="frank-digital">Frank Digital</option>
-                <option value="modern">Modern</option>
-                <option value="classic">Classic</option>
-                <option value="creative">Creative</option>
-              </select>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="template">Template</Label>
+                <select
+                  id="template"
+                  title="Select CV Template"
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  value={selectedTemplate}
+                  onChange={(e) => setSelectedTemplate(e.target.value)}
+                  disabled={isLoadingTemplates}
+                >
+                  {isLoadingTemplates ? (
+                    <option>Loading templates...</option>
+                  ) : (
+                    availableTemplates.length > 0 ? (
+                      availableTemplates.map((template) => (
+                        <option key={template.id} value={template.id}>
+                          {template.name}
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="frank-digital">Frank Digital</option>
+                        <option value="modern">Modern</option>
+                        <option value="classic">Classic</option>
+                        <option value="creative">Creative</option>
+                      </>
+                    )
+                  )}
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="format">Format</Label>
+                <select
+                  id="format"
+                  title="Select Output Format"
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  value={selectedFormat}
+                  onChange={(e) => setSelectedFormat(e.target.value as 'pdf' | 'html' | 'docx')}
+                >
+                  <option value="pdf">PDF</option>
+                  <option value="html">HTML</option>
+                  <option value="docx">DOCX</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="format">Format</Label>
-              <select
-                id="format"
-                title="Select Output Format"
-                className="w-full p-2 border border-gray-300 rounded-md"
-                value={selectedFormat}
-                onChange={(e) => setSelectedFormat(e.target.value as 'pdf' | 'html' | 'docx')}
-              >
-                <option value="pdf">PDF</option>
-                <option value="html">HTML</option>
-                <option value="docx">DOCX</option>
-              </select>
-            </div>
+
+            {/* Template Information */}
+            {availableTemplates.length > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                {(() => {
+                  const selectedTemplateInfo = availableTemplates.find(t => t.id === selectedTemplate);
+                  if (!selectedTemplateInfo) return null;
+                  
+                  return (
+                    <div>
+                      <h4 className="font-semibold text-blue-800 mb-2">{selectedTemplateInfo.name}</h4>
+                      <p className="text-blue-700 text-sm mb-2">{selectedTemplateInfo.description}</p>
+                      <div className="text-xs space-y-1">
+                        <div><strong>Industry Focus:</strong> {selectedTemplateInfo.industryFocus}</div>
+                        <div><strong>Features:</strong> {selectedTemplateInfo.features.join(', ')}</div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
           </div>
 
           {/* Data Summary */}
@@ -267,14 +475,58 @@ export default function EnhancedCVTest() {
             </ul>
           </div>
 
-          {/* Generate Button */}
-          <Button 
-            onClick={handleGenerate} 
-            disabled={isGenerating}
-            className="w-full"
-          >
-            {isGenerating ? 'Generating CV...' : `Generate ${selectedTemplate} CV as ${selectedFormat.toUpperCase()}`}
-          </Button>
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <Button 
+              onClick={handleGenerate} 
+              disabled={isGenerating || isTestingAll}
+              className="w-full"
+            >
+              {isGenerating ? 'Generating CV...' : `Generate ${selectedTemplate} CV as ${selectedFormat.toUpperCase()}`}
+            </Button>
+
+            <Button 
+              onClick={testAllTemplates} 
+              disabled={isGenerating || isTestingAll}
+              variant="outline"
+              className="w-full"
+            >
+              {isTestingAll ? 'Testing All Templates...' : 'Test All Templates & Formats'}
+            </Button>
+
+            <Button 
+              onClick={fetchTemplates} 
+              disabled={isLoadingTemplates}
+              variant="outline"
+              className="w-full"
+            >
+              {isLoadingTemplates ? 'Loading...' : 'Refresh Templates'}
+            </Button>
+          </div>
+
+          {/* Test Results */}
+          {Object.keys(testResults).length > 0 && (
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">Template Test Results</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {['frank-digital', 'modern', 'classic', 'creative'].map(template => (
+                  <div key={template} className="border border-gray-200 rounded-lg p-3">
+                    <h4 className="font-medium capitalize mb-2">{template.replace('-', ' ')}</h4>
+                    <div className="space-y-1 text-sm">
+                      {(['pdf', 'html', 'docx'] as const).map(format => (
+                        <div key={format} className="flex justify-between">
+                          <span className="uppercase">{format}:</span>
+                          <span className={testResults[`${template}-${format}`]?.includes('✅') ? 'text-green-600' : 'text-red-600'}>
+                            {testResults[`${template}-${format}`] || '⏳ Pending...'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Result */}
           {result && (
@@ -305,6 +557,62 @@ export default function EnhancedCVTest() {
           )}
         </CardContent>
       </Card>
+
+      {/* Template Gallery */}
+      {availableTemplates.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Available Templates</CardTitle>
+            <CardDescription>
+              Browse all available CV templates with their features and target industries
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {availableTemplates.map((template) => (
+                <div 
+                  key={template.id} 
+                  className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                    selectedTemplate === template.id 
+                      ? 'border-blue-500 bg-blue-50' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => setSelectedTemplate(template.id)}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-semibold">{template.name}</h3>
+                    {template.isPremium && (
+                      <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Premium</span>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">{template.description}</p>
+                  <div className="text-xs space-y-1">
+                    <div><strong>Industry:</strong> {template.industryFocus}</div>
+                    <div><strong>Features:</strong></div>
+                    <ul className="ml-2 space-y-0.5">
+                      {template.features.map((feature, index) => (
+                        <li key={index}>• {feature}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Template Customizer */}
+      <TemplateCustomizer
+        selectedTemplate={selectedTemplate}
+        onCustomizationChange={setTemplateCustomization}
+      />
+
+      {/* Batch Tester */}
+      <BatchTester
+        cvData={customData}
+        selectedTemplate={selectedTemplate}
+      />
 
       {/* Mock Data Display */}
       <Card>

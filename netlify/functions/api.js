@@ -97,16 +97,70 @@ function generatePDFContent(cvData) {
     if (!text) return '';
     return text
       .replace(/[()\\]/g, '\\$&')  // Escape parentheses and backslashes
-      .replace(/[\u0080-\uFFFF]/g, '?')  // Replace non-ASCII characters
+      .replace(/[åäö]/g, (match) => {  // Handle Swedish characters
+        switch(match) {
+          case 'å': return 'a';
+          case 'ä': return 'a'; 
+          case 'ö': return 'o';
+          default: return match;
+        }
+      })
+      .replace(/[ÅÄÖ]/g, (match) => {  // Handle uppercase Swedish characters
+        switch(match) {
+          case 'Å': return 'A';
+          case 'Ä': return 'A';
+          case 'Ö': return 'O';
+          default: return match;
+        }
+      })
+      .replace(/[\u0080-\uFFFF]/g, '?')  // Replace other non-ASCII characters
       .replace(/[\r\n]/g, ' ')  // Replace line breaks with spaces
-      .substring(0, 100);  // Limit length to prevent issues
+      .substring(0, 150);  // Increased limit for more content
   }
   
   const name = safePDFText(personalInfo?.name || 'Unknown');
   const title = safePDFText(personalInfo?.title || 'N/A');
   const email = safePDFText(personalInfo?.email || '');
+  const phone = safePDFText(personalInfo?.phone || '');
+  const intro = safePDFText(summary?.introduction || 'Ingen sammanfattning');
   
-  // Simple PDF with basic info to avoid character issues
+  // Build project content
+  let projectsText = '';
+  if (projects && projects.length > 0) {
+    projects.slice(0, 3).forEach((project, i) => {  // Limit to 3 projects
+      projectsText += `(${safePDFText(project.title || 'Projekt')}) Tj 0 -15 Td\n`;
+      projectsText += `(${safePDFText(project.period || '')}) Tj 0 -12 Td\n`;
+      projectsText += `(${safePDFText(project.description || '')}) Tj 0 -12 Td\n`;
+      if (i < 2) projectsText += `0 -10 Td\n`;  // Add spacing between projects
+    });
+  }
+
+  // Build education content
+  let educationText = '';
+  if (education && education.length > 0) {
+    education.forEach((edu, i) => {
+      educationText += `(${safePDFText(edu.degree || 'Utbildning')}) Tj 0 -15 Td\n`;
+      educationText += `(${safePDFText(edu.institution || '')}) Tj 0 -12 Td\n`;
+      if (i < education.length - 1) educationText += `0 -10 Td\n`;
+    });
+  }
+
+  // Build competencies content
+  let competenciesText = '';
+  if (competencies && competencies.length > 0) {
+    competencies.slice(0, 2).forEach((comp, i) => {  // Limit to 2 categories
+      competenciesText += `(${safePDFText(comp.category || 'Kompetens')}) Tj 0 -15 Td\n`;
+      if (comp.skills) {
+        const skillsList = comp.skills.slice(0, 5).map(s => s.name || s).join(', ');
+        competenciesText += `(${safePDFText(skillsList)}) Tj 0 -12 Td\n`;
+      }
+      if (i < 1) competenciesText += `0 -10 Td\n`;
+    });
+  }
+
+  // Calculate content length for PDF stream
+  const contentLength = 800 + projectsText.length + educationText.length + competenciesText.length;
+
   const pdfContent = `%PDF-1.4
 1 0 obj
 <<
@@ -132,6 +186,7 @@ endobj
 /Resources <<
   /Font <<
     /F1 5 0 R
+    /F2 6 0 R
   >>
 >>
 >>
@@ -139,33 +194,55 @@ endobj
 
 4 0 obj
 <<
-/Length 500
+/Length ${contentLength}
 >>
 stream
 BT
-/F1 18 Tf
-50 720 Td
+/F1 20 Tf
+50 750 Td
 (${name}) Tj
-0 -30 Td
+0 -25 Td
 /F1 14 Tf
 (${title}) Tj
-0 -25 Td
-/F1 12 Tf
+0 -20 Td
+/F1 11 Tf
 (${email}) Tj
-0 -40 Td
-(CV genererat: ${new Date().toLocaleDateString('sv-SE')}) Tj
+0 -15 Td
+(${phone}) Tj
+0 -30 Td
+
+/F2 14 Tf
+(PROFESSIONELL SAMMANFATTNING) Tj
 0 -20 Td
+/F1 10 Tf
+(${intro}) Tj
+0 -25 Td
+
+/F2 14 Tf
+(PROJEKT) Tj
+0 -20 Td
+/F1 11 Tf
+${projectsText}
+0 -20 Td
+
+/F2 14 Tf
+(UTBILDNING) Tj
+0 -20 Td
+/F1 11 Tf
+${educationText}
+0 -20 Td
+
+/F2 14 Tf
+(KOMPETENSER) Tj
+0 -20 Td
+/F1 11 Tf
+${competenciesText}
+0 -30 Td
+
+/F1 9 Tf
+(Genererat: ${new Date().toLocaleDateString('sv-SE')}) Tj
+0 -12 Td
 (Template: ${safePDFText(cvData.template || 'modern')}) Tj
-0 -30 Td
-(Professionell sammanfattning:) Tj
-0 -20 Td
-(${safePDFText(summary?.introduction || 'Ingen sammanfattning')}) Tj
-0 -30 Td
-(Projekt: ${projects?.length || 0} st) Tj
-0 -20 Td
-(Utbildning: ${education?.length || 0} st) Tj
-0 -20 Td
-(Certifieringar: ${certifications?.length || 0} st) Tj
 ET
 endstream
 endobj
@@ -178,21 +255,30 @@ endobj
 >>
 endobj
 
+6 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica-Bold
+>>
+endobj
+
 xref
-0 6
+0 7
 0000000000 65535 f 
 0000000009 00000 n 
 0000000058 00000 n 
 0000000115 00000 n 
 0000000274 00000 n 
 0000000726 00000 n 
+0000000797 00000 n 
 trailer
 <<
-/Size 6
+/Size 7
 /Root 1 0 R
 >>
 startxref
-797
+873
 %%EOF`;
   
   return btoa(pdfContent);

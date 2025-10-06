@@ -17,8 +17,14 @@ export const handler = async (event, context) => {
 
   try {
     // Parse the path to determine the route
-    const path = event.path.replace('/.netlify/functions/api', '');
+    // Netlify passes the full path including /api/ prefix
+    let path = event.path;
+    if (path.startsWith('/api')) {
+      path = path.substring(4); // Remove '/api' prefix
+    }
     const method = event.httpMethod;
+    
+    console.log('Function called with path:', event.path, 'parsed to:', path);
     
     // API key validation for protected routes
     const apiKey = event.headers['x-api-key'];
@@ -203,13 +209,19 @@ export const handler = async (event, context) => {
     }
 
     // 404 for unknown routes
+    console.log('No route matched for:', path, method);
     return {
       statusCode: 404,
       headers,
       body: JSON.stringify({
         error: {
           code: 'NOT_FOUND',
-          message: `Route ${path} not found`
+          message: `Route ${path} not found`,
+          debug: {
+            originalPath: event.path,
+            parsedPath: path,
+            method: method
+          }
         }
       })
     };

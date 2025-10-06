@@ -152,22 +152,26 @@ export const handler = async (event, context) => {
 
     if (path === '/generate/complete' && method === 'POST') {
       const body = JSON.parse(event.body || '{}');
+      const origin = event.headers.origin || event.headers.host || 'https://andervang-cv.netlify.app';
       return {
         statusCode: 200,
         headers,
         body: JSON.stringify({
           success: true,
           data: {
-            fileUrl: 'https://example.com/mock-cv.pdf',
-            format: 'pdf',
+            fileUrl: `${origin}/demo/cv-${Date.now()}.pdf`,
+            format: body.format || 'pdf',
             generatedAt: new Date().toISOString(),
-            template: body.template || 'modern'
+            template: body.template || 'modern',
+            note: 'Demo file - actual PDF generation not yet implemented'
           }
         })
       };
     }
 
     if (path === '/batch/formats' && method === 'POST') {
+      const origin = event.headers.origin || event.headers.host || 'https://andervang-cv.netlify.app';
+      const timestamp = Date.now();
       return {
         statusCode: 200,
         headers,
@@ -182,17 +186,17 @@ export const handler = async (event, context) => {
             results: {
               pdf: {
                 success: true,
-                fileUrl: 'https://example.com/mock-cv.pdf',
+                fileUrl: `${origin}/demo/batch-cv-${timestamp}.pdf`,
                 generatedAt: new Date().toISOString()
               },
               html: {
                 success: true,
-                fileUrl: 'https://example.com/mock-cv.html',
+                fileUrl: `${origin}/demo/batch-cv-${timestamp}.html`,
                 generatedAt: new Date().toISOString()
               },
               docx: {
                 success: true,
-                fileUrl: 'https://example.com/mock-cv.docx',
+                fileUrl: `${origin}/demo/batch-cv-${timestamp}.docx`,
                 generatedAt: new Date().toISOString()
               }
             }
@@ -202,6 +206,8 @@ export const handler = async (event, context) => {
     }
 
     if (path === '/batch/comprehensive' && method === 'POST') {
+      const origin = event.headers.origin || event.headers.host || 'https://andervang-cv.netlify.app';
+      const timestamp = Date.now();
       return {
         statusCode: 200,
         headers,
@@ -217,24 +223,24 @@ export const handler = async (event, context) => {
             },
             results: {
               'frank-digital': {
-                pdf: { success: true, fileUrl: 'https://example.com/frank-digital.pdf' },
-                html: { success: true, fileUrl: 'https://example.com/frank-digital.html' },
-                docx: { success: true, fileUrl: 'https://example.com/frank-digital.docx' }
+                pdf: { success: true, fileUrl: `${origin}/demo/frank-digital-${timestamp}.pdf` },
+                html: { success: true, fileUrl: `${origin}/demo/frank-digital-${timestamp}.html` },
+                docx: { success: true, fileUrl: `${origin}/demo/frank-digital-${timestamp}.docx` }
               },
               modern: {
-                pdf: { success: true, fileUrl: 'https://example.com/modern.pdf' },
-                html: { success: true, fileUrl: 'https://example.com/modern.html' },
-                docx: { success: true, fileUrl: 'https://example.com/modern.docx' }
+                pdf: { success: true, fileUrl: `${origin}/demo/modern-${timestamp}.pdf` },
+                html: { success: true, fileUrl: `${origin}/demo/modern-${timestamp}.html` },
+                docx: { success: true, fileUrl: `${origin}/demo/modern-${timestamp}.docx` }
               },
               classic: {
-                pdf: { success: true, fileUrl: 'https://example.com/classic.pdf' },
-                html: { success: true, fileUrl: 'https://example.com/classic.html' },
-                docx: { success: true, fileUrl: 'https://example.com/classic.docx' }
+                pdf: { success: true, fileUrl: `${origin}/demo/classic-${timestamp}.pdf` },
+                html: { success: true, fileUrl: `${origin}/demo/classic-${timestamp}.html` },
+                docx: { success: true, fileUrl: `${origin}/demo/classic-${timestamp}.docx` }
               },
               creative: {
-                pdf: { success: true, fileUrl: 'https://example.com/creative.pdf' },
-                html: { success: true, fileUrl: 'https://example.com/creative.html' },
-                docx: { success: true, fileUrl: 'https://example.com/creative.docx' }
+                pdf: { success: true, fileUrl: `${origin}/demo/creative-${timestamp}.pdf` },
+                html: { success: true, fileUrl: `${origin}/demo/creative-${timestamp}.html` },
+                docx: { success: true, fileUrl: `${origin}/demo/creative-${timestamp}.docx` }
               }
             }
           }

@@ -152,26 +152,52 @@ export const handler = async (event, context) => {
 
     if (path === '/generate/complete' && method === 'POST') {
       const body = JSON.parse(event.body || '{}');
-      const origin = event.headers.origin || event.headers.host || 'https://andervang-cv.netlify.app';
+      
+      // Generate a simple PDF as base64 (mock implementation)
+      const mockPdfContent = 'JVBERi0xLjQKJcOkw7zDtsKwCjIgMCBvYmoKPDwKL0xlbmd0aCA2OQAKL0ZpbHRlciBbL0FTQ0lJODVEZWNvZGVdCj4+CnN0cmVhbQpCVDA9QkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCCmVuZHN0cmVhbQplbmRvYmoKCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCA0IDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovQ29udGVudHMgMiAwIFIKPj4KZW5kb2JqCgo0IDAgb2JqCjw8Ci9UeXBlIC9QYWdlcwovS2lkcyBbMyAwIFJdCi9Db3VudCAxCj4+CmVuZG9iagoKNSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgNCAwIFIKPj4KZW5kb2JqCgp4cmVmCjAgNgowMDAwMDAwMDAwIDY1NTM1IGYKMDAwMDAwMDAwOSAwMDAwMCBuCjAwMDAwMDAxMDcgMDAwMDAgbgowMDAwMDAwMTU4IDAwMDAwIG4KMDAwMDAwMDIxNiAwMDAwMCBuCjAwMDAwMDAyNzMgMDAwMDAgbgp0cmFpbGVyCjw8Ci9TaXplIDYKL1Jvb3QgNSAwIFIKPj4Kc3RhcnR4cmVmCjMyMgolJUVPRgo=';
+      
+      const format = body.format || 'pdf';
+      let fileContent = '';
+      let mimeType = '';
+      
+      if (format === 'pdf') {
+        fileContent = mockPdfContent;
+        mimeType = 'application/pdf';
+      } else if (format === 'html') {
+        const htmlContent = `<!DOCTYPE html>
+<html><head><title>CV - ${body.template || 'modern'}</title></head>
+<body><h1>Demo CV</h1><p>Template: ${body.template || 'modern'}</p><p>Generated: ${new Date().toLocaleString()}</p></body></html>`;
+        fileContent = btoa(htmlContent);
+        mimeType = 'text/html';
+      } else if (format === 'docx') {
+        // Simple mock DOCX (actually just a text file)
+        const docContent = `Demo CV\nTemplate: ${body.template || 'modern'}\nGenerated: ${new Date().toLocaleString()}`;
+        fileContent = btoa(docContent);
+        mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      }
+      
       return {
         statusCode: 200,
         headers,
         body: JSON.stringify({
           success: true,
           data: {
-            fileUrl: `${origin}/demo/cv-${Date.now()}.pdf`,
-            format: body.format || 'pdf',
+            fileUrl: `data:${mimeType};base64,${fileContent}`,
+            format: format,
             generatedAt: new Date().toISOString(),
             template: body.template || 'modern',
-            note: 'Demo file - actual PDF generation not yet implemented'
+            note: 'Demo file generated as base64 data URL'
           }
         })
       };
     }
 
     if (path === '/batch/formats' && method === 'POST') {
-      const origin = event.headers.origin || event.headers.host || 'https://andervang-cv.netlify.app';
-      const timestamp = Date.now();
+      // Generate mock files as base64 data URLs
+      const mockPdfContent = 'JVBERi0xLjQKJcOkw7zDtsKwCjIgMCBvYmoKPDwKL0xlbmd0aCA2OQAKL0ZpbHRlciBbL0FTQ0lJODVEZWNvZGVdCj4+CnN0cmVhbQpCVDA9QkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCCmVuZHN0cmVhbQplbmRvYmoKCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCA0IDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovQ29udGVudHMgMiAwIFIKPj4KZW5kb2JqCgo0IDAgb2JqCjw8Ci9UeXBlIC9QYWdlcwovS2lkcyBbMyAwIFJdCi9Db3VudCAxCj4+CmVuZG9iagoKNSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgNCAwIFIKPj4KZW5kb2JqCgp4cmVmCjAgNgowMDAwMDAwMDAwIDY1NTM1IGYKMDAwMDAwMDAwOSAwMDAwMCBuCjAwMDAwMDAxMDcgMDAwMDAgbgowMDAwMDAwMTU4IDAwMDAwIG4KMDAwMDAwMDIxNiAwMDAwMCBuCjAwMDAwMDAyNzMgMDAwMDAgbgp0cmFpbGVyCjw8Ci9TaXplIDYKL1Jvb3QgNSAwIFIKPj4Kc3RhcnR4cmVmCjMyMgolJUVPRgo=';
+      const htmlContent = btoa('<!DOCTYPE html><html><head><title>Batch CV</title></head><body><h1>Demo Batch CV</h1><p>Generated: ' + new Date().toLocaleString() + '</p></body></html>');
+      const docxContent = btoa('Demo Batch CV\nGenerated: ' + new Date().toLocaleString());
+      
       return {
         statusCode: 200,
         headers,
@@ -186,17 +212,17 @@ export const handler = async (event, context) => {
             results: {
               pdf: {
                 success: true,
-                fileUrl: `${origin}/demo/batch-cv-${timestamp}.pdf`,
+                fileUrl: `data:application/pdf;base64,${mockPdfContent}`,
                 generatedAt: new Date().toISOString()
               },
               html: {
                 success: true,
-                fileUrl: `${origin}/demo/batch-cv-${timestamp}.html`,
+                fileUrl: `data:text/html;base64,${htmlContent}`,
                 generatedAt: new Date().toISOString()
               },
               docx: {
                 success: true,
-                fileUrl: `${origin}/demo/batch-cv-${timestamp}.docx`,
+                fileUrl: `data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,${docxContent}`,
                 generatedAt: new Date().toISOString()
               }
             }
@@ -206,8 +232,15 @@ export const handler = async (event, context) => {
     }
 
     if (path === '/batch/comprehensive' && method === 'POST') {
-      const origin = event.headers.origin || event.headers.host || 'https://andervang-cv.netlify.app';
-      const timestamp = Date.now();
+      // Generate mock files as base64 data URLs for each template
+      const mockPdfContent = 'JVBERi0xLjQKJcOkw7zDtsKwCjIgMCBvYmoKPDwKL0xlbmd0aCA2OQAKL0ZpbHRlciBbL0FTQ0lJODVEZWNvZGVdCj4+CnN0cmVhbQpCVDA9QkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCCmVuZHN0cmVhbQplbmRvYmoKCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCA0IDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovQ29udGVudHMgMiAwIFIKPj4KZW5kb2JqCgo0IDAgb2JqCjw8Ci9UeXBlIC9QYWdlcwovS2lkcyBbMyAwIFJdCi9Db3VudCAxCj4+CmVuZG9iagoKNSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgNCAwIFIKPj4KZW5kb2JqCgp4cmVmCjAgNgowMDAwMDAwMDAwIDY1NTM1IGYKMDAwMDAwMDAwOSAwMDAwMCBuCjAwMDAwMDAxMDcgMDAwMDAgbgowMDAwMDAwMTU4IDAwMDAwIG4KMDAwMDAwMDIxNiAwMDAwMCBuCjAwMDAwMDAyNzMgMDAwMDAgbgp0cmFpbGVyCjw8Ci9TaXplIDYKL1Jvb3QgNSAwIFIKPj4Kc3RhcnR4cmVmCjMyMgolJUVPRgo=';
+      
+      const generateFileUrls = (templateName) => ({
+        pdf: { success: true, fileUrl: `data:application/pdf;base64,${mockPdfContent}` },
+        html: { success: true, fileUrl: `data:text/html;base64,${btoa(`<!DOCTYPE html><html><head><title>${templateName} CV</title></head><body><h1>Demo ${templateName} CV</h1><p>Generated: ${new Date().toLocaleString()}</p></body></html>`)}` },
+        docx: { success: true, fileUrl: `data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,${btoa(`Demo ${templateName} CV\nGenerated: ${new Date().toLocaleString()}`)}` }
+      });
+      
       return {
         statusCode: 200,
         headers,
@@ -222,26 +255,10 @@ export const handler = async (event, context) => {
               failed: 0
             },
             results: {
-              'frank-digital': {
-                pdf: { success: true, fileUrl: `${origin}/demo/frank-digital-${timestamp}.pdf` },
-                html: { success: true, fileUrl: `${origin}/demo/frank-digital-${timestamp}.html` },
-                docx: { success: true, fileUrl: `${origin}/demo/frank-digital-${timestamp}.docx` }
-              },
-              modern: {
-                pdf: { success: true, fileUrl: `${origin}/demo/modern-${timestamp}.pdf` },
-                html: { success: true, fileUrl: `${origin}/demo/modern-${timestamp}.html` },
-                docx: { success: true, fileUrl: `${origin}/demo/modern-${timestamp}.docx` }
-              },
-              classic: {
-                pdf: { success: true, fileUrl: `${origin}/demo/classic-${timestamp}.pdf` },
-                html: { success: true, fileUrl: `${origin}/demo/classic-${timestamp}.html` },
-                docx: { success: true, fileUrl: `${origin}/demo/classic-${timestamp}.docx` }
-              },
-              creative: {
-                pdf: { success: true, fileUrl: `${origin}/demo/creative-${timestamp}.pdf` },
-                html: { success: true, fileUrl: `${origin}/demo/creative-${timestamp}.html` },
-                docx: { success: true, fileUrl: `${origin}/demo/creative-${timestamp}.docx` }
-              }
+              'frank-digital': generateFileUrls('Frank Digital'),
+              modern: generateFileUrls('Modern'),
+              classic: generateFileUrls('Classic'),
+              creative: generateFileUrls('Creative')
             }
           }
         })

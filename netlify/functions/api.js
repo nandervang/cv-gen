@@ -1,3 +1,7 @@
+// Import Puppeteer and Chromium for PDF generation
+const puppeteer = require('puppeteer');
+const chromium = require('@sparticuz/chromium');
+
 // Helper functions for content generation
 function generateHTMLContent(cvData) {
   const { personalInfo, summary, projects, education, certifications, competencies, languages } = cvData;
@@ -22,6 +26,21 @@ function generateHTMLContent(cvData) {
         .tech-tag { background: #e0e7ff; color: #3730a3; padding: 2px 6px; margin: 2px; border-radius: 4px; font-size: 0.8em; }
         .skills { display: flex; flex-wrap: wrap; gap: 8px; }
         .skill { background: #f0f9ff; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; }
+        
+        /* PDF-specific styles */
+        @media print {
+            body { max-width: none; margin: 0; padding: 15px; }
+            .header { margin: -15px -15px 20px -15px; page-break-inside: avoid; }
+            .section { page-break-inside: avoid; margin-bottom: 20px; }
+            .item { page-break-inside: avoid; margin-bottom: 10px; }
+            .tech-tag, .skill { display: inline-block; }
+        }
+        
+        /* Puppeteer PDF optimization */
+        @page {
+            margin: 0.4in;
+            size: A4;
+        }
     </style>
 </head>
 <body>
@@ -89,199 +108,49 @@ function generateHTMLContent(cvData) {
 </html>`;
 }
 
-function generatePDFContent(cvData) {
-  const { personalInfo, summary, projects, education, certifications, competencies, languages } = cvData;
-  
-  // Helper function to safely escape text for PDF
-  function safePDFText(text) {
-    if (!text) return '';
-    return text
-      .replace(/[()\\]/g, '\\$&')  // Escape parentheses and backslashes
-      .replace(/[åäö]/g, (match) => {  // Handle Swedish characters
-        switch(match) {
-          case 'å': return 'a';
-          case 'ä': return 'a'; 
-          case 'ö': return 'o';
-          default: return match;
-        }
-      })
-      .replace(/[ÅÄÖ]/g, (match) => {  // Handle uppercase Swedish characters
-        switch(match) {
-          case 'Å': return 'A';
-          case 'Ä': return 'A';
-          case 'Ö': return 'O';
-          default: return match;
-        }
-      })
-      .replace(/[\u0080-\uFFFF]/g, '?')  // Replace other non-ASCII characters
-      .replace(/[\r\n]/g, ' ')  // Replace line breaks with spaces
-      .substring(0, 150);  // Increased limit for more content
-  }
-  
-  const name = safePDFText(personalInfo?.name || 'Unknown');
-  const title = safePDFText(personalInfo?.title || 'N/A');
-  const email = safePDFText(personalInfo?.email || '');
-  const phone = safePDFText(personalInfo?.phone || '');
-  const intro = safePDFText(summary?.introduction || 'Ingen sammanfattning');
-  
-  // Build project content
-  let projectsText = '';
-  if (projects && projects.length > 0) {
-    projects.slice(0, 3).forEach((project, i) => {  // Limit to 3 projects
-      projectsText += `(${safePDFText(project.title || 'Projekt')}) Tj 0 -15 Td\n`;
-      projectsText += `(${safePDFText(project.period || '')}) Tj 0 -12 Td\n`;
-      projectsText += `(${safePDFText(project.description || '')}) Tj 0 -12 Td\n`;
-      if (i < 2) projectsText += `0 -10 Td\n`;  // Add spacing between projects
+async function generatePDFContent(cvData) {
+  try {
+    // Generate the HTML content first
+    const htmlContent = generateHTMLContent(cvData);
+    
+    // Launch Puppeteer with Netlify-compatible settings
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+      ignoreHTTPSErrors: true,
     });
-  }
 
-  // Build education content
-  let educationText = '';
-  if (education && education.length > 0) {
-    education.forEach((edu, i) => {
-      educationText += `(${safePDFText(edu.degree || 'Utbildning')}) Tj 0 -15 Td\n`;
-      educationText += `(${safePDFText(edu.institution || '')}) Tj 0 -12 Td\n`;
-      if (i < education.length - 1) educationText += `0 -10 Td\n`;
+    const page = await browser.newPage();
+    
+    // Set the HTML content
+    await page.setContent(htmlContent, {
+      waitUntil: 'networkidle0',
     });
-  }
 
-  // Build competencies content
-  let competenciesText = '';
-  if (competencies && competencies.length > 0) {
-    competencies.slice(0, 2).forEach((comp, i) => {  // Limit to 2 categories
-      competenciesText += `(${safePDFText(comp.category || 'Kompetens')}) Tj 0 -15 Td\n`;
-      if (comp.skills) {
-        const skillsList = comp.skills.slice(0, 5).map(s => s.name || s).join(', ');
-        competenciesText += `(${safePDFText(skillsList)}) Tj 0 -12 Td\n`;
-      }
-      if (i < 1) competenciesText += `0 -10 Td\n`;
+    // Generate PDF with proper settings for CV
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '0.4in',
+        right: '0.4in',
+        bottom: '0.4in',
+        left: '0.4in',
+      },
     });
+
+    await browser.close();
+
+    // Return base64 encoded PDF
+    return Buffer.from(pdfBuffer).toString('base64');
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    // Fallback to HTML content if PDF generation fails
+    const htmlContent = generateHTMLContent(cvData);
+    return btoa(unescape(encodeURIComponent(htmlContent)));
   }
-
-  // Calculate content length for PDF stream
-  const contentLength = 800 + projectsText.length + educationText.length + competenciesText.length;
-
-  const pdfContent = `%PDF-1.4
-1 0 obj
-<<
-/Type /Catalog
-/Pages 2 0 R
->>
-endobj
-
-2 0 obj
-<<
-/Type /Pages
-/Kids [3 0 R]
-/Count 1
->>
-endobj
-
-3 0 obj
-<<
-/Type /Page
-/Parent 2 0 R
-/MediaBox [0 0 612 792]
-/Contents 4 0 R
-/Resources <<
-  /Font <<
-    /F1 5 0 R
-    /F2 6 0 R
-  >>
->>
->>
-endobj
-
-4 0 obj
-<<
-/Length ${contentLength}
->>
-stream
-BT
-/F1 20 Tf
-50 750 Td
-(${name}) Tj
-0 -25 Td
-/F1 14 Tf
-(${title}) Tj
-0 -20 Td
-/F1 11 Tf
-(${email}) Tj
-0 -15 Td
-(${phone}) Tj
-0 -30 Td
-
-/F2 14 Tf
-(PROFESSIONELL SAMMANFATTNING) Tj
-0 -20 Td
-/F1 10 Tf
-(${intro}) Tj
-0 -25 Td
-
-/F2 14 Tf
-(PROJEKT) Tj
-0 -20 Td
-/F1 11 Tf
-${projectsText}
-0 -20 Td
-
-/F2 14 Tf
-(UTBILDNING) Tj
-0 -20 Td
-/F1 11 Tf
-${educationText}
-0 -20 Td
-
-/F2 14 Tf
-(KOMPETENSER) Tj
-0 -20 Td
-/F1 11 Tf
-${competenciesText}
-0 -30 Td
-
-/F1 9 Tf
-(Genererat: ${new Date().toLocaleDateString('sv-SE')}) Tj
-0 -12 Td
-(Template: ${safePDFText(cvData.template || 'modern')}) Tj
-ET
-endstream
-endobj
-
-5 0 obj
-<<
-/Type /Font
-/Subtype /Type1
-/BaseFont /Helvetica
->>
-endobj
-
-6 0 obj
-<<
-/Type /Font
-/Subtype /Type1
-/BaseFont /Helvetica-Bold
->>
-endobj
-
-xref
-0 7
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000274 00000 n 
-0000000726 00000 n 
-0000000797 00000 n 
-trailer
-<<
-/Size 7
-/Root 1 0 R
->>
-startxref
-873
-%%EOF`;
-  
-  return btoa(pdfContent);
 }
 
 function generateDOCXContent(cvData) {
@@ -498,7 +367,7 @@ export const handler = async (event, context) => {
         fileContent = btoa(unescape(encodeURIComponent(htmlContent)));
         mimeType = 'text/html';
       } else if (format === 'pdf') {
-        const pdfContent = generatePDFContent(body);
+        const pdfContent = await generatePDFContent(body);
         fileContent = pdfContent;
         mimeType = 'application/pdf';
       } else if (format === 'docx') {
@@ -540,7 +409,7 @@ export const handler = async (event, context) => {
           fileContent = btoa(unescape(encodeURIComponent(htmlContent)));
           mimeType = 'text/html';
         } else if (format === 'pdf') {
-          const pdfContent = generatePDFContent(body);
+          const pdfContent = await generatePDFContent(body);
           fileContent = pdfContent;
           mimeType = 'application/pdf';
         } else if (format === 'docx') {
@@ -594,7 +463,7 @@ export const handler = async (event, context) => {
             fileContent = btoa(unescape(encodeURIComponent(htmlContent)));
             mimeType = 'text/html';
           } else if (format === 'pdf') {
-            const pdfContent = generatePDFContent(templateData);
+            const pdfContent = await generatePDFContent(templateData);
             fileContent = pdfContent;
             mimeType = 'application/pdf';
           } else if (format === 'docx') {

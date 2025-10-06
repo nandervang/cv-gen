@@ -5,6 +5,7 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
 
 [[redirects]]
   from = "/api/*"
@@ -22,4 +23,5 @@
   status = 200
 
 [functions]
-  node_bundler = "nft"
+  external_node_modules = ["puppeteer", "@sparticuz/chromium"]
+  node_bundler = "esbuild"

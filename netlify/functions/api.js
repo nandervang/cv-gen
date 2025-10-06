@@ -92,54 +92,21 @@ function generateHTMLContent(cvData) {
 function generatePDFContent(cvData) {
   const { personalInfo, summary, projects, education, certifications, competencies, languages } = cvData;
   
-  // Build text content with all CV data
-  let textContent = `CV - ${personalInfo?.name || 'Unknown'}
-${personalInfo?.title || 'N/A'}
-${personalInfo?.email || ''}
-${personalInfo?.phone || ''}
-
-PROFESSIONELL SAMMANFATTNING
-${summary?.introduction || ''}
-
-SPECIALITETER:
-${summary?.specialties ? summary.specialties.map(s => `• ${s}`).join('\n') : ''}
-
-HÖJDPUNKTER:
-${summary?.highlights ? summary.highlights.map(h => `• ${h}`).join('\n') : ''}
-
-PROJEKT
-${projects ? projects.map(p => `
-${p.title || 'N/A'} (${p.period || 'N/A'})
-${p.type || ''}
-${p.description || ''}
-Teknologier: ${p.technologies ? p.technologies.join(', ') : 'N/A'}
-`).join('\n') : ''}
-
-UTBILDNING
-${education ? education.map(e => `
-${e.degree || 'N/A'} (${e.period || 'N/A'})
-${e.institution || 'N/A'}
-`).join('\n') : ''}
-
-CERTIFIERINGAR
-${certifications ? certifications.map(c => `
-${c.title || 'N/A'} (${c.year || 'N/A'})
-${c.issuer || 'N/A'}
-`).join('\n') : ''}
-
-KOMPETENSER
-${competencies ? competencies.map(cat => `
-${cat.category || 'N/A'}:
-${cat.skills ? cat.skills.map(s => `• ${s.name} (${s.level})`).join('\n') : ''}
-`).join('\n') : ''}
-
-SPRÅK
-${languages ? languages.map(l => `• ${l.language}: ${l.proficiency}`).join('\n') : ''}
-
-Genererat: ${new Date().toLocaleDateString('sv-SE')}
-Template: ${cvData.template || 'modern'}`;
-
-  // Simple PDF structure with comprehensive content
+  // Helper function to safely escape text for PDF
+  function safePDFText(text) {
+    if (!text) return '';
+    return text
+      .replace(/[()\\]/g, '\\$&')  // Escape parentheses and backslashes
+      .replace(/[\u0080-\uFFFF]/g, '?')  // Replace non-ASCII characters
+      .replace(/[\r\n]/g, ' ')  // Replace line breaks with spaces
+      .substring(0, 100);  // Limit length to prevent issues
+  }
+  
+  const name = safePDFText(personalInfo?.name || 'Unknown');
+  const title = safePDFText(personalInfo?.title || 'N/A');
+  const email = safePDFText(personalInfo?.email || '');
+  
+  // Simple PDF with basic info to avoid character issues
   const pdfContent = `%PDF-1.4
 1 0 obj
 <<
@@ -172,13 +139,33 @@ endobj
 
 4 0 obj
 <<
-/Length ${textContent.length + 100}
+/Length 500
 >>
 stream
 BT
+/F1 18 Tf
+50 720 Td
+(${name}) Tj
+0 -30 Td
+/F1 14 Tf
+(${title}) Tj
+0 -25 Td
 /F1 12 Tf
-50 750 Td
-${textContent.split('\n').map((line, i) => `(${line.replace(/[()\\]/g, '\\$&')}) Tj 0 -15 Td`).join('\n')}
+(${email}) Tj
+0 -40 Td
+(CV genererat: ${new Date().toLocaleDateString('sv-SE')}) Tj
+0 -20 Td
+(Template: ${safePDFText(cvData.template || 'modern')}) Tj
+0 -30 Td
+(Professionell sammanfattning:) Tj
+0 -20 Td
+(${safePDFText(summary?.introduction || 'Ingen sammanfattning')}) Tj
+0 -30 Td
+(Projekt: ${projects?.length || 0} st) Tj
+0 -20 Td
+(Utbildning: ${education?.length || 0} st) Tj
+0 -20 Td
+(Certifieringar: ${certifications?.length || 0} st) Tj
 ET
 endstream
 endobj

@@ -1,4 +1,4 @@
-import { Document, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
+import { Document, Paragraph, TextRun, AlignmentType } from 'docx';
 import type { CompleteCVData } from '../types/cv.js';
 
 export interface ModernTemplateConfig {

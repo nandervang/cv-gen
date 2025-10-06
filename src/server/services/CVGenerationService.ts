@@ -1,4 +1,4 @@
-import type { SimpleCVData, CompleteCVData } from '../types/cv.js';
+import type { CompleteCVData } from '../types/cv.js';
 import { generatePDF } from '../lib/pdf-generator.js';
 import { generateFrankDigitalHTML, generateFrankDigitalDOCX } from '../templates/frank-digital.js'
 import { generateModernHTML, generateModernDOCX, type ModernTemplateConfig } from '../templates/modern.js'

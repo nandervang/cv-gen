@@ -1,4 +1,4 @@
-import { CompleteCVData } from '../types/cv.js';
+import type { CompleteCVData } from '../types/cv.js';
 
 /**
  * EXACT Mock data from Frank_Digital_AB_Niklas_Andervang_CV_2025.pdf

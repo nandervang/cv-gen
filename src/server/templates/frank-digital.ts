@@ -1,5 +1,5 @@
-import { CompleteCVData } from '../types/cv.js';
-import { Document, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle, ShadingType, Table, TableRow, TableCell, WidthType } from 'docx';
+import type { CompleteCVData } from '../types/cv.js';
+import { Document, Paragraph, TextRun, AlignmentType } from 'docx';
 
 /**
  * Frank Digital CV Template
@@ -9,7 +9,6 @@ import { Document, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle,
 
 export function generateFrankDigitalHTML(data: CompleteCVData): string {
   const primaryColor = data.styling?.primaryColor || '#6366f1';
-  const accentColor = data.styling?.accentColor || '#8b5cf6';
   const fontFamily = data.styling?.fontFamily || 'Inter, system-ui, sans-serif';
 
   return `

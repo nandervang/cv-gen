@@ -1,4 +1,4 @@
-import { Document, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
+import { Document, Paragraph, TextRun, AlignmentType } from 'docx';
 import type { CompleteCVData } from '../types/cv.js';
 
 export interface ModernTemplateConfig {
@@ -8,14 +8,7 @@ export interface ModernTemplateConfig {
   layout?: 'sidebar' | 'stacked';
 }
 
-const defaultConfig: Required<ModernTemplateConfig> = {
-  primaryColor: '#2563eb', // Blue-600
-  accentColor: '#64748b', // Slate-500
-  fontFamily: 'Calibri',
-  layout: 'sidebar'
-};
-
-export function generateModernHTML(data: CompleteCVData, config: ModernTemplateConfig = {}): string {
+export function generateModernHTML(data: CompleteCVData, _config: ModernTemplateConfig = {}): string {
   return `
 <!DOCTYPE html>
 <html>
@@ -29,7 +22,7 @@ export function generateModernHTML(data: CompleteCVData, config: ModernTemplateC
   `;
 }
 
-export function generateModernDOCX(data: CompleteCVData, config: ModernTemplateConfig = {}): Document {
+export function generateModernDOCX(data: CompleteCVData, _config: ModernTemplateConfig = {}): Document {
   const doc = new Document({
     sections: [{
       properties: {

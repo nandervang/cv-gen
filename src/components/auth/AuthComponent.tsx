@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { LogIn, LogOut, User } from 'lucide-react'
-import type { User as SupabaseUser } from '@supabase/supabase-js'
+import type { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js'
 
 interface AuthComponentProps {
   onAuthChange?: (user: SupabaseUser | null) => void
@@ -20,14 +20,14 @@ export function AuthComponent({ onAuthChange }: AuthComponentProps) {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
       setUser(session?.user ?? null)
       onAuthChange?.(session?.user ?? null)
       setAuthLoading(false)
     })
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       setUser(session?.user ?? null)
       onAuthChange?.(session?.user ?? null)
     })
@@ -52,8 +52,9 @@ export function AuthComponent({ onAuthChange }: AuthComponentProps) {
         if (error) throw error
         alert('Check your email for the confirmation link!')
       }
-    } catch (error: any) {
-      alert(error.message)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred'
+      alert(errorMessage)
     } finally {
       setLoading(false)
     }

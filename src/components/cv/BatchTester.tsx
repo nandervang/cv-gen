@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
+import { getApiUrl } from '@/lib/api-config';
 
 interface FormatResult {
   success: boolean;
@@ -66,7 +67,7 @@ export const BatchTester: React.FC<BatchTesterProps> = ({ cvData, selectedTempla
 
     try {
       const apiKey = import.meta.env.VITE_CV_API_KEY || 'dev-api-key-12345';
-      const apiUrl = import.meta.env.VITE_CV_API_URL || 'http://localhost:3001';
+      const apiUrl = getApiUrl('');
 
       const payload = {
         ...cvData,
@@ -103,7 +104,7 @@ export const BatchTester: React.FC<BatchTesterProps> = ({ cvData, selectedTempla
 
     try {
       const apiKey = import.meta.env.VITE_CV_API_KEY || 'dev-api-key-12345';
-      const apiUrl = import.meta.env.VITE_CV_API_URL || 'http://localhost:3001';
+      const apiUrl = getApiUrl('');
 
       const response = await fetch(`${apiUrl}/api/batch/comprehensive`, {
         method: 'POST',

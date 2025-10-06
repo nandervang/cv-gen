@@ -9,6 +9,7 @@ import morgan from 'morgan';
 import { cvRoutes } from '../../src/server/routes/cvRoutes.js';
 import { templateRoutes } from '../../src/server/routes/templateRoutes.js';
 import { generateRoutes } from '../../src/server/routes/generateRoutes.js';
+import { customizationRoutes } from '../../src/server/routes/customizationRoutes.js';
 
 const app = express();
 
@@ -82,6 +83,7 @@ app.use('/api', validateApiKey);
 // Routes
 app.use('/api/cvs', cvRoutes);
 app.use('/api/templates', templateRoutes);
+app.use('/api/customization', customizationRoutes);
 app.use('/api', generateRoutes);
 
 // Error handling

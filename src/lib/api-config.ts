@@ -15,8 +15,8 @@ export function getApiConfig(): ApiConfig {
   // Try environment variable first
   let baseUrl = import.meta.env.VITE_CV_API_URL;
   
-  // If no environment variable, detect based on current URL
-  if (!baseUrl) {
+  // If no environment variable or empty, detect based on current URL
+  if (!baseUrl || baseUrl.trim() === '') {
     const currentHost = window.location.hostname;
     
     if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
@@ -24,16 +24,11 @@ export function getApiConfig(): ApiConfig {
       baseUrl = 'http://localhost:3001';
     } else if (currentHost.includes('netlify.app') || currentHost.includes('netlify.com')) {
       // Netlify deployment - use current domain for functions
-      baseUrl = `${window.location.protocol}//${window.location.host}/.netlify/functions`;
+      baseUrl = `${window.location.protocol}//${window.location.host}`;
     } else {
       // Production or other deployment
       baseUrl = `${window.location.protocol}//${window.location.host}`;
     }
-  }
-  
-  // Handle empty environment variable (means use relative/detect)
-  if (baseUrl === '') {
-    baseUrl = `${window.location.protocol}//${window.location.host}/.netlify/functions`;
   }
   
   return {
@@ -106,6 +101,19 @@ export function getApiUrl(endpoint: string): string {
   return endpoint.startsWith('http') 
     ? endpoint 
     : `${config.baseUrl}${endpoint}`;
+}
+
+/**
+ * Smart URL replacement for API calls
+ * Automatically replaces localhost URLs when deployed
+ */
+export function getSmartApiUrl(originalUrl: string): string {
+  // If we're on netlify and the URL contains localhost, replace it
+  if (window.location.hostname.includes('netlify') && originalUrl.includes('localhost:3001')) {
+    const config = getApiConfig();
+    return originalUrl.replace('http://localhost:3001', config.baseUrl);
+  }
+  return originalUrl;
 }
 
 /**

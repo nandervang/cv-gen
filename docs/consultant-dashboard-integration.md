@@ -2,14 +2,14 @@
 
 ## Overview
 
-This guide provides step-by-step instructions for integrating the CV Generation API into your consultant dashboard application. The integration allows your consultants to generate professional CVs directly from their profile data.
+This guide provides step-by-step instructions for integrating the CV Generation System into your consultant dashboard application. The system uses Netlify Functions for serverless PDF generation with Puppeteer, providing high-quality CV generation directly from consultant profile data.
 
 ## Prerequisites
 
-- CV Generation API running (locally or deployed)
-- API key for authentication
-- Basic understanding of HTTP requests
+- CV Generation System deployed on Netlify (or local development setup)
+- Basic understanding of HTTP requests and serverless functions
 - Frontend framework (React, Vue, Angular, etc.)
+- Understanding of async operations (PDF generation can take 5-15 seconds)
 
 ## Integration Steps
 
@@ -20,15 +20,19 @@ First, configure your environment variables:
 ```javascript
 // .env or environment configuration
 const CV_API_CONFIG = {
-  baseUrl: process.env.CV_API_URL || 'http://localhost:3001',
-  apiKey: process.env.CV_API_KEY || 'dev-api-key-12345',
-  timeout: 30000 // 30 seconds for generation requests
+  // Production: Your Netlify site URL
+  baseUrl: process.env.CV_API_URL || 'https://your-cv-app.netlify.app',
+  // Development: Local dev server
+  // baseUrl: process.env.CV_API_URL || 'http://localhost:5173',
+  
+  // No API key needed for Netlify Functions
+  timeout: 45000 // 45 seconds for PDF generation (includes cold start)
 };
 ```
 
 ### 2. API Client Setup
 
-Create a dedicated API client for CV generation:
+Create a dedicated API client for CV generation with Netlify Functions:
 
 ```javascript
 // services/cvGenerationAPI.js
@@ -36,7 +40,6 @@ Create a dedicated API client for CV generation:
 class CVGenerationAPI {
   constructor(config) {
     this.baseUrl = config.baseUrl;
-    this.apiKey = config.apiKey;
     this.timeout = config.timeout;
   }
 
@@ -46,9 +49,9 @@ class CVGenerationAPI {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': this.apiKey,
         ...options.headers
       },
+      // No API key needed for Netlify Functions
       timeout: this.timeout,
       ...options
     };
@@ -58,7 +61,7 @@ class CVGenerationAPI {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error?.message || 'API request failed');
+        throw new Error(data.error?.message || `HTTP ${response.status}: ${response.statusText}`);
       }
       
       return data;
@@ -73,33 +76,25 @@ class CVGenerationAPI {
     return this.makeRequest('/health');
   }
 
-  // Get available templates
-  async getTemplates() {
-    return this.makeRequest('/api/templates');
-  }
-
-  // Generate CV
+  // Generate CV (single format)
   async generateCV(cvData) {
-    return this.makeRequest('/api/generate/complete', {
+    return this.makeRequest('/.netlify/functions/api', {
       method: 'POST',
       body: JSON.stringify(cvData)
     });
   }
 
-  // Generate all formats
+  // Generate all formats (batch)
   async generateAllFormats(cvData) {
-    return this.makeRequest('/api/batch/formats', {
+    return this.makeRequest('/.netlify/functions/batch-generate', {
       method: 'POST',
       body: JSON.stringify(cvData)
     });
   }
 
-  // Preview template with customization
-  async previewTemplate(templateId, customization) {
-    return this.makeRequest('/api/customization/preview', {
-      method: 'POST',
-      body: JSON.stringify({ templateId, customization })
-    });
+  // Test endpoint for development
+  async testGeneration() {
+    return this.makeRequest('/test');
   }
 }
 
@@ -204,31 +199,26 @@ import cvAPI from '../services/cvGenerationAPI';
 import { transformConsultantToCV } from '../utils/dataTransformer';
 
 const CVGenerator = ({ consultantProfile }) => {
-  const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState('frank-digital');
   const [selectedFormat, setSelectedFormat] = useState('pdf');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationResult, setGenerationResult] = useState(null);
   const [error, setError] = useState(null);
+  const [progress, setProgress] = useState('');
 
-  useEffect(() => {
-    loadTemplates();
-  }, []);
-
-  const loadTemplates = async () => {
-    try {
-      const response = await cvAPI.getTemplates();
-      setTemplates(response.data || []);
-    } catch (err) {
-      setError('Failed to load templates');
-      console.error(err);
-    }
-  };
+  // Available templates (no API call needed)
+  const templates = [
+    { id: 'frank-digital', name: 'Frank Digital', description: 'Professional corporate design' },
+    { id: 'modern', name: 'Modern', description: 'Clean minimalist layout' },
+    { id: 'classic', name: 'Classic', description: 'Traditional professional format' },
+    { id: 'creative', name: 'Creative', description: 'Creative design portfolio' }
+  ];
 
   const generateCV = async () => {
     setIsGenerating(true);
     setError(null);
     setGenerationResult(null);
+    setProgress('Preparing CV data...');
 
     try {
       const cvData = {
@@ -237,10 +227,14 @@ const CVGenerator = ({ consultantProfile }) => {
         format: selectedFormat
       };
 
+      setProgress('Generating CV (this may take 5-15 seconds)...');
       const result = await cvAPI.generateCV(cvData);
+      
       setGenerationResult(result);
+      setProgress('');
     } catch (err) {
       setError(err.message);
+      setProgress('');
     } finally {
       setIsGenerating(false);
     }
@@ -249,6 +243,7 @@ const CVGenerator = ({ consultantProfile }) => {
   const generateAllFormats = async () => {
     setIsGenerating(true);
     setError(null);
+    setProgress('Generating all formats (this may take 30-90 seconds)...');
 
     try {
       const cvData = {
@@ -258,8 +253,10 @@ const CVGenerator = ({ consultantProfile }) => {
 
       const result = await cvAPI.generateAllFormats(cvData);
       setGenerationResult(result);
+      setProgress('');
     } catch (err) {
       setError(err.message);
+      setProgress('');
     } finally {
       setIsGenerating(false);
     }
@@ -291,9 +288,9 @@ const CVGenerator = ({ consultantProfile }) => {
           value={selectedFormat} 
           onChange={(e) => setSelectedFormat(e.target.value)}
         >
-          <option value="pdf">PDF</option>
-          <option value="html">HTML</option>
-          <option value="docx">DOCX</option>
+          <option value="pdf">PDF (High Quality)</option>
+          <option value="html">HTML (Preview)</option>
+          <option value="docx">DOCX (Word Document)</option>
         </select>
       </div>
 
@@ -316,10 +313,21 @@ const CVGenerator = ({ consultantProfile }) => {
         </button>
       </div>
 
+      {/* Progress Display */}
+      {progress && (
+        <div className="progress">
+          <p>{progress}</p>
+          <div className="progress-bar">
+            <div className="progress-animation"></div>
+          </div>
+        </div>
+      )}
+
       {/* Error Display */}
       {error && (
         <div className="error">
           <p>Error: {error}</p>
+          <p><small>Note: PDF generation requires more time due to serverless cold starts.</small></p>
         </div>
       )}
 
@@ -327,12 +335,12 @@ const CVGenerator = ({ consultantProfile }) => {
       {generationResult && (
         <div className="results">
           <h3>Generation Complete</h3>
-          {generationResult.data?.fileUrl ? (
+          {generationResult.fileUrl ? (
             // Single file result
             <div>
-              <p>Format: {generationResult.data.format.toUpperCase()}</p>
+              <p>Format: {selectedFormat.toUpperCase()}</p>
               <a 
-                href={generationResult.data.fileUrl} 
+                href={generationResult.fileUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="download-link"
@@ -340,11 +348,11 @@ const CVGenerator = ({ consultantProfile }) => {
                 Download CV
               </a>
             </div>
-          ) : generationResult.data?.results ? (
+          ) : generationResult.results ? (
             // Multiple formats result
             <div>
-              <p>Generated {generationResult.data.summary?.successful} of {generationResult.data.summary?.total} formats</p>
-              {Object.entries(generationResult.data.results).map(([format, result]) => (
+              <p>Generated multiple formats</p>
+              {Object.entries(generationResult.results).map(([format, result]) => (
                 <div key={format} className="format-result">
                   <span>{format.toUpperCase()}: </span>
                   {result.success ? (
@@ -357,7 +365,7 @@ const CVGenerator = ({ consultantProfile }) => {
                       Download
                     </a>
                   ) : (
-                    <span className="error">Failed</span>
+                    <span className="error">Failed - {result.error}</span>
                   )}
                 </div>
               ))}
@@ -367,6 +375,7 @@ const CVGenerator = ({ consultantProfile }) => {
       )}
     </div>
   );
+};
 };
 
 export default CVGenerator;
@@ -530,31 +539,53 @@ export class CVGenerationError extends Error {
 }
 
 export function handleCVAPIError(error) {
-  if (error.code === 'RATE_LIMIT_EXCEEDED') {
+  // Netlify Function timeout (10 minutes max)
+  if (error.message.includes('timeout') || error.message.includes('Function invocation timeout')) {
     return {
-      message: 'Too many CV generation requests. Please wait a moment and try again.',
+      message: 'PDF generation timed out. This can happen with complex CVs or during cold starts. Please try again.',
       retry: true,
-      retryAfter: 60000 // 1 minute
+      retryAfter: 30000 // 30 seconds
     };
   }
   
-  if (error.code === 'VALIDATION_ERROR') {
+  // Function memory limit exceeded
+  if (error.message.includes('memory') || error.message.includes('out of memory')) {
     return {
-      message: 'Please check that all required profile information is filled out.',
+      message: 'Generation failed due to memory constraints. Try with a simpler template or fewer sections.',
       retry: false
     };
   }
   
-  if (error.code === 'GENERATION_ERROR') {
+  // Cold start delays
+  if (error.message.includes('cold') || error.message.includes('initialization')) {
     return {
-      message: 'CV generation failed. Please try again or contact support.',
-      retry: true
+      message: 'Function is initializing (cold start). This takes 5-15 seconds. Please wait...',
+      retry: true,
+      retryAfter: 15000 // 15 seconds
+    };
+  }
+  
+  // Puppeteer/Chromium errors
+  if (error.message.includes('chromium') || error.message.includes('browser')) {
+    return {
+      message: 'PDF generation engine error. Please try again or use HTML format as fallback.',
+      retry: true,
+      retryAfter: 10000 // 10 seconds
+    };
+  }
+  
+  // Validation errors
+  if (error.message.includes('validation') || error.statusCode === 400) {
+    return {
+      message: 'Please check that all required profile information is filled out correctly.',
+      retry: false
     };
   }
   
   return {
-    message: 'An unexpected error occurred. Please try again.',
-    retry: true
+    message: 'An unexpected error occurred. Please try again or contact support.',
+    retry: true,
+    retryAfter: 5000 // 5 seconds
   };
 }
 ```
@@ -563,27 +594,66 @@ export function handleCVAPIError(error) {
 
 ```jsx
 // components/GenerationProgress.jsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-const GenerationProgress = ({ isGenerating, currentStep, totalSteps }) => {
-  if (!isGenerating) return null;
-
+const GenerationProgress = ({ isGenerating, estimatedTime = 15000 }) => {
+  const [progress, setProgress] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
+  
   const steps = [
-    'Validating data',
-    'Applying template',
-    'Generating document',
-    'Finalizing output'
+    'Initializing serverless function...',
+    'Starting Chromium browser...',
+    'Rendering HTML template...',
+    'Generating PDF document...',
+    'Finalizing and uploading...'
   ];
+
+  useEffect(() => {
+    if (!isGenerating) {
+      setProgress(0);
+      setCurrentStep(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 95) return prev; // Don't complete until actually done
+        return prev + (100 / (estimatedTime / 1000)); // Increment based on estimated time
+      });
+    }, 1000);
+
+    const stepInterval = setInterval(() => {
+      setCurrentStep(prev => {
+        if (prev >= steps.length - 1) return prev;
+        return prev + 1;
+      });
+    }, estimatedTime / steps.length);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(stepInterval);
+    };
+  }, [isGenerating, estimatedTime]);
+
+  if (!isGenerating) return null;
 
   return (
     <div className="generation-progress">
       <div className="progress-bar">
         <div 
           className="progress-fill"
-          style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+          style={{ 
+            width: `${Math.min(progress, 95)}%`,
+            transition: 'width 1s ease-out'
+          }}
         />
       </div>
-      <p>Step {currentStep} of {totalSteps}: {steps[currentStep - 1]}</p>
+      <p className="progress-text">
+        {steps[currentStep]} ({Math.round(progress)}%)
+      </p>
+      <small className="progress-note">
+        Serverless functions may take 5-15 seconds due to cold starts.
+      </small>
     </div>
   );
 };
@@ -594,34 +664,41 @@ export default GenerationProgress;
 ## Best Practices
 
 ### 1. User Experience
-- Show clear progress indicators during generation
-- Provide meaningful error messages
-- Allow users to cancel long-running operations
-- Cache templates to avoid repeated API calls
+
+- **Show clear progress indicators** during generation with realistic time estimates (5-15 seconds)
+- **Inform users about cold starts** - first requests may take longer
+- **Provide meaningful error messages** with guidance on next steps
+- **Allow users to cancel** long-running operations if needed
 
 ### 2. Performance
-- Implement request debouncing for rapid user actions
-- Use loading states for better UX
-- Consider background generation for batch operations
-- Implement retry logic with exponential backoff
+
+- **Implement request debouncing** for rapid user actions
+- **Use loading states** for better UX during function initialization
+- **Consider background generation** for batch operations when possible
+- **Cache results client-side** to avoid repeated generation of same CVs
+- **Set appropriate timeouts** (45+ seconds for PDF generation)
 
 ### 3. Security
-- Never expose API keys in frontend code
-- Validate user permissions before allowing CV generation
-- Implement rate limiting on your frontend
-- Sanitize user data before sending to API
+
+- **No API keys needed** for public Netlify Functions
+- **Validate user permissions** before allowing CV generation
+- **Implement client-side rate limiting** to prevent abuse
+- **Sanitize user data** before sending to functions
+- **Use HTTPS** for all communications (automatic with Netlify)
 
 ### 4. Error Recovery
-- Implement retry mechanisms for transient failures
-- Provide clear error messages and suggested actions
-- Log errors for debugging and monitoring
-- Graceful fallbacks when API is unavailable
+
+- **Implement retry mechanisms** for transient failures (cold starts, timeouts)
+- **Provide clear error messages** specific to serverless issues
+- **Graceful fallbacks** when PDF generation fails (offer HTML instead)
+- **Log errors** for debugging and monitoring function performance
 
 ### 5. Testing
-- Mock API responses for unit tests
-- Test error scenarios thoroughly
-- Validate data transformation logic
-- Test with various consultant profile data structures
+
+- **Mock function responses** for unit tests
+- **Test error scenarios** thoroughly, especially timeouts
+- **Validate data transformation** logic with various profile structures
+- **Test with different CV sizes** to understand performance characteristics
 
 ## Monitoring and Analytics
 
@@ -650,15 +727,18 @@ export function trackCVDownload(fileUrl, format) {
 ## Deployment Considerations
 
 ### Environment Configuration
-- Set appropriate API URLs for different environments
-- Configure proper CORS settings
-- Use secure API keys in production
-- Monitor API usage and costs
+
+- **Set appropriate URLs** for different environments (dev, staging, production)
+- **No API keys required** for Netlify Functions (they're public endpoints)
+- **Configure CORS** if needed for cross-domain requests
+- **Monitor function usage** and costs in Netlify dashboard
 
 ### Scaling
-- Consider implementing client-side caching
-- Monitor API rate limits
-- Plan for increased generation volume
-- Consider background job queuing for batch operations
 
-This integration guide provides a complete framework for incorporating CV generation into your consultant dashboard. Adapt the components and logic to match your existing application architecture and design patterns.
+- **Implement client-side caching** for generated CVs to reduce function calls
+- **Monitor Netlify Function** execution limits and costs
+- **Consider upgrade to Netlify Pro** for higher limits if needed
+- **Plan for concurrent users** - Netlify Functions auto-scale but have cold start delays
+- **Batch operations** may hit timeout limits (10-minute max per function)
+
+This integration guide provides a complete framework for incorporating CV generation into your consultant dashboard. Adapt the components and logic to match your existing application architecture and design patterns. Remember that serverless functions have different performance characteristics than traditional APIs, so plan accordingly for cold starts and longer execution times.

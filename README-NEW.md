@@ -1,22 +1,6 @@
 # CV Generation System
 
-A production-ready CV generation system built with Netlify Functions (serverless) backend and React frontend. Generate professional CVs in multiple formats (HTML, PDF, DOCX) using Puppeteer for high-quality PDF generation, ## 🔒 Security
-
-### Security Features
-
-- **Serverless isolation**: Each function execution is isolated
-- **Input validation**: Comprehensive request validation
-- **CORS protection**: Configurable cross-origin policies
-- **Rate limiting**: Built-in Netlify Function limits
-- **Secure headers**: Security headers for all responses
-
-### Best Practices
-
-- **Environment variables**: Store sensitive data in Netlify environment variables
-- **HTTPS enforcement**: Automatic HTTPS with Netlify
-- **Input sanitization**: All user inputs are validated and sanitized
-- **Function timeouts**: Prevent long-running executions
-- **Error handling**: Secure error messages without sensitive informatione templates and comprehensive batch testing capabilities.
+A production-ready CV generation system built with Netlify Functions (serverless) backend and React frontend. Generate professional CVs in multiple formats (HTML, PDF, DOCX) using Puppeteer for high-quality PDF generation, with customizable templates and comprehensive batch testing capabilities.
 
 ## 🚀 Quick Start
 
@@ -49,7 +33,7 @@ npm run dev:full
 - **Netlify Functions**: Serverless API with automatic scaling
 - **Puppeteer PDF Generation**: High-quality PDF creation using headless Chrome
 - **Stateless Design**: No database dependencies for generation
-- **Rate Limiting**: Production-ready with development-optimized limits
+- **Rate Limiting**: Built-in Netlify Function execution limits
 - **Comprehensive Error Handling**: Structured error responses
 - **Type Safety**: Full TypeScript implementation
 
@@ -59,19 +43,6 @@ npm run dev:full
 - **Batch Testing**: Test all 12 template/format combinations simultaneously
 - **Real-time Results**: Download links and status indicators
 - **Contract Tests**: Comprehensive API endpoint testing
-
-## 📚 Documentation
-
-### Getting Started
-
-- **[Quick Setup Guide](docs/quick-setup.md)** - Get running in 5 minutes
-- **[Complete Documentation](docs/README.md)** - Full system documentation
-- **[API Specification](docs/api-specification.md)** - Detailed API reference
-
-### Integration & Deployment
-
-- **[Consultant Dashboard Integration](docs/consultant-dashboard-integration.md)** - Step-by-step integration guide
-- **[Deployment Guide](docs/deployment-guide.md)** - Production deployment instructions
 
 ## 🏗️ Architecture
 
@@ -84,31 +55,6 @@ npm run dev:full
 
 ### Frontend (React + Vite - Port 5173)
 
-- **Testing Interface**: Comprehensive UI for API validation
-- **Component Library**: shadcn/ui with Tailwind CSS
-- **Template Gallery**: Visual template selection and customization
-- **Batch Testing**: Multi-format and multi-template testing
-
-## � Documentation
-
-### Getting Started
-- **[Quick Setup Guide](docs/quick-setup.md)** - Get running in 5 minutes
-- **[Complete Documentation](docs/README.md)** - Full system documentation
-- **[API Specification](docs/api-specification.md)** - Detailed API reference
-
-### Integration & Deployment  
-- **[Consultant Dashboard Integration](docs/consultant-dashboard-integration.md)** - Step-by-step integration guide
-- **[Deployment Guide](docs/deployment-guide.md)** - Production deployment instructions
-
-## 🏗️ Architecture
-
-### Backend (Express + TypeScript - Port 3001)
-- **API Endpoints**: Templates, generation, customization, batch, preview
-- **Document Generation**: Puppeteer for PDF, custom engine for HTML/DOCX
-- **Security**: API key authentication, CORS, rate limiting, Helmet
-- **Performance**: Clustering, memory optimization, efficient processing
-
-### Frontend (React + Vite - Port 5173)
 - **Testing Interface**: Comprehensive UI for API validation
 - **Component Library**: shadcn/ui with Tailwind CSS
 - **Template Gallery**: Visual template selection and customization
@@ -159,21 +105,25 @@ console.log('Generated CV:', result.fileUrl);
 ## 🎨 Available Templates
 
 ### Frank Digital
+
 - **Type**: Corporate/Professional
 - **Best For**: Digital agencies, tech companies
 - **Features**: Clean layout, skills matrix, project showcase
 
-### Modern Professional  
+### Modern Professional
+
 - **Type**: Modern/Minimalist
 - **Best For**: Tech professionals, startups
 - **Features**: Modern typography, clean sections, tech focus
 
 ### Classic Executive
-- **Type**: Traditional/Executive  
+
+- **Type**: Traditional/Executive
 - **Best For**: Senior positions, traditional industries
 - **Features**: Professional layout, executive summary, formal style
 
 ### Creative Portfolio
+
 - **Type**: Creative/Design
 - **Best For**: Designers, creative professionals
 - **Features**: Visual elements, portfolio sections, creative layout
@@ -201,14 +151,10 @@ The system is optimized for Netlify deployment with:
 - **Chromium**: Uses `@sparticuz/chromium` for serverless PDF generation
 - **Redirects**: API routes redirect to Netlify Functions
 
-### Rate Limiting
-
-- **Development**: Minimal limits for testing
-- **Production**: Configured per Netlify Function execution limits
-
 ## 🧪 Testing
 
 ### Available Tests
+
 ```bash
 npm run test:contract     # API contract tests
 npm run test:integration  # Integration tests
@@ -216,9 +162,10 @@ npm run test:watch       # Watch mode
 ```
 
 ### Manual Testing
+
 1. **Frontend**: Visit http://localhost:5173 for interactive testing
-2. **API**: Use curl or Postman with provided examples
-3. **Batch Testing**: Use frontend's batch tester for comprehensive validation
+2. **Batch Testing**: Use frontend's batch tester for comprehensive validation
+3. **API Functions**: Test individual endpoints through the UI
 
 ## 🚀 Deployment
 
@@ -243,8 +190,6 @@ npm run build
 - [ ] Verify PDF generation works in production
 - [ ] Monitor function execution times and memory usage
 
-See the [Deployment Guide](docs/deployment-guide.md) for detailed instructions.
-
 ## 📊 Performance
 
 ### Expected Performance
@@ -261,22 +206,23 @@ See the [Deployment Guide](docs/deployment-guide.md) for detailed instructions.
 - **Memory management**: Automatic cleanup after PDF generation
 - **Template caching**: Optimized HTML generation with minimal DOM manipulation
 
-## � Security
+## 🔒 Security
 
 ### Security Features
-- API key authentication
-- CORS protection
-- Rate limiting
-- Security headers (Helmet)
-- Input validation and sanitization
-- Secure file storage with signed URLs
+
+- **Serverless isolation**: Each function execution is isolated
+- **Input validation**: Comprehensive request validation
+- **CORS protection**: Configurable cross-origin policies
+- **Rate limiting**: Built-in Netlify Function limits
+- **Secure headers**: Security headers for all responses
 
 ### Best Practices
-- Store API keys securely
-- Use HTTPS in production
-- Validate all user inputs
-- Monitor for unusual usage patterns
-- Implement proper error handling
+
+- **Environment variables**: Store sensitive data in Netlify environment variables
+- **HTTPS enforcement**: Automatic HTTPS with Netlify
+- **Input sanitization**: All user inputs are validated and sanitized
+- **Function timeouts**: Prevent long-running executions
+- **Error handling**: Secure error messages without sensitive information
 
 ## 🤝 Contributing
 
@@ -294,16 +240,18 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🆘 Support
 
 ### Common Issues
-- **Port conflicts**: Use `pkill -f "tsx"` and `pkill -f "vite"` to clean up
-- **Puppeteer issues**: Install Chrome dependencies (see quick setup guide)
-- **Memory issues**: Monitor with `npm run dev:api` and restart if needed
+
+- **Slow PDF generation**: Cold starts in serverless environments are normal
+- **Memory errors**: Netlify Functions have memory limits, batch operations may timeout
+- **Build failures**: Ensure Puppeteer dependencies are correctly bundled
 
 ### Getting Help
-1. Check the [Quick Setup Guide](docs/quick-setup.md)
-2. Review [API Specification](docs/api-specification.md)
-3. See [Integration Guide](docs/consultant-dashboard-integration.md)
+
+1. Check the [API Specification](docs/api-specification.md)
+2. Review batch testing results for debugging
+3. Monitor Netlify Function logs for errors
 4. Open an issue for bugs or feature requests
 
 ---
 
-**Ready to generate professional CVs?** Start with the [Quick Setup Guide](docs/quick-setup.md) and have the system running in 5 minutes!
+**Ready to generate professional CVs?** Deploy to Netlify and start generating high-quality PDFs in minutes!

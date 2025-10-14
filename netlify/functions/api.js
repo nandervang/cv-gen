@@ -5,9 +5,13 @@ const chromium = require('@sparticuz/chromium');
 // Helper functions for content generation
 function generateAndervangConsultingHTML(cvData) {
   // Handle different payload formats - consultant manager vs direct API
-  const { personalInfo, summary, projects, education, certifications, languages, company, styling } = cvData;
-  const employment = cvData.employment || cvData.experience; // Handle both field names
-  const competencies = cvData.competencies || cvData.skills; // Handle both field names
+  const { personalInfo, summary, company, styling } = cvData;
+  const employment = cvData.employment || cvData.experience || []; // Handle both field names with fallback
+  const competencies = cvData.competencies || cvData.skills || []; // Handle both field names with fallback
+  const projects = cvData.projects || []; // Ensure array
+  const education = cvData.education || []; // Ensure array
+  const certifications = cvData.certifications || []; // Ensure array
+  const languages = cvData.languages || []; // Ensure array
   
   // Use Andervang Consulting colors and styling
   const primaryColor = styling?.primaryColor || '#003D82'; // Darker blue for better contrast
@@ -563,11 +567,11 @@ function generateAndervangConsultingHTML(cvData) {
                 <div class="competency-category">
                     <div class="competency-title">
                         <div class="competency-icon">${index + 1}</div>
-                        ${category.category}
+                        ${category.category || category.name || `Kategori ${index + 1}`}
                     </div>
                     <div class="competency-skills">
-                        ${category.skills.map(skill => 
-                            `<span class="competency-skill">${skill.name}</span>`
+                        ${(category.skills || category.items || []).map(skill => 
+                            `<span class="competency-skill">${typeof skill === 'string' ? skill : skill.name}</span>`
                         ).join('')}
                     </div>
                 </div>
@@ -640,9 +644,13 @@ async function generatePDFContent(cvData) {
 
 function generateDOCXContent(cvData) {
   // Handle different payload formats - consultant manager vs direct API
-  const { personalInfo, summary, projects, education, certifications, languages, company } = cvData;
-  const employment = cvData.employment || cvData.experience; // Handle both field names
-  const competencies = cvData.competencies || cvData.skills; // Handle both field names
+  const { personalInfo, summary, company } = cvData;
+  const employment = cvData.employment || cvData.experience || []; // Handle both field names with fallback
+  const competencies = cvData.competencies || cvData.skills || []; // Handle both field names with fallback
+  const projects = cvData.projects || []; // Ensure array
+  const education = cvData.education || []; // Ensure array
+  const certifications = cvData.certifications || []; // Ensure array
+  const languages = cvData.languages || []; // Ensure array
   const companyName = company || 'Andervang Consulting';
   
   return `${companyName}
@@ -693,10 +701,10 @@ ${c.issuer || 'N/A'}
 ${c.description ? `Beskrivning: ${c.description}` : ''}
 `).join('\n')}` : ''}
 
-${competencies ? `KOMPETENSER
+${competencies?.length ? `KOMPETENSER
 ${competencies.map(cat => `
-${cat.category || 'N/A'}:
-${cat.skills ? cat.skills.map(s => `• ${s.name}${s.level ? ` (${s.level})` : ''}`).join('\n') : ''}
+${cat.category || cat.name || 'N/A'}:
+${(cat.skills || cat.items || []).map(s => `• ${typeof s === 'string' ? s : s.name}${s.level ? ` (${s.level})` : ''}`).join('\n')}
 `).join('\n')}` : ''}
 
 ${languages ? `SPRÅKKUNSKAPER

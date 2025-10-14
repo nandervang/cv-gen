@@ -701,21 +701,28 @@ Template: Andervang Consulting`;
 }
 
 export const handler = async (event, context) => {
-  // Handle CORS preflight
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, X-API-Key',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Content-Type': 'application/json'
+  // CORS headers for all responses
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*', // Allow all origins
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Max-Age': '86400', // Cache preflight for 24 hours
   };
 
+  // Handle preflight requests
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
-      headers,
-      body: ''
+      headers: corsHeaders,
+      body: '',
     };
   }
+
+  // Default headers for all responses
+  const headers = {
+    ...corsHeaders,
+    'Content-Type': 'application/json'
+  };
 
   try {
     // Parse the path to determine the route
@@ -782,7 +789,10 @@ export const handler = async (event, context) => {
     if (!apiKey || !validKeys.includes(apiKey)) {
       return {
         statusCode: 401,
-        headers,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           error: {
             code: 'UNAUTHORIZED',
@@ -1062,7 +1072,10 @@ export const handler = async (event, context) => {
     console.error('Function error:', error);
     return {
       statusCode: 500,
-      headers,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
         error: {
           code: 'INTERNAL_ERROR',

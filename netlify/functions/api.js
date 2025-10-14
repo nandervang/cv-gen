@@ -700,7 +700,7 @@ Genererat: ${new Date().toLocaleDateString('sv-SE')}
 Template: Andervang Consulting`;
 }
 
-export const handler = async (event, context) => {
+exports.handler = async (event, context) => {
   // CORS headers for all responses
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*', // Allow all origins

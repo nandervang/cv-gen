@@ -3,7 +3,7 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
-import { makeApiRequest, getApiUrl } from '@/lib/api-config'
+import { getApiUrl } from '@/lib/api-config'
 
 interface Template {
   id: string
@@ -47,7 +47,7 @@ export default function CVGeneratorTest() {
       setError(null)
       
       try {
-        const response = await makeApiRequest('/api/templates', {
+        const response = await fetch('/api/templates', {
           headers: {
             'X-API-Key': API_KEY,
             'Content-Type': 'application/json'
@@ -81,15 +81,18 @@ export default function CVGeneratorTest() {
     setResult(null)
     
     try {
-      const response = await makeApiRequest('/api/generate', {
+      const response = await fetch('/api/generate/complete', {
         method: 'POST',
         headers: {
           'X-API-Key': API_KEY,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          name: cvData.name,
-          title: cvData.title,
+          personalInfo: {
+            name: cvData.name,
+            title: cvData.title,
+            email: 'test@example.com'
+          },
           template: cvData.template,
           format: cvData.format
         })

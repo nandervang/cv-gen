@@ -1,309 +1,157 @@
-# CV Generation System
+# CV Generation API
 
-A production-ready CV generation system built with Netlify Functions (serverless) backend and React frontend. Generate professional CVs in multiple formats (HTML, PDF, DOCX) using Puppeteer for high-quality PDF generation, ## 🔒 Security
+A production-ready backend API for generating professional CVs with multiple templates and formats. Built with Netlify Functions for serverless deployment.
 
-### Security Features
+## 🎯 **Architecture**
 
-- **Serverless isolation**: Each function execution is isolated
-- **Input validation**: Comprehensive request validation
-- **CORS protection**: Configurable cross-origin policies
-- **Rate limiting**: Built-in Netlify Function limits
-- **Secure headers**: Security headers for all responses
+**Backend-First Design**: This is primarily a backend API system designed for integration with external applications. The included frontend is for testing and development only.
 
-### Best Practices
+**Production Use**: 
+- Backend API integrated into consultant management dashboards
+- Standalone API for custom applications  
+- RESTful endpoints with comprehensive documentation
 
-- **Environment variables**: Store sensitive data in Netlify environment variables
-- **HTTPS enforcement**: Automatic HTTPS with Netlify
-- **Input sanitization**: All user inputs are validated and sanitized
-- **Function timeouts**: Prevent long-running executions
-- **Error handling**: Secure error messages without sensitive informatione templates and comprehensive batch testing capabilities.
+## 🚀 **Quick Start**
 
-## 🚀 Quick Start
+### Prerequisites
+- Node.js 18+
+- Netlify CLI (for deployment)
+
+### Setup
 
 ```bash
-# Clone and install
-git clone https://github.com/your-username/cv-gen.git
+git clone https://github.com/nandervang/cv-gen.git
 cd cv-gen
 npm install
 
-# Start development server
+# Start development
 npm run dev
 
-# For local API testing (Express fallback)
-npm run dev:full
-
-# Test at http://localhost:5173 (frontend) and http://localhost:3001 (API)
+# Access testing UI: http://localhost:5173
 ```
 
-## 🎯 Features
-
-### Templates & Formats
-
-- **4 Professional Templates**: Frank Digital, Modern, Classic, Creative
-- **3 Output Formats**: HTML, PDF, DOCX
-- **Template Customization**: 12 color schemes, 6 fonts, spacing options
-- **Preview System**: Generate template previews with sample data
-
-### Serverless Architecture
-
-- **Netlify Functions**: Serverless API with automatic scaling
-- **Puppeteer PDF Generation**: High-quality PDF creation using headless Chrome
-- **Stateless Design**: No database dependencies for generation
-- **Rate Limiting**: Production-ready with development-optimized limits
-- **Comprehensive Error Handling**: Structured error responses
-- **Type Safety**: Full TypeScript implementation
-
-### Testing & Development
-
-- **React Testing Interface**: Visual template gallery and generation testing
-- **Batch Testing**: Test all 12 template/format combinations simultaneously
-- **Real-time Results**: Download links and status indicators
-- **Contract Tests**: Comprehensive API endpoint testing
-
-## 📚 Documentation
-
-### Getting Started
-
-- **[Quick Setup Guide](docs/quick-setup.md)** - Get running in 5 minutes
-- **[Complete Documentation](docs/README.md)** - Full system documentation
-- **[API Specification](docs/api-specification.md)** - Detailed API reference
-
-### Integration & Deployment
-
-- **[Consultant Dashboard Integration](docs/consultant-dashboard-integration.md)** - Step-by-step integration guide
-- **[Deployment Guide](docs/deployment-guide.md)** - Production deployment instructions
-
-## 🏗️ Architecture
-
-### Serverless Backend (Netlify Functions)
-
-- **API Endpoints**: Templates, generation, customization, batch, preview
-- **Document Generation**: Puppeteer for PDF, custom engine for HTML/DOCX
-- **Security**: Rate limiting, CORS, input validation
-- **Performance**: Optimized for serverless with @sparticuz/chromium
-
-### Frontend (React + Vite - Port 5173)
-
-- **Testing Interface**: Comprehensive UI for API validation
-- **Component Library**: shadcn/ui with Tailwind CSS
-- **Template Gallery**: Visual template selection and customization
-- **Batch Testing**: Multi-format and multi-template testing
-
-## � Documentation
-
-### Getting Started
-- **[Quick Setup Guide](docs/quick-setup.md)** - Get running in 5 minutes
-- **[Complete Documentation](docs/README.md)** - Full system documentation
-- **[API Specification](docs/api-specification.md)** - Detailed API reference
-
-### Integration & Deployment  
-- **[Consultant Dashboard Integration](docs/consultant-dashboard-integration.md)** - Step-by-step integration guide
-- **[Deployment Guide](docs/deployment-guide.md)** - Production deployment instructions
-
-## 🏗️ Architecture
-
-### Backend (Express + TypeScript - Port 3001)
-- **API Endpoints**: Templates, generation, customization, batch, preview
-- **Document Generation**: Puppeteer for PDF, custom engine for HTML/DOCX
-- **Security**: API key authentication, CORS, rate limiting, Helmet
-- **Performance**: Clustering, memory optimization, efficient processing
-
-### Frontend (React + Vite - Port 5173)
-- **Testing Interface**: Comprehensive UI for API validation
-- **Component Library**: shadcn/ui with Tailwind CSS
-- **Template Gallery**: Visual template selection and customization
-- **Batch Testing**: Multi-format and multi-template testing
-
-## 🛠️ Development
-
-### Scripts
+### Production Build
 
 ```bash
-npm run dev              # Start frontend (Vite dev server)
-npm run dev:api          # Start Express API fallback (port 3001)
-npm run dev:full         # Start both frontend and API
-npm run build            # Build for production (includes Netlify Functions)
-npm run build:functions  # Build Netlify Functions only
-npm run test             # Run all tests
-npm run test:contract    # Run API contract tests
-npm run lint             # Lint code
-```
-
-### API Usage Example
-
-```javascript
-// Generate CV with Netlify Functions (production)
-const response = await fetch('/.netlify/functions/api', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    personalInfo: {
-      name: 'John Doe',
-      title: 'Senior Developer', 
-      email: 'john@example.com'
-    },
-    summary: {
-      introduction: 'Experienced full-stack developer...'
-    },
-    template: 'frank-digital',
-    format: 'pdf'
-  })
-});
-
-const result = await response.json();
-console.log('Generated CV:', result.fileUrl);
-```
-
-## 🎨 Available Templates
-
-### Frank Digital
-- **Type**: Corporate/Professional
-- **Best For**: Digital agencies, tech companies
-- **Features**: Clean layout, skills matrix, project showcase
-
-### Modern Professional  
-- **Type**: Modern/Minimalist
-- **Best For**: Tech professionals, startups
-- **Features**: Modern typography, clean sections, tech focus
-
-### Classic Executive
-- **Type**: Traditional/Executive  
-- **Best For**: Senior positions, traditional industries
-- **Features**: Professional layout, executive summary, formal style
-
-### Creative Portfolio
-- **Type**: Creative/Design
-- **Best For**: Designers, creative professionals
-- **Features**: Visual elements, portfolio sections, creative layout
-
-## 🔧 Configuration
-
-### Environment Variables
-
-```bash
-# Development
-NODE_ENV=development
-PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-
-# Production (Netlify)
-NODE_ENV=production
-PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-```
-
-### Netlify Configuration
-
-The system is optimized for Netlify deployment with:
-
-- **Functions**: `netlify/functions/` directory for serverless functions
-- **Build**: Optimized bundling with esbuild for Puppeteer
-- **Chromium**: Uses `@sparticuz/chromium` for serverless PDF generation
-- **Redirects**: API routes redirect to Netlify Functions
-
-### Rate Limiting
-
-- **Development**: Minimal limits for testing
-- **Production**: Configured per Netlify Function execution limits
-
-## 🧪 Testing
-
-### Available Tests
-```bash
-npm run test:contract     # API contract tests
-npm run test:integration  # Integration tests
-npm run test:watch       # Watch mode
-```
-
-### Manual Testing
-1. **Frontend**: Visit http://localhost:5173 for interactive testing
-2. **API**: Use curl or Postman with provided examples
-3. **Batch Testing**: Use frontend's batch tester for comprehensive validation
-
-## 🚀 Deployment
-
-### Netlify Deployment
-
-The system is designed for seamless Netlify deployment:
-
-```bash
-# 1. Build the project
 npm run build
-
-# 2. Deploy to Netlify (automatically handles functions)
-# Connect your GitHub repo to Netlify for automatic deployments
 ```
 
-### Production Checklist
+### Deploy to Netlify
 
-- [ ] Connect GitHub repository to Netlify
-- [ ] Set environment variables in Netlify dashboard
-- [ ] Configure custom domain (optional)
-- [ ] Test all Netlify Functions endpoints
-- [ ] Verify PDF generation works in production
-- [ ] Monitor function execution times and memory usage
+```bash
+netlify deploy --prod
+```
 
-See the [Deployment Guide](docs/deployment-guide.md) for detailed instructions.
+## 📊 **Featured Template: Andervang Consulting**
 
-## 📊 Performance
+Our flagship template with distinctive design elements:
 
-### Expected Performance
+- **Design**: Apple-inspired clean aesthetics
+- **Color System**: Dark blue primary (#003D82) with orange accents (#FF6B35) 
+- **Employment Sections**: Distinctive orange gradient backgrounds
+- **Visual Elements**: Section dividers, hover effects, interactive elements
+- **Accessibility**: WCAG AA compliant
+- **Content Density**: Optimized for comprehensive information
 
-- **CV Generation**: 5-15 seconds per PDF (includes Chromium initialization)
-- **Batch Operations**: 30-90 seconds for all formats (serverless limitations)
-- **Frontend Response**: <100ms for non-generation endpoints
-- **Function Cold Start**: 2-5 seconds (Puppeteer initialization)
+## 🔧 **API Endpoints**
 
-### Serverless Optimizations
+### Core Generation
 
-- **@sparticuz/chromium**: Optimized Chromium for serverless environments
-- **Efficient bundling**: esbuild configuration for Netlify Functions
-- **Memory management**: Automatic cleanup after PDF generation
-- **Template caching**: Optimized HTML generation with minimal DOM manipulation
+```bash
+# Health Check
+GET /.netlify/functions/health
 
-## � Security
+# Generate CV
+POST /.netlify/functions/api
+Content-Type: application/json
 
-### Security Features
-- API key authentication
-- CORS protection
-- Rate limiting
-- Security headers (Helmet)
-- Input validation and sanitization
-- Secure file storage with signed URLs
+{
+  "personalInfo": {
+    "name": "John Doe",
+    "title": "Senior Developer",
+    "email": "john@example.com"
+  },
+  "template": "andervang-consulting",
+  "format": "pdf"
+}
+```
 
-### Best Practices
-- Store API keys securely
-- Use HTTPS in production
-- Validate all user inputs
-- Monitor for unusual usage patterns
-- Implement proper error handling
+### Response
 
-## 🤝 Contributing
+```json
+{
+  "success": true,
+  "data": {
+    "fileUrl": "data:application/pdf;base64,JVBERi0x...",
+    "format": "pdf",
+    "template": "andervang-consulting",
+    "generatedAt": "2025-10-13T12:00:00Z"
+  }
+}
+```
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
+## 📖 **Documentation**
 
-## 📄 License
+- **[API Specification](docs/api-specification.md)** - Complete API reference
+- **[Integration Guide](docs/consultant-dashboard-integration.md)** - External app integration
+- **[Project Recommendations](docs/project-recommendations.md)** - Future development roadmap
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## 🏗️ **Technical Stack**
 
-## 🆘 Support
+### Backend (Netlify Functions)
+- **Runtime**: Node.js serverless functions
+- **Document Generation**: Puppeteer for PDF, custom HTML/DOCX
+- **Templates**: Modular template system with full customization
+- **Security**: CORS headers, input validation
 
-### Common Issues
-- **Port conflicts**: Use `pkill -f "tsx"` and `pkill -f "vite"` to clean up
-- **Puppeteer issues**: Install Chrome dependencies (see quick setup guide)
-- **Memory issues**: Monitor with `npm run dev:api` and restart if needed
+### Testing Frontend (Development Only)
+- **Framework**: React + Vite + TypeScript
+- **UI**: shadcn/ui components
+- **Purpose**: API validation and development testing
+- **Scope**: Not for production - external apps handle UI
 
-### Getting Help
-1. Check the [Quick Setup Guide](docs/quick-setup.md)
-2. Review [API Specification](docs/api-specification.md)
-3. See [Integration Guide](docs/consultant-dashboard-integration.md)
-4. Open an issue for bugs or feature requests
+## 🧪 **Testing**
+
+```bash
+# Run API tests
+npm test
+
+# Lint code
+npm run lint
+```
+
+## 🚢 **Production Integration**
+
+This API is designed to integrate with external consultant management systems. See the [Integration Guide](docs/consultant-dashboard-integration.md) for:
+
+- Complete payload structure
+- Data transformation examples
+- React component implementations
+- Error handling patterns
+- Production deployment strategies
+
+## 📁 **Project Structure**
+
+```
+├── netlify/functions/     # Serverless API functions
+│   ├── api.js            # Main CV generation endpoint
+│   └── health.js         # Health check endpoint
+├── src/                  # Testing frontend (dev only)
+│   ├── components/       # React testing components
+│   └── lib/              # Utility functions
+├── docs/                 # Comprehensive documentation
+└── tests/                # API contract tests
+```
+
+## 🔑 **Key Features**
+
+- **Multi-format Export**: PDF, HTML, DOCX
+- **Template System**: Multiple professional templates
+- **Serverless Architecture**: Scales automatically
+- **Type Safety**: Full TypeScript implementation
+- **Comprehensive Testing**: API contract validation
+- **Production Ready**: Security, error handling, documentation
 
 ---
 
-**Ready to generate professional CVs?** Start with the [Quick Setup Guide](docs/quick-setup.md) and have the system running in 5 minutes!
+**Note**: This is a backend API system. The React frontend is minimal and intended for development/testing only. Production applications should integrate with the API endpoints directly.

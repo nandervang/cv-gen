@@ -1,38 +1,39 @@
-# Consultant Dashboard Integration Guide
+# CV Generation Backend API Integration Guide
 
 ## Overview
 
-This guide provides step-by-step instructions for integrating the CV Generation System into your consultant dashboard application. The system uses Netlify Functions for serverless PDF generation with Puppeteer, providing high-quality CV generation directly from consultant profile data.
+This guide provides step-by-step instructions for integrating the CV Generation Backend API into your consultant dashboard application. The system provides a robust REST API for high-quality CV generation with multiple templates including the featured **Andervang Consulting** template.
 
 ## Prerequisites
 
-- CV Generation System deployed on Netlify (or local development setup)
-- Basic understanding of HTTP requests and serverless functions
-- Frontend framework (React, Vue, Angular, etc.)
-- Understanding of async operations (PDF generation can take 5-15 seconds)
+- CV Generation Backend API deployed (or local development setup)
+- Basic understanding of REST APIs and HTTP authentication
+- Frontend framework (React, Vue, Angular, etc.) 
+- Understanding of async operations (CV generation can take 3-8 seconds)
+- API key for authentication
 
 ## Integration Steps
 
 ### 1. Environment Configuration
 
-First, configure your environment variables:
+Configure your environment variables for the CV Generation Backend API:
 
 ```javascript
 // .env or environment configuration
 const CV_API_CONFIG = {
-  // Production: Your Netlify site URL
-  baseUrl: process.env.CV_API_URL || 'https://your-cv-app.netlify.app',
-  // Development: Local dev server
-  // baseUrl: process.env.CV_API_URL || 'http://localhost:5173',
+  // Production: Your deployed backend API
+  baseUrl: process.env.CV_API_URL || 'https://your-cv-api.herokuapp.com',
+  // Development: Local backend server
+  // baseUrl: process.env.CV_API_URL || 'http://localhost:3001',
   
-  // No API key needed for Netlify Functions
-  timeout: 45000 // 45 seconds for PDF generation (includes cold start)
+  apiKey: process.env.CV_API_KEY || 'your-secure-api-key',
+  timeout: 30000 // 30 seconds for CV generation
 };
 ```
 
 ### 2. API Client Setup
 
-Create a dedicated API client for CV generation with Netlify Functions:
+Create a dedicated API client for the CV Generation Backend:
 
 ```javascript
 // services/cvGenerationAPI.js
@@ -40,6 +41,7 @@ Create a dedicated API client for CV generation with Netlify Functions:
 class CVGenerationAPI {
   constructor(config) {
     this.baseUrl = config.baseUrl;
+    this.apiKey = config.apiKey;
     this.timeout = config.timeout;
   }
 
@@ -49,9 +51,9 @@ class CVGenerationAPI {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'X-API-Key': this.apiKey,
         ...options.headers
       },
-      // No API key needed for Netlify Functions
       timeout: this.timeout,
       ...options
     };
@@ -76,9 +78,14 @@ class CVGenerationAPI {
     return this.makeRequest('/health');
   }
 
+  // List available templates
+  async getTemplates() {
+    return this.makeRequest('/api/templates');
+  }
+
   // Generate CV (single format)
   async generateCV(cvData) {
-    return this.makeRequest('/.netlify/functions/api', {
+    return this.makeRequest('/api/generate', {
       method: 'POST',
       body: JSON.stringify(cvData)
     });
@@ -86,15 +93,26 @@ class CVGenerationAPI {
 
   // Generate all formats (batch)
   async generateAllFormats(cvData) {
-    return this.makeRequest('/.netlify/functions/batch-generate', {
+    return this.makeRequest('/api/batch/formats', {
       method: 'POST',
       body: JSON.stringify(cvData)
     });
   }
 
-  // Test endpoint for development
-  async testGeneration() {
-    return this.makeRequest('/test');
+  // Generate with all templates and formats
+  async generateComprehensive(cvData) {
+    return this.makeRequest('/api/batch/comprehensive', {
+      method: 'POST',
+      body: JSON.stringify(cvData)
+    });
+  }
+
+  // Generate template preview
+  async generatePreview(templateId, options = {}) {
+    return this.makeRequest('/api/preview/template', {
+      method: 'POST',
+      body: JSON.stringify({ templateId, ...options })
+    });
   }
 }
 
@@ -110,7 +128,7 @@ Transform your consultant profile data to match the CV API format:
 ```javascript
 // utils/dataTransformer.js
 
-export function transformConsultantToCV(consultantProfile) {
+export function transformConsultantToCV(consultantProfile, template = 'andervang-consulting') {
   return {
     personalInfo: {
       name: `${consultantProfile.firstName} ${consultantProfile.lastName}`,
@@ -123,13 +141,17 @@ export function transformConsultantToCV(consultantProfile) {
       website: consultantProfile.website
     },
     
+    // Company name for Andervang Consulting template
+    company: consultantProfile.companyName || 'Andervang Consulting',
+    
     summary: {
       introduction: consultantProfile.summary || consultantProfile.bio,
       keyStrengths: consultantProfile.skills?.slice(0, 5) || [],
       careerObjective: consultantProfile.careerGoals
     },
     
-    experience: consultantProfile.workExperience?.map(exp => ({
+    // Enhanced employment section for Andervang Consulting template
+    employment: consultantProfile.workExperience?.map(exp => ({
       company: exp.company,
       position: exp.position,
       period: `${exp.startDate} - ${exp.endDate || 'Present'}`,

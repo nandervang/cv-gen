@@ -20,14 +20,11 @@ export function getApiConfig(): ApiConfig {
     const currentHost = window.location.hostname;
     
     if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
-      // Local development
-      baseUrl = 'http://localhost:3001';
-    } else if (currentHost.includes('netlify.app') || currentHost.includes('netlify.com')) {
-      // Netlify deployment - use current domain for functions
-      baseUrl = `${window.location.protocol}//${window.location.host}`;
+      // Local development - point to Netlify Functions
+      baseUrl = `${window.location.protocol}//${window.location.host}/.netlify/functions`;
     } else {
-      // Production or other deployment
-      baseUrl = `${window.location.protocol}//${window.location.host}`;
+      // Production deployment - use current domain for Netlify Functions
+      baseUrl = `${window.location.protocol}//${window.location.host}/.netlify/functions`;
     }
   }
   

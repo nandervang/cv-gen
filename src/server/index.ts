@@ -1,176 +1,174 @@
 import express from 'express'
 import cors from 'cors'
-import helmet from 'helmet'
-import morgan from 'morgan'
-import rateLimit from 'express-rate-limit'
-import { apiKeyAuth } from './middleware/auth'
-import { templateRoutes } from './routes/templateRoutes'
-import { generateRoutes } from './routes/generateRoutes'
-import { customizationRoutes } from './routes/customizationRoutes'
-import { previewRoutes } from './routes/previewRoutes'
-import { batchRoutes } from './routes/batchRoutes'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { cvGenerationService } from './services/CVGenerationService.js'
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express()
 const PORT = process.env.PORT || 3001
 
-// Security middleware
-app.use(helmet({
-  contentSecurityPolicy: false // Allow inline styles for generated CVs
-}))
+app.use(cors())
+app.use(express.json({ limit: '10mb' }))
 
-// CORS configuration for external frontend access
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || true, // Allow all origins in development
-  credentials: false, // No cookies needed for stateless API
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'X-API-Key']
-}))
-
-// Logging middleware
-app.use(morgan('combined'))
-
-// Body parsing middleware
-app.use(express.json({ limit: '1mb' })) // Smaller limit for simple payloads
-app.use(express.urlencoded({ extended: true, limit: '1mb' }))
-
-// Rate limiting for general API access (relaxed for development)
-const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // increased limit for development
-  message: {
-    success: false,
-    error: {
-      code: 'RATE_LIMIT_EXCEEDED',
-      message: 'Too many requests, please try again later'
-    },
-    timestamp: new Date().toISOString()
-  },
-  standardHeaders: true,
-  legacyHeaders: false
-})
-
-// Rate limiting for generation endpoints (relaxed for development)
-const generateLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute (reduced window)
-  max: 50, // increased limit for batch testing
-  message: {
-    success: false,
-    error: {
-      code: 'GENERATION_RATE_LIMIT',
-      message: 'Too many generation requests, please try again later'
-    },
-    timestamp: new Date().toISOString()
-  },
-  standardHeaders: true,
-  legacyHeaders: false
-})
-
-// Apply general rate limiting to all routes
-app.use(generalLimiter)
-
-// Health check endpoint (no authentication required)
-app.get('/health', (_req, res) => {
+app.get('/health', (req: any, res: any) => {
   res.json({
     success: true,
     message: 'CV Generation API is running',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0',
-    status: {
-      server: 'healthy',
-      puppeteer: 'ready',
-      templates: 'loaded'
+    timestamp: new Date().toISOString()
+  })
+})
+
+app.get('/api/templates', (req: any, res: any) => {
+  const templates = [
+    {
+      id: 'andervang-consulting',
+      name: 'Andervang Consulting',
+      description: 'Professional template with Apple-inspired design and orange accent colors',
+      category: 'professional',
+      features: ['PDF Export', 'HTML Export', 'Professional Layout', 'Orange Accents']
     }
-  })
-})
-
-// API Routes with authentication
-app.use('/api/templates', apiKeyAuth, templateRoutes)
-app.use('/api/customization', apiKeyAuth, customizationRoutes)
-app.use('/api/preview', apiKeyAuth, previewRoutes)
-app.use('/api/batch', apiKeyAuth, generateLimiter, batchRoutes)
-app.use('/api/generate', apiKeyAuth, generateLimiter, (req, _res, next) => {
-  console.log('DEBUG: /api/generate route hit:', { method: req.method, body: req.body })
-  next()
-}, generateRoutes)
-
-// Global error handling middleware
-app.use((err: Error & { status?: number; code?: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('API Error:', {
-    message: err.message,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-    timestamp: new Date().toISOString()
-  })
+  ]
   
-  // Don't expose internal errors in production
-  const isProduction = process.env.NODE_ENV === 'production'
-  
-  res.status(err.status || 500).json({
-    success: false,
-    error: {
-      code: err.code || 'INTERNAL_SERVER_ERROR',
-      message: isProduction && !err.status ? 'An unexpected error occurred' : err.message
-    },
-    timestamp: new Date().toISOString()
+  res.json({
+    success: true,
+    data: templates,
+    count: templates.length
   })
 })
 
-// 404 handler for unmatched routes
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    error: {
-      code: 'NOT_FOUND',
-      message: `Endpoint ${req.method} ${req.originalUrl} not found`
-    },
-    timestamp: new Date().toISOString()
-  })
-})
-
-export function startAPIServer() {
-  return new Promise<void>((resolve) => {
-    const server = app.listen(PORT, () => {
-      console.log(`🚀 CV Generation API server running on port ${PORT}`)
-      console.log(`📖 Health check: http://localhost:${PORT}/health`)
-      console.log(`🎯 API Base URL: http://localhost:${PORT}/api`)
-      console.log(`🔑 API Key: ${process.env.CV_API_KEY || 'dev-api-key-12345'}`)
-      console.log(`📋 Available endpoints:`)
-      console.log(`   GET  /api/templates - List available CV templates`)
-      console.log(`   POST /api/generate  - Generate CV from payload`)
-      resolve()
-    })
+// Download endpoint for generated files
+app.get('/api/download/:filename', (req: any, res: any) => {
+  try {
+    const filename = req.params.filename;
+    const filepath = path.join(__dirname, '../downloads', filename);
     
-    // Keep server running until explicitly stopped
-    return server
-  })
-}
+    // Security: Only allow PDF files and prevent directory traversal
+    if (!filename.endsWith('.pdf') || filename.includes('..')) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid file request'
+      });
+    }
 
-export { app }
+    res.download(filepath, filename, (err) => {
+      if (err) {
+        console.error('Download error:', err);
+        res.status(404).json({
+          success: false,
+          error: 'File not found'
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Download endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Download failed'
+    });
+  }
+})
 
-// Only start the server if we're not in test mode
-const isTest = process.env.NODE_ENV === 'test'
+// Test endpoint with full CV data - now uses frontend data!
+app.post('/api/generate-real', async (req: any, res: any) => {
+  try {
+    console.log('🎯 Generating CV with uploaded data...')
+    
+    const format = req.body.format || 'pdf';
+    const templateId = req.body.template || 'andervang-consulting';
+    
+    // Use the CV data sent from frontend (including uploaded image!)
+    const cvData = {
+      ...req.body, // This includes all the data from the frontend
+      template: templateId,
+      format: format
+    };
 
-// Start the server if this file is run directly and not in test mode
-if (!isTest) {
-  console.log('🔧 Starting stateless CV generation server...')
-  
-  // Keep the process alive and handle graceful shutdown
-  startAPIServer()
-    .then(() => {
-      console.log('✅ Server started successfully')
+    // Log image upload status
+    const hasProfileImage = !!cvData.personalInfo?.profileImage;
+    const imageSize = hasProfileImage ? 
+      `${(cvData.personalInfo.profileImage.length / 1024).toFixed(1)} KB` : 
+      'No image';
+    
+    console.log('📊 CV Data received:', {
+      name: cvData.personalInfo?.name,
+      hasProfileImage,
+      imageSize,
+      template: templateId,
+      format: format
+    });
+    
+    // If requesting PDF, generate and send directly as download
+    if (format === 'pdf') {
+      await cvGenerationService.generatePDFDirectWithData(res, cvData, templateId);
+      return; // Response already sent by generatePDFDirectWithData
+    }
+    
+    console.log('🎨 Generating CV with user data...')
+    const result = await cvGenerationService.generateCV(cvData, templateId, format)
+    
+    res.json(result)
+  } catch (error) {
+    console.error('❌ CV generation error:', error)
+    res.status(500).json({
+      success: false,
+      error: 'CV generation failed',
+      message: error instanceof Error ? error.message : 'Unknown error'
     })
-    .catch((error) => {
-      console.error('❌ Failed to start server:', error)
-      process.exit(1)
+  }
+})
+
+app.post('/api/generate', async (req: any, res: any) => {
+  try {
+    console.log('🎯 CV generation request received')
+    const { templateId = 'andervang-consulting', format = 'pdf', ...cvData } = req.body
+    
+    if (!cvData.personalInfo?.name) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid CV data: personalInfo.name is required'
+      })
+    }
+
+    console.log(`🎨 Generating CV: template=${templateId}, format=${format}`)
+    const result = await cvGenerationService.generateCV(cvData, templateId, format)
+    
+    res.json(result)
+  } catch (error) {
+    console.error('❌ Generation error:', error)
+    res.status(500).json({
+      success: false,
+      error: 'CV generation failed'
     })
-  
-  // Handle graceful shutdown
-  process.on('SIGTERM', () => {
-    console.log('🛑 Received SIGTERM signal, shutting down gracefully...')
+  }
+})
+
+const server = app.listen(PORT, () => {
+  console.log('🚀 CV Generation API server running on port', PORT)
+  console.log('📖 Health check: http://localhost:' + PORT + '/health')
+  console.log('🎯 Templates: http://localhost:' + PORT + '/api/templates')
+})
+
+// Handle server errors
+server.on('error', (error: Error) => {
+  console.error('❌ Server error:', error)
+})
+
+// Handle process termination gracefully
+process.on('SIGINT', () => {
+  console.log('\n🛑 Shutting down server...')
+  server.close(() => {
+    console.log('✅ Server closed')
     process.exit(0)
   })
-  
-  process.on('SIGINT', () => {
-    console.log('🛑 Received SIGINT signal, shutting down gracefully...')
+})
+
+process.on('SIGTERM', () => {
+  console.log('\n🛑 Server terminated')
+  server.close(() => {
+    console.log('✅ Server closed')
     process.exit(0)
   })
-}
+})

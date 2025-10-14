@@ -15,16 +15,13 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Proxy API requests to the Express server
       '/api': {
         target: 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false,
+        changeOrigin: true
       },
       '/health': {
         target: 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false,
+        changeOrigin: true
       }
     }
   },

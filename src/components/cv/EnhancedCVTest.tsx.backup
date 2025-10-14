@@ -1,0 +1,109 @@
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+const niklasAndervangMockData = {
+  personalInfo: {
+    name: "Niklas Andervang",
+    title: "Senior front-end/fullstack utvecklare & tillgänglighetsexpert",
+    email: "niklas.andervang@frankdigital.se",
+    phone: "+46702441323",
+    location: "Stockholm, Sverige",
+    profilePhoto: ""
+  },
+  summary: {
+    introduction: "Niklas är en senior frontend/fullstack utvecklare som är bred med sin kompetens och kan röra sig i flera roller."
+  },
+  template: "frank-digital",
+  format: "pdf"
+};
+
+export default function EnhancedCVTest() {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [result, setResult] = useState<string>('');
+  const [customData, setCustomData] = useState(niklasAndervangMockData);
+
+  const updatePersonalInfo = (field: string, value: string) => {
+    setCustomData((prev) => ({
+      ...prev,
+      personalInfo: {
+        ...prev.personalInfo,
+        [field]: value
+      }
+    }));
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64 = e.target?.result as string;
+        updatePersonalInfo('profilePhoto', base64);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Enhanced CV Generator Test - Niklas Andervang</CardTitle>
+          <CardDescription>
+            Test CV generation with profile photo support
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                value={customData.personalInfo.name}
+                onChange={(e) => updatePersonalInfo('name', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="profilePhoto">Profile Photo</Label>
+              <div className="flex items-center space-x-4">
+                <Input
+                  id="profilePhoto"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="flex-1"
+                />
+                {customData.personalInfo.profilePhoto && (
+                  <div className="flex items-center space-x-2">
+                    <img 
+                      src={customData.personalInfo.profilePhoto} 
+                      alt="Profile preview" 
+                      className="w-12 h-12 rounded-full object-cover border border-gray-300"
+                    />
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => updatePersonalInfo('profilePhoto', '')}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">CV Data Summary:</h3>
+            <ul className="text-sm space-y-1">
+              <li>• Profile photo: {customData.personalInfo.profilePhoto ? '✅ Uploaded' : '❌ Not uploaded'}</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

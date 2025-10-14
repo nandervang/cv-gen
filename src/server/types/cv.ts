@@ -6,6 +6,30 @@ export interface SimpleCVData {
   format?: 'pdf' | 'docx' | 'html'; // Optional: Output format (defaults to 'pdf')
 }
 
+// Extended CV Data with additional fields for Andervang Consulting
+export interface ExtendedCVData extends CompleteCVData {
+  company?: string;                  // "Andervang Consulting"
+  
+  // Courses and continuing education
+  courses?: {
+    name: string;                    // "Course name"
+    provider: string;                // "Course provider"
+    completionDate: string;          // "2023"
+    description?: string;            // Additional details
+  }[];
+
+  // Closing section
+  closing?: {
+    text: string;                    // Closing statement
+    contact: {
+      email: string;
+      phone: string;
+      location: string;
+      company: string;
+    };
+  };
+}
+
 // Enhanced CV Data Structure for comprehensive CV generation
 export interface CompleteCVData {
   // Basic Information (Required)
@@ -83,7 +107,7 @@ export interface CompleteCVData {
   }[];
 
   // Template and Format Options
-  template?: 'frank-digital' | 'modern' | 'classic' | 'creative' | 'technical';
+  template?: 'frank-digital' | 'andervang-consulting' | 'modern' | 'classic' | 'creative' | 'technical';
   format?: 'pdf' | 'docx' | 'html';
   
   // Styling Options
@@ -106,12 +130,21 @@ export interface CVGenerationRequest extends SimpleCVData {
 
 export interface CVGenerationResult {
   success: boolean;
-  data?: string; // Base64 data URL
+  data?: string | {
+    fileUrl?: string;
+    format?: string;
+    template?: string;
+    generatedAt?: string;
+    filename?: string;
+    size?: number;
+  }; // Download URL, base64 data URL, or structured data
   error?: string;
   metadata?: {
     templateId: string;
     format: string;
     generatedAt: string;
+    filename?: string;
+    size?: number;
   };
 }
 

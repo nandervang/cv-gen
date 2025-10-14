@@ -4,24 +4,17 @@
     "module": "CommonJS",
     "target": "ES2020",
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
-    "outDir": "./dist",
-    "rootDir": "./src"
+    "allowSyntheticDefaultImports": true,
+    "outDir": "./dist/server",
+    "rootDir": "./src/server",
+    "types": ["node"]
   },
   "include": [
-    "src/server/**/*",
-    "src/api/**/*",
-    "src/lib/**/*"
+    "src/server/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    "src/components",
-    "src/templates"
+    "dist"
   ]
 }

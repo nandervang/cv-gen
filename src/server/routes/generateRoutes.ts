@@ -1,113 +1,96 @@
 import { Router } from 'express'
-import { validateCVData } from '../middleware/validation'
+import type { Request, Response } from 'express'
 import { cvGenerationService } from '../services/CVGenerationService.js'
-import type { CompleteCVData } from '../types/cv.js'
+import type { ExtendedCVData } from '../types/cv.js'
 
-const router = Router()
+export const generateRoutes = Router()
 
-// Handle method checking first
-router.use('/', (req, res, next) => {
-  if (req.method !== 'POST') {
-    return res.status(405).json({
-      success: false,
-      error: {
-        code: 'METHOD_NOT_ALLOWED',
-        message: `Method ${req.method} not allowed. Only POST is supported.`
-      },
-      timestamp: new Date().toISOString()
-    })
-  }
-  next()
-})
-
-// POST /api/generate - Generate CV file from simple payload
-router.post('/', validateCVData, async (req, res) => {
-  console.log('Generate route hit with body:', req.body)
+generateRoutes.post('/', async (req: Request, res: Response) => {
   try {
-    const { name, title, format = 'pdf', template = 'modern' } = req.body
+    console.log('🎯 CV generation request received')
+    console.log('Request body keys:', Object.keys(req.body))
     
-    // Create a simplified CompleteCVData object for basic generation
-    const cvData = {
-      personalInfo: {
-        name,
-        title,
-        email: '',
-        phone: ''
-      },
-      summary: {
-        introduction: `Professional ${title}`,
-        highlights: []
-      },
-      template,
-      format
-    }
+    const { templateId = 'andervang-consulting', format = 'pdf', ...cvData } = req.body
     
-    const fileUrl = await cvGenerationService.generateCompleteCV(cvData)
-    
-    res.status(200).json({
-      success: true,
-      data: {
-        fileUrl,
-        format,
-        template,
-        generatedAt: new Date().toISOString()
-      },
-      timestamp: new Date().toISOString()
-    })
-  } catch (error: any) {
-    console.error('Generation error:', error)
-    res.status(500).json({
-      success: false,
-      error: {
-        code: 'INTERNAL_SERVER_ERROR',
-        message: error.message || 'Failed to generate CV'
-      },
-      timestamp: new Date().toISOString()
-    })
-  }
-})
-
-// POST /api/generate/complete - Generate CV file from complete payload
-router.post('/complete', async (req, res) => {
-  console.log('Complete generate route hit with body keys:', Object.keys(req.body))
-  try {
-    const cvData = req.body as CompleteCVData
-    
-    // Basic validation for required fields
-    if (!cvData.personalInfo?.name || !cvData.personalInfo?.title) {
+    if (!cvData.personalInfo || !cvData.personalInfo.name) {
       return res.status(400).json({
         success: false,
         error: {
-          code: 'VALIDATION_ERROR',
-          message: 'personalInfo.name and personalInfo.title are required'
+          code: 'INVALID_CV_DATA',
+          message: 'Invalid CV data: personalInfo.name is required'
         },
         timestamp: new Date().toISOString()
       })
     }
-    
-    const fileUrl = await cvGenerationService.generateCompleteCV(cvData)
-    
-    res.status(200).json({
+
+    console.log(`�� Generating CV: template=${templateId}, format=${format}`)
+    console.log('CV Data preview:', {
+      name: cvData.personalInfo?.name,
+      title: cvData.personalInfo?.title,
+      company: cvData.company,
+      hasEmployment: !!cvData.employment,
+      hasProjects: !!cvData.projects
+    })
+
+    const result = await cvGenerationService.generateCV(
+      cvData as ExtendedCVData,
+      templateId,
+      format
+    )
+
+    if (!result.success) {
+      console.error('❌ CV generation failed:', result.error)
+      return res.status(500).json({
+        success: false,
+        error: {
+          code: 'GENERATION_FAILED',
+          message: result.error || 'CV generation failed'
+        },
+        timestamp: new Date().toISOString()
+      })
+    }
+
+    console.log('✅ CV generated successfully')
+    res.json({
       success: true,
-      data: {
-        fileUrl,
-        format: cvData.format || 'pdf',
-        template: cvData.template || 'frank-digital',
-        generatedAt: new Date().toISOString()
-      },
+      data: result.data,
+      metadata: result.metadata,
       timestamp: new Date().toISOString()
     })
-  } catch (error: any) {
-    console.error('Complete generation error:', error)
+
+  } catch (error) {
+    console.error('❌ Generation endpoint error:', error)
     res.status(500).json({
       success: false,
       error: {
-        code: 'INTERNAL_SERVER_ERROR',
-        message: error.message || 'Failed to generate complete CV'
+        code: 'INTERNAL_ERROR',
+        message: error instanceof Error ? error.message : 'Unknown error occurred'
       },
       timestamp: new Date().toISOString()
     })
   }
 })
 
-export { router as generateRoutes }
+generateRoutes.post('/test', async (req: Request, res: Response) => {
+  try {
+    console.log('🧪 Test CV generation requested')
+    const result = await cvGenerationService.testGeneration()
+    
+    res.json({
+      success: true,
+      data: result.data,
+      metadata: result.metadata,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    console.error('❌ Test generation error:', error)
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'TEST_GENERATION_FAILED',
+        message: error instanceof Error ? error.message : 'Test generation failed'
+      },
+      timestamp: new Date().toISOString()
+    })
+  }
+})

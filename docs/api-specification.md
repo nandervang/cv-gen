@@ -1,12 +1,26 @@
-# CV Generation API Specification
+# CV Generation Backend API Specification
 
-## Version: 1.0.0
+## Version: 2.0.0 - Andervang Consulting
 
 ### Base Information
 - **Base URL**: `http://localhost:3001` (development) / `https://your-domain.com` (production)
 - **Authentication**: API Key via `X-API-Key` header
 - **Content Type**: `application/json`
 - **Rate Limiting**: Yes (see sections below)
+- **Primary Purpose**: Backend API for integration with external consultant management systems
+
+---
+
+## Featured Template: Andervang Consulting
+
+The flagship template with Apple-inspired design and professional consulting focus:
+
+- **Design Philosophy**: Clean, modern, Apple-inspired aesthetics
+- **Color Scheme**: Dark blue primary (#003D82) with vibrant orange accents (#FF6B35)
+- **Employment Focus**: Distinctive orange gradient backgrounds for employment sections
+- **Interactive Elements**: Hover effects, transitions, and visual hierarchy
+- **Accessibility**: WCAG AA compliant with proper contrast ratios
+- **Content Density**: Optimized for comprehensive professional information
 
 ---
 
@@ -72,23 +86,30 @@ Rate limit information is included in response headers:
 **Parameters**: None
 
 **Response**:
+
 ```json
 {
   "success": true,
   "data": [
     {
-      "id": "frank-digital",
-      "name": "Frank Digital",
-      "description": "Professional template based on Frank Digital AB style",
-      "type": "corporate",
-      "industryFocus": "Digital Agencies & Tech Companies",
+      "id": "andervang-consulting",
+      "name": "Andervang Consulting",
+      "description": "Apple-inspired professional template with distinctive employment sections",
+      "type": "professional",
+      "industryFocus": "Consulting & Professional Services",
       "features": [
-        "Clean layout",
-        "Skills matrix",
-        "Project showcase"
+        "Apple-inspired design system",
+        "Orange gradient employment sections",
+        "Interactive hover effects",
+        "WCAG AA accessibility",
+        "Optimized content density"
       ],
       "isPremium": false,
-      "previewUrl": "/previews/frank-digital.jpg"
+      "colorScheme": {
+        "primary": "#003D82",
+        "accent": "#FF6B35"
+      },
+      "previewUrl": "/previews/andervang-consulting.jpg"
     },
     {
       "id": "modern",
@@ -103,9 +124,37 @@ Rate limit information is included in response headers:
       ],
       "isPremium": false,
       "previewUrl": "/previews/modern.jpg"
+    },
+    {
+      "id": "classic",
+      "name": "Classic Executive",
+      "description": "Traditional professional styling for executive positions",
+      "type": "executive",
+      "industryFocus": "Corporate & Traditional Industries",
+      "features": [
+        "Professional layout",
+        "Executive summary focus",
+        "Formal styling"
+      ],
+      "isPremium": false,
+      "previewUrl": "/previews/classic.jpg"
+    },
+    {
+      "id": "creative",
+      "name": "Creative Portfolio",
+      "description": "Design-focused template with visual elements",
+      "type": "creative",
+      "industryFocus": "Design & Creative Industries",
+      "features": [
+        "Visual elements",
+        "Portfolio sections",
+        "Creative layout"
+      ],
+      "isPremium": false,
+      "previewUrl": "/previews/creative.jpg"
     }
   ],
-  "timestamp": "2025-10-06T09:30:00.000Z"
+  "timestamp": "2025-10-13T14:00:00.000Z"
 }
 ```
 
@@ -118,82 +167,99 @@ Rate limit information is included in response headers:
 **Description**: Generate a CV in the specified format using provided data
 
 **Request Body**:
+
 ```json
 {
   "personalInfo": {
-    "name": "John Doe",
-    "title": "Senior Developer",
-    "email": "john@example.com",
+    "name": "Niklas Andervang",
+    "title": "Senior Consultant & Developer",
+    "email": "niklas@andervang.com",
     "phone": "+46 70 123 45 67",
     "location": "Stockholm, Sweden",
-    "linkedIn": "https://linkedin.com/in/johndoe",
-    "github": "https://github.com/johndoe",
-    "website": "https://johndoe.dev"
+    "linkedIn": "https://linkedin.com/in/niklasandervang",
+    "github": "https://github.com/nandervang",
+    "website": "https://andervang.com"
   },
+  "company": "Andervang Consulting",
   "summary": {
-    "introduction": "Experienced developer with 5+ years in full-stack development...",
-    "keyStrengths": ["React", "Node.js", "TypeScript", "AWS"],
-    "careerObjective": "Seeking senior technical leadership roles..."
+    "introduction": "Senior consultant and full-stack developer specializing in modern web technologies and digital transformation projects...",
+    "keyStrengths": ["React", "Node.js", "TypeScript", "AWS", "System Architecture"],
+    "careerObjective": "Driving digital innovation through technical leadership and strategic consulting..."
   },
-  "experience": [
+  "employment": [
+    {
+      "company": "Andervang Consulting",
+      "position": "Founder & Senior Consultant",
+      "period": "2024-Present",
+      "description": "Founded consulting firm specializing in full-stack development and digital transformation. Leading complex technical projects for enterprise clients.",
+      "technologies": ["React", "Node.js", "TypeScript", "AWS", "PostgreSQL"],
+      "achievements": [
+        "Delivered 15+ successful digital transformation projects",
+        "Built high-performance applications serving 100k+ users",
+        "Established consulting practice with 95% client satisfaction"
+      ]
+    },
     {
       "company": "Tech Company AB",
-      "position": "Senior Developer",
-      "period": "2020-2025",
-      "description": "Led development of scalable web applications...",
-      "technologies": ["React", "Node.js", "PostgreSQL"],
+      "position": "Senior Full-Stack Developer",
+      "period": "2020-2024",
+      "description": "Led development of scalable web applications and managed technical architecture decisions for enterprise-level systems.",
+      "technologies": ["React", "Node.js", "PostgreSQL", "Docker", "Kubernetes"],
       "achievements": [
         "Improved application performance by 40%",
-        "Led team of 5 developers"
+        "Led team of 5 developers",
+        "Architected microservices handling 1M+ requests/day"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "title": "CV Generation System",
+      "type": "Backend API Development",
+      "period": "2025",
+      "description": "Built comprehensive CV generation backend with multiple export formats and Apple-inspired template system.",
+      "technologies": ["TypeScript", "Express", "Puppeteer", "React"],
+      "achievements": [
+        "Multi-format export (HTML, PDF, DOCX)",
+        "Apple-inspired design system",
+        "Full REST API with authentication"
       ]
     }
   ],
   "education": [
     {
-      "institution": "Royal Institute of Technology",
+      "institution": "Royal Institute of Technology (KTH)",
       "degree": "Master of Science",
       "field": "Computer Science",
       "period": "2016-2018",
       "gpa": "3.8/4.0"
     }
   ],
-  "skills": [
+  "competencies": [
     {
-      "category": "Programming Languages",
-      "items": ["JavaScript", "TypeScript", "Python", "Java"]
+      "category": "Frontend Development",
+      "skills": ["React", "TypeScript", "Next.js", "Tailwind CSS", "Vue.js"]
     },
     {
-      "category": "Frameworks & Libraries",
-      "items": ["React", "Node.js", "Express", "Django"]
-    }
-  ],
-  "projects": [
+      "category": "Backend Development", 
+      "skills": ["Node.js", "Express", "PostgreSQL", "MongoDB", "Redis"]
+    },
     {
-      "name": "E-commerce Platform",
-      "description": "Full-stack e-commerce solution with React and Node.js",
-      "technologies": ["React", "Node.js", "MongoDB"],
-      "url": "https://github.com/johndoe/ecommerce"
-    }
-  ],
-  "certifications": [
-    {
-      "name": "AWS Certified Developer",
-      "issuer": "Amazon Web Services",
-      "date": "2024",
-      "credentialId": "AWS-DEV-123456"
+      "category": "Cloud & DevOps",
+      "skills": ["AWS", "Docker", "Kubernetes", "CI/CD", "Terraform"]
     }
   ],
   "languages": [
     {
-      "language": "English",
+      "language": "Swedish",
       "proficiency": "Native"
     },
     {
-      "language": "Swedish",
-      "proficiency": "Professional"
+      "language": "English", 
+      "proficiency": "Fluent"
     }
   ],
-  "template": "frank-digital",
+  "template": "andervang-consulting",
   "format": "pdf"
 }
 ```
@@ -587,8 +653,9 @@ All errors follow this structure:
 ## Available Options
 
 ### Templates
-- `frank-digital` - Professional corporate style
-- `modern` - Clean modern design for tech professionals
+
+- `andervang-consulting` - **Featured**: Apple-inspired professional consulting template
+- `modern` - Clean modern design for tech professionals  
 - `classic` - Traditional executive format
 - `creative` - Creative design for design professionals
 

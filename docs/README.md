@@ -1,25 +1,25 @@
-# CV Generation System Documentation
+# CV Generation Backend API Documentation
 
 ## Overview
 
-A production-ready CV generation system built with Node.js/Express backend and React frontend. The system provides stateless CV generation in multiple formats (HTML, PDF, DOCX) with customizable templates and comprehensive batch testing capabilities.
+A production-ready **backend API** for professional CV generation built with Node.js/Express and TypeScript. Designed primarily for integration with external consultant management systems, featuring the **Andervang Consulting** template with Apple-inspired design.
 
 ## System Architecture
 
-### Backend (Express + TypeScript - Port 3001)
-- **Stateless API Design**: No database dependencies for generation
-- **Multiple Output Formats**: HTML, PDF (via Puppeteer), DOCX
-- **Template System**: 4 professional templates with customization options
-- **Batch Processing**: Generate multiple formats/templates simultaneously
-- **Rate Limiting**: Development-optimized limits for testing
-- **Comprehensive Error Handling**: Structured error responses
+### **Primary: Backend API (Express + TypeScript - Port 3001)**
+- **Stateless API Design**: No database dependencies for CV generation
+- **Multi-Format Export**: HTML, PDF (via Puppeteer), DOCX with consistent styling
+- **Featured Template**: Andervang Consulting with Apple-inspired design system
+- **Template System**: Professional templates with extensive customization
+- **Batch Processing**: Parallel generation for multiple formats/templates
+- **Enterprise Security**: API key authentication, CORS, rate limiting
+- **Type Safety**: Full TypeScript implementation with comprehensive interfaces
 
-### Frontend (React + Vite - Port 5173)
-- **Testing Interface**: Comprehensive UI for API validation
-- **Template Gallery**: Visual template selection and preview
-- **Batch Testing**: Test all templates and formats
-- **Customization UI**: Color schemes, fonts, layouts
-- **Real-time Results**: Download links and status indicators
+### **Secondary: Testing Frontend (React + Vite - Port 5173)**  
+- **Development Purpose**: API validation and backend testing interface only
+- **Template Preview**: Visual validation of CV generation capabilities
+- **API Testing**: Comprehensive testing UI for all endpoints
+- **Not for Production**: External applications handle user interfaces
 
 ## Quick Start
 
@@ -232,26 +232,33 @@ POST /api/batch/comprehensive
 
 ## Available Templates
 
-### 1. Frank Digital
-- **ID**: `frank-digital`
-- **Type**: Corporate/Professional
-- **Best For**: Digital agencies, tech companies
-- **Features**: Clean layout, skills matrix, project showcase
+### 1. **Andervang Consulting** ⭐ **Featured**
+- **ID**: `andervang-consulting`
+- **Type**: Professional Consulting 
+- **Design**: Apple-inspired with clean, modern aesthetics
+- **Color System**: Dark blue primary (#003D82) with vibrant orange accents (#FF6B35)
+- **Best For**: Consulting professionals, senior roles, modern businesses
+- **Key Features**:
+  - Distinctive orange gradient employment sections
+  - Interactive hover effects and visual hierarchy
+  - WCAG AA compliant accessibility
+  - Optimized content density with excellent readability
+  - Section dividers and professional polish
 
 ### 2. Modern Professional
 - **ID**: `modern`
-- **Type**: Modern/Minimalist
-- **Best For**: Tech professionals, startups
+- **Type**: Tech/Minimalist
+- **Best For**: Tech professionals, startups, developers
 - **Features**: Modern typography, clean sections, tech focus
 
-### 3. Classic Executive
+### 3. Classic Executive  
 - **ID**: `classic`
 - **Type**: Traditional/Executive
 - **Best For**: Senior positions, traditional industries
 - **Features**: Professional layout, executive summary, formal style
 
 ### 4. Creative Portfolio
-- **ID**: `creative`
+- **ID**: `creative` 
 - **Type**: Creative/Design
 - **Best For**: Designers, creative professionals
 - **Features**: Visual elements, portfolio sections, creative layout

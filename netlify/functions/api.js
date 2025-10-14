@@ -3,525 +3,597 @@ const puppeteer = require('puppeteer');
 const chromium = require('@sparticuz/chromium');
 
 // Helper functions for content generation
-function generateHTMLContent(cvData) {
-  const { personalInfo, summary, projects, education, certifications, competencies, languages, skills } = cvData;
+function generateAndervangConsultingHTML(cvData) {
+  const { personalInfo, summary, employment, projects, education, certifications, competencies, languages, company, styling } = cvData;
   
+  // Use Andervang Consulting colors and styling
+  const primaryColor = styling?.primaryColor || '#003D82'; // Darker blue for better contrast
+  const orangeAccent = '#FF6B35'; // New orange accent color
+  const fontFamily = styling?.fontFamily || '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif';
+  const companyName = company || 'Andervang Consulting';
   return `<!DOCTYPE html>
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CV - ${personalInfo?.name || 'Unknown'}</title>
+    <title>${personalInfo?.name || 'Unknown'} - CV</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
-        body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-            line-height: 1.6; 
-            color: #374151; 
-            background: #ffffff;
-            font-size: 14px;
-        }
-        
-        .container {
-            max-width: 210mm;
-            margin: 0 auto;
-            background: white;
-            min-height: 297mm;
-            position: relative;
-        }
-        
-        /* Header with Frank Digital branding */
-        .frank-header {
-            position: absolute;
-            top: 0;
-            right: 0;
-            font-size: 48px;
-            font-weight: 300;
-            color: #6b7280;
-            padding: 40px 40px 20px 20px;
-            line-height: 1;
-        }
-        
-        .contact-info {
-            position: absolute;
-            top: 80px;
-            right: 40px;
-            text-align: right;
-            font-size: 12px;
-            color: #6b7280;
+
+        body {
+            font-family: ${fontFamily};
             line-height: 1.4;
-        }
-        
-        .contact-info div {
-            margin-bottom: 2px;
-        }
-        
-        /* Main content area */
-        .main-content {
-            padding: 40px;
-            padding-right: 280px;
-        }
-        
-        /* Profile section */
-        .profile-section {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 40px;
-            gap: 30px;
-        }
-        
-        .profile-image {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            object-fit: cover;
-            flex-shrink: 0;
-            background: #f3f4f6;
-            border: 3px solid #e5e7eb;
-        }
-        
-        .profile-text {
-            flex: 1;
-        }
-        
-        .name {
-            font-size: 42px;
-            font-weight: 600;
-            color: #111827;
-            margin-bottom: 8px;
-            line-height: 1.1;
-        }
-        
-        .title {
-            font-size: 18px;
-            font-weight: 500;
-            color: #6b7280;
-            margin-bottom: 20px;
-            line-height: 1.3;
-        }
-        
-        .intro-text {
-            font-size: 14px;
-            line-height: 1.6;
-            color: #4b5563;
-            margin-bottom: 20px;
-        }
-        
-        .additional-text {
-            font-size: 14px;
-            line-height: 1.6;
-            color: #4b5563;
-            margin-bottom: 20px;
-        }
-        
-        .personality-text {
-            font-size: 14px;
-            line-height: 1.6;
-            color: #4b5563;
-        }
-        
-        /* Sidebar */
-        .sidebar {
-            position: absolute;
-            top: 200px;
-            right: 40px;
-            width: 200px;
-        }
-        
-        .sidebar-section {
-            margin-bottom: 30px;
-        }
-        
-        .sidebar h3 {
-            font-size: 16px;
-            font-weight: 600;
-            color: #111827;
-            margin-bottom: 12px;
-        }
-        
-        .role-list {
-            list-style: none;
-        }
-        
-        .role-list li {
+            color: #1d1d1f;
+            background: #fafafa;
+            padding: 25px;
             font-size: 13px;
-            color: #6b7280;
-            margin-bottom: 4px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid ${primaryColor};
             position: relative;
-            padding-left: 12px;
         }
-        
-        .role-list li:before {
-            content: "•";
-            color: #a855f7;
-            position: absolute;
-            left: 0;
-            font-weight: bold;
-        }
-        
-        /* Section headings */
-        .section {
-            margin-bottom: 35px;
-        }
-        
-        .section-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #a855f7;
-            margin-bottom: 20px;
-            position: relative;
-            padding-bottom: 8px;
-        }
-        
-        .section-title:after {
+
+        .header::after {
             content: '';
             position: absolute;
-            bottom: 0;
+            bottom: -3px;
             left: 0;
-            width: 100%;
+            width: 60px;
             height: 3px;
-            background: repeating-linear-gradient(
-                to right,
-                #a855f7 0px,
-                #a855f7 8px,
-                transparent 8px,
-                transparent 16px
-            );
+            background: ${orangeAccent};
         }
-        
-        /* Project items */
-        .project-item {
+
+        .company-brand {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 4px;
+            letter-spacing: -0.2px;
+        }
+
+        .company-tagline {
+            font-size: 13px;
+            color: #86868b;
+            font-weight: 400;
+            letter-spacing: -0.05px;
+        }
+
+        .contact-info {
+            text-align: right;
+            font-size: 13px;
+            line-height: 1.3;
+            color: #1d1d1f;
+        }
+
+        .contact-info strong {
+            color: ${primaryColor};
+            font-weight: 600;
+        }
+
+        .profile-section {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 24px;
             margin-bottom: 30px;
-            page-break-inside: avoid;
+            align-items: start;
         }
-        
-        .project-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
+
+        .profile-image {
+            width: 90px;
+            height: 90px;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
         }
-        
-        .project-period {
-            font-size: 12px;
-            color: #6b7280;
-            white-space: nowrap;
-            margin-left: 20px;
+
+        .profile-content {
+            flex: 1;
         }
-        
-        .project-type {
-            font-size: 13px;
-            color: #a855f7;
-            font-weight: 500;
+
+        .profile-name {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1d1d1f;
             margin-bottom: 6px;
+            letter-spacing: -0.3px;
         }
-        
-        .project-title {
-            font-size: 18px;
+
+        .profile-title {
+            font-size: 16px;
+            color: ${primaryColor};
             font-weight: 600;
-            color: #111827;
-            margin-bottom: 12px;
-        }
-        
-        .project-description {
-            font-size: 13px;
-            line-height: 1.6;
-            color: #4b5563;
-            margin-bottom: 12px;
-        }
-        
-        .tech-stack {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 10px;
-        }
-        
-        .tech-tag {
-            background: #f3f4f6;
-            color: #374151;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 500;
-            border: 1px solid #e5e7eb;
-        }
-        
-        /* Education items */
-        .education-item {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-        
-        .education-content {
-            flex: 1;
-        }
-        
-        .education-degree {
-            font-size: 14px;
-            font-weight: 500;
-            color: #111827;
-            margin-bottom: 4px;
-        }
-        
-        .education-school {
-            font-size: 13px;
-            color: #6b7280;
-        }
-        
-        .education-period {
-            font-size: 12px;
-            color: #6b7280;
-            white-space: nowrap;
-            margin-left: 20px;
-        }
-        
-        /* Certifications */
-        .cert-item {
             margin-bottom: 16px;
+            letter-spacing: -0.1px;
+        }
+
+        .profile-intro {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #1d1d1f;
+            letter-spacing: -0.05px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 0;
+            width: 30px;
+            height: 2px;
+            background: ${orangeAccent};
+            opacity: 0.6;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: ${primaryColor};
+            margin-bottom: 12px;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, ${primaryColor}, ${orangeAccent}, transparent);
+            margin-left: 16px;
+            opacity: 0.3;
+        }
+
+        .project-item {
+            margin-bottom: 18px;
+            padding: 18px;
+            background: #ffffff;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .project-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: ${primaryColor};
+            border-radius: 10px 0 0 10px;
+        }
+
+        .employment-item {
+            margin-bottom: 22px;
+            padding: 24px;
+            background: linear-gradient(135deg, ${orangeAccent}, #E85A20);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.25);
+            color: white;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .employment-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
+        }
+
+        .employment-item::after {
+            content: '💼';
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            font-size: 24px;
+            opacity: 0.3;
+        }
+
+        .project-header, .employment-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
+            margin-bottom: 12px;
         }
-        
-        .cert-content {
-            flex: 1;
-        }
-        
-        .cert-title {
-            font-size: 13px;
+
+        .project-type {
+            font-size: 11px;
+            color: ${primaryColor};
             font-weight: 500;
-            color: #111827;
-            margin-bottom: 4px;
+            letter-spacing: -0.02px;
         }
-        
-        .cert-issuer {
+
+        .employment-position {
             font-size: 12px;
-            color: #6b7280;
-        }
-        
-        .cert-year {
-            font-size: 12px;
-            color: #6b7280;
-            white-space: nowrap;
-            margin-left: 20px;
-        }
-        
-        /* Skills sections */
-        .skills-category {
-            margin-bottom: 25px;
-        }
-        
-        .skills-category h4 {
-            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
             font-weight: 600;
-            color: #6b7280;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
-        
-        .skills-list {
+
+        .project-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 12px;
+            letter-spacing: -0.2px;
+        }
+
+        .employment-company {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+            letter-spacing: -0.2px;
+        }
+
+        .project-period, .employment-period {
+            font-size: 11px;
+            color: #86868b;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .employment-period {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .project-description, .employment-description {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #1d1d1f;
+            margin-bottom: 12px;
+        }
+
+        .employment-description {
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .technology-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
+            margin-top: 12px;
         }
-        
-        .skill-tag {
-            background: #f3f4f6;
-            color: #374151;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 11px;
+
+        .tech-tag {
+            background: rgba(255, 255, 255, 0.9);
+            color: ${primaryColor};
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
             font-weight: 500;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(0, 0, 0, 0.04);
         }
-        
-        /* Footer */
-        .footer {
+
+        .employment-item .tech-tag {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .education-item, .certification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            margin-bottom: 6px;
+            border-radius: 8px;
+            font-size: 13px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            position: relative;
+            transition: all 0.1s ease;
+        }
+
+        .education-item::before, .certification-item::before {
+            content: '';
             position: absolute;
-            bottom: 40px;
-            left: 40px;
-            right: 40px;
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: ${primaryColor};
+            border-radius: 8px 0 0 8px;
         }
-        
-        .footer-brand {
-            font-size: 24px;
-            font-weight: 300;
-            color: #6b7280;
+
+        .education-content, .certification-content {
+            flex: 1;
         }
-        
-        .page-number {
-            position: absolute;
-            bottom: 20px;
-            right: 40px;
+
+        .education-degree, .certification-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 3px;
+            letter-spacing: -0.1px;
+        }
+
+        .education-institution, .certification-issuer {
+            font-size: 11px;
+            color: #86868b;
+            letter-spacing: -0.02px;
+        }
+
+        .education-period, .certification-year {
+            font-size: 11px;
+            color: ${primaryColor};
+            font-weight: 500;
+            letter-spacing: -0.02px;
+        }
+
+        .competency-category {
+            margin-bottom: 18px;
+            position: relative;
+        }
+
+        .competency-title {
+            display: flex;
+            align-items: center;
+            font-size: 15px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 12px;
+            letter-spacing: -0.15px;
+        }
+
+        .competency-icon {
+            width: 22px;
+            height: 22px;
+            background: linear-gradient(135deg, ${primaryColor}, ${orangeAccent});
+            color: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .competency-skills {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+        }
+
+        .competency-skill {
+            padding: 6px 12px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 8px;
             font-size: 12px;
-            color: #9ca3af;
+            color: #1d1d1f;
+            font-weight: 500;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
-        
-        /* PDF-specific styles */
+
+        .languages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .language-item {
+            padding: 12px 16px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .language-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 4px;
+        }
+
+        .language-proficiency {
+            font-size: 11px;
+            color: ${primaryColor};
+            font-weight: 500;
+        }
+
+        /* Print styles */
         @media print {
             body { 
                 margin: 0; 
-                padding: 0;
+                padding: 15px;
+                font-size: 12px;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
-            .container { 
-                margin: 0; 
-                box-shadow: none;
-                min-height: auto;
+            .employment-item {
+                break-inside: avoid;
             }
-            .section { 
-                page-break-inside: avoid; 
-            }
-            .project-item { 
-                page-break-inside: avoid; 
+            .project-item {
+                break-inside: avoid;
             }
         }
-        
+
         @page {
-            margin: 0;
+            margin: 0.5in;
             size: A4;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Frank Digital Header -->
-        <div class="frank-header">Frank fam.</div>
-        
-        <!-- Contact Info -->
+    <!-- Header -->
+    <div class="header">
+        <div>
+            <div class="company-brand">${companyName}</div>
+            <div class="company-tagline">Professional Consulting Services</div>
+        </div>
         <div class="contact-info">
             <div><strong>${personalInfo?.name || 'N/A'}</strong></div>
             <div>${personalInfo?.email || ''}</div>
             <div>${personalInfo?.phone || ''}</div>
+            ${personalInfo?.location ? `<div>${personalInfo.location}</div>` : ''}
         </div>
-        
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Profile Section -->
-            <div class="profile-section">
-                <img class="profile-image" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQwIiBoZWlnaHQ9IjE0MCIgdmlld0JveD0iMCAwIDE0MCAxNDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNDAiIGhlaWdodD0iMTQwIiBmaWxsPSIjRjNGNEY2Ii8+CjxjaXJjbGUgY3g9IjcwIiBjeT0iNTUiIHI9IjIwIiBmaWxsPSIjOUNBM0FGIi8+CjxwYXRoIGQ9Ik00MCA5NUMzNCA4NSA0NSA3NSA3MCA3NUM5NSA3NSAxMDYgODUgMTAwIDk1SDQwWiIgZmlsbD0iIzlDQTNBRiIvPgo8L3N2Zz4K" alt="Profile" />
-                <div class="profile-text">
-                    <h1 class="name">${personalInfo?.name || 'N/A'}</h1>
-                    <h2 class="title">${personalInfo?.title || 'N/A'}</h2>
-                    
-                    <p class="intro-text">${summary?.introduction || ''}</p>
-                    
-                    <p class="additional-text">${summary?.keyStrengths?.[3] || 'Niklas har också ett stort intresse för analys och SEO och brinner för att skapa värde och förbättring.'}</p>
-                    
-                    <p class="personality-text">${summary?.careerObjective || 'Som person är Niklas noggrann och trivs med att ha ett brett perspektiv till saker och ting. Hans erfarenhet är bred och han har inga problem med att gå mellan olika roller och ta sig an andra uppgifter. Niklas beskrivs som ödmjuk och prestigelös och har ofta haft roller som mentor, scrummaster och teamlead.'}</p>
+    </div>
+
+    <!-- Profile Section -->
+    <div class="profile-section">
+        ${personalInfo?.profileImage ? 
+            `<img class="profile-image" src="${personalInfo.profileImage}" alt="Profile" />` : 
+            `<div class="profile-image" style="background: #f5f5f7; display: flex; align-items: center; justify-content: center; color: #86868b; font-size: 11px;">No Image</div>`
+        }
+        <div class="profile-content">
+            <h1 class="profile-name">${personalInfo?.name || 'N/A'}</h1>
+            <h2 class="profile-title">${personalInfo?.title || 'N/A'}</h2>
+            <div class="profile-intro">${summary?.introduction || ''}</div>
+        </div>
+    </div>
+
+    <!-- Employment Section (Orange gradient) -->
+    ${employment?.length ? `
+        <div class="section">
+            <h2 class="section-title">Anställningar och roller</h2>
+            ${employment.map(job => `
+                <div class="employment-item">
+                    <div class="employment-header">
+                        <div>
+                            <div class="employment-position">${job.position}</div>
+                            <div class="employment-company">${job.company}</div>
+                        </div>
+                        <div class="employment-period">${job.period}</div>
+                    </div>
+                    <div class="employment-description">${job.description}</div>
+                    ${job.technologies?.length ? `
+                        <div class="technology-tags">
+                            ${job.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+                        </div>
+                    ` : ''}
                 </div>
-            </div>
-            
-            <!-- Projects Section -->
-            ${projects?.length ? `<div class="section">
-                <h2 class="section-title">Projekt och uppdrag</h2>
-                ${projects.map(p => `<div class="project-item">
+            `).join('')}
+        </div>
+    ` : ''}
+
+    <!-- Projects Section -->
+    ${projects?.length ? `
+        <div class="section">
+            <h2 class="section-title">Projekt och uppdrag</h2>
+            ${projects.map(project => `
+                <div class="project-item">
                     <div class="project-header">
                         <div>
-                            <div class="project-period">${p.period || p.startDate || 'N/A'} ${p.endDate ? '- ' + p.endDate : '- pågående'}</div>
-                            <div class="project-type">${p.type || 'Front-end / Fullstack utvecklare'}</div>
+                            <div class="project-type">${project.type || 'Projekt'}</div>
+                            <div class="project-title">${project.title}</div>
                         </div>
+                        <div class="project-period">${project.period}</div>
                     </div>
-                    <h3 class="project-title">${p.title || p.name || 'N/A'}</h3>
-                    <p class="project-description">${p.description || ''}</p>
-                    ${p.technologies?.length ? `<div class="tech-stack">
-                        ${p.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
-                    </div>` : ''}
-                </div>`).join('')}
-            </div>` : ''}
-            
-            <!-- Education Section -->
-            ${education?.length ? `<div class="section">
-                <h2 class="section-title">Utbildning</h2>
-                ${education.map(e => `<div class="education-item">
+                    <div class="project-description">${project.description}</div>
+                    ${project.technologies?.length ? `
+                        <div class="technology-tags">
+                            ${project.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('')}
+        </div>
+    ` : ''}
+
+    <!-- Education Section -->
+    ${education?.length ? `
+        <div class="section">
+            <h2 class="section-title">Utbildning</h2>
+            ${education.map(edu => `
+                <div class="education-item">
                     <div class="education-content">
-                        <div class="education-degree">${e.degree || e.name || 'N/A'}</div>
-                        <div class="education-school">${e.institution || e.school || 'N/A'}</div>
+                        <div class="education-degree">${edu.degree}</div>
+                        <div class="education-institution">${edu.institution}</div>
                     </div>
-                    <div class="education-period">${e.period || e.startDate + ' - ' + (e.endDate || e.graduationDate) || 'N/A'}</div>
-                </div>`).join('')}
-            </div>` : ''}
-            
-            <!-- Certifications Section -->
-            ${(certifications?.length || cvData.courses?.length) ? `<div class="section">
-                <h2 class="section-title">Kurser och certifieringar</h2>
-                ${(certifications || []).map(c => `<div class="cert-item">
-                    <div class="cert-content">
-                        <div class="cert-title">${c.title || c.name || 'N/A'}</div>
-                        <div class="cert-issuer">${c.issuer || c.provider || 'N/A'}</div>
-                    </div>
-                    <div class="cert-year">${c.year || c.completionDate || 'N/A'}</div>
-                </div>`).join('')}
-                ${(cvData.courses || []).map(c => `<div class="cert-item">
-                    <div class="cert-content">
-                        <div class="cert-title">${c.name || 'N/A'}</div>
-                        <div class="cert-issuer">${c.provider || 'N/A'}</div>
-                    </div>
-                    <div class="cert-year">${c.completionDate || 'N/A'}</div>
-                </div>`).join('')}
-            </div>` : ''}
+                    <div class="education-period">${edu.period}</div>
+                </div>
+            `).join('')}
         </div>
-        
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-section">
-                <h3>${personalInfo?.name?.split(' ')[0] || 'Niklas'} Andervang</h3>
-                <ul class="role-list">
-                    ${summary?.keyStrengths?.slice(0, 4).map(strength => `<li>${strength}</li>`).join('') || `
-                    <li>Senior utvecklare FE/Fullstack</li>
-                    <li>Test och kvalitetssäkring</li>
-                    <li>Teamlead / mentor / scrummaster</li>
-                    <li>Tillgänglighetsexpert</li>
-                    <li>Teknisk projektledare</li>
-                    `}
-                </ul>
+    ` : ''}
+
+    <!-- Certifications Section -->
+    ${certifications?.length ? `
+        <div class="section">
+            <h2 class="section-title">Certifieringar</h2>
+            ${certifications.map(cert => `
+                <div class="certification-item">
+                    <div class="certification-content">
+                        <div class="certification-title">${cert.title}</div>
+                        <div class="certification-issuer">${cert.issuer}</div>
+                    </div>
+                    <div class="certification-year">${cert.year}</div>
+                </div>
+            `).join('')}
+        </div>
+    ` : ''}
+
+    <!-- Competencies Section -->
+    ${competencies?.length ? `
+        <div class="section">
+            <h2 class="section-title">Kompetenser</h2>
+            ${competencies.map((category, index) => `
+                <div class="competency-category">
+                    <div class="competency-title">
+                        <div class="competency-icon">${index + 1}</div>
+                        ${category.category}
+                    </div>
+                    <div class="competency-skills">
+                        ${category.skills.map(skill => 
+                            `<span class="competency-skill">${skill.name}</span>`
+                        ).join('')}
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    ` : ''}
+
+    <!-- Languages Section -->
+    ${languages?.length ? `
+        <div class="section">
+            <h2 class="section-title">Språkkunskaper</h2>
+            <div class="languages-grid">
+                ${languages.map(lang => `
+                    <div class="language-item">
+                        <div class="language-name">${lang.language}</div>
+                        <div class="language-proficiency">${lang.proficiency}</div>
+                    </div>
+                `).join('')}
             </div>
         </div>
-        
-        <!-- Skills Section (if provided) -->
-        ${skills?.length ? `<div class="main-content" style="padding-top: 0; margin-top: -20px;">
-            <div class="section">
-                <h2 class="section-title">Kompetenser</h2>
-                ${skills.map(category => `<div class="skills-category">
-                    <h4>${category.category}</h4>
-                    <div class="skills-list">
-                        ${category.items.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
-                    </div>
-                </div>`).join('')}
-            </div>
-        </div>` : ''}
-        
-        <!-- Footer -->
-        <div class="footer">
-            <div class="footer-brand">Frank fam.</div>
-        </div>
-        
-        <!-- Page Number -->
-        <div class="page-number">${personalInfo?.name?.split(' ')[0] || 'Niklas'} Andervang &nbsp;&nbsp;&nbsp;&nbsp; 1 / 1</div>
-    </div>
+    ` : ''}
 </body>
 </html>`;
 }
 
 async function generatePDFContent(cvData) {
   try {
-    // Generate the HTML content first
-    const htmlContent = generateHTMLContent(cvData);
+    // Generate the HTML content first using Andervang Consulting template
+    const htmlContent = generateAndervangConsultingHTML(cvData);
     
     // Launch Puppeteer with Netlify-compatible settings
     const browser = await puppeteer.launch({
@@ -558,59 +630,74 @@ async function generatePDFContent(cvData) {
   } catch (error) {
     console.error('PDF generation error:', error);
     // Fallback to HTML content if PDF generation fails
-    const htmlContent = generateHTMLContent(cvData);
+    const htmlContent = generateAndervangConsultingHTML(cvData);
     return btoa(unescape(encodeURIComponent(htmlContent)));
   }
 }
 
 function generateDOCXContent(cvData) {
-  const { personalInfo, summary, projects, education, certifications, competencies, languages } = cvData;
+  const { personalInfo, summary, employment, projects, education, certifications, competencies, languages, company } = cvData;
+  const companyName = company || 'Andervang Consulting';
   
-  return `CV - ${personalInfo?.name || 'N/A'}
+  return `${companyName}
+CV - ${personalInfo?.name || 'N/A'}
 ${personalInfo?.title || 'N/A'}
-${personalInfo?.email || ''}
-${personalInfo?.phone || ''}
+
+KONTAKTINFORMATION
+Email: ${personalInfo?.email || ''}
+Telefon: ${personalInfo?.phone || ''}
+${personalInfo?.location ? `Plats: ${personalInfo.location}` : ''}
 
 PROFESSIONELL SAMMANFATTNING
 ${summary?.introduction || ''}
 
-SPECIALITETER:
-${summary?.specialties ? summary.specialties.map(s => `• ${s}`).join('\n') : ''}
+${summary?.highlights ? `HÖJDPUNKTER:
+${summary.highlights.map(h => `• ${h}`).join('\n')}` : ''}
 
-HÖJDPUNKTER:
-${summary?.highlights ? summary.highlights.map(h => `• ${h}`).join('\n') : ''}
+${summary?.specialties ? `SPECIALITETER:
+${summary.specialties.map(s => `• ${s}`).join('\n')}` : ''}
 
-PROJEKT
-${projects ? projects.map(p => `
+${employment ? `ANSTÄLLNINGAR OCH ROLLER
+${employment.map(job => `
+${job.position} - ${job.company} (${job.period})
+${job.description}
+${job.technologies ? `Teknologier: ${job.technologies.join(', ')}` : ''}
+${job.achievements ? `Framgångar:\n${job.achievements.map(a => `• ${a}`).join('\n')}` : ''}
+`).join('\n')}` : ''}
+
+${projects ? `PROJEKT OCH UPPDRAG
+${projects.map(p => `
 ${p.title || 'N/A'} (${p.period || 'N/A'})
 ${p.type || ''}
 ${p.description || ''}
-Teknologier: ${p.technologies ? p.technologies.join(', ') : 'N/A'}
-`).join('\n') : ''}
+${p.technologies ? `Teknologier: ${p.technologies.join(', ')}` : ''}
+`).join('\n')}` : ''}
 
-UTBILDNING
-${education ? education.map(e => `
+${education ? `UTBILDNING
+${education.map(e => `
 ${e.degree || 'N/A'} (${e.period || 'N/A'})
 ${e.institution || 'N/A'}
-`).join('\n') : ''}
+${e.specialization ? `Specialisering: ${e.specialization}` : ''}
+`).join('\n')}` : ''}
 
-CERTIFIERINGAR
-${certifications ? certifications.map(c => `
+${certifications ? `CERTIFIERINGAR
+${certifications.map(c => `
 ${c.title || 'N/A'} (${c.year || 'N/A'})
 ${c.issuer || 'N/A'}
-`).join('\n') : ''}
+${c.description ? `Beskrivning: ${c.description}` : ''}
+`).join('\n')}` : ''}
 
-KOMPETENSER
-${competencies ? competencies.map(cat => `
+${competencies ? `KOMPETENSER
+${competencies.map(cat => `
 ${cat.category || 'N/A'}:
-${cat.skills ? cat.skills.map(s => `• ${s.name} (${s.level})`).join('\n') : ''}
-`).join('\n') : ''}
+${cat.skills ? cat.skills.map(s => `• ${s.name}${s.level ? ` (${s.level})` : ''}`).join('\n') : ''}
+`).join('\n')}` : ''}
 
-SPRÅK
-${languages ? languages.map(l => `• ${l.language}: ${l.proficiency}`).join('\n') : ''}
+${languages ? `SPRÅKKUNSKAPER
+${languages.map(l => `• ${l.language}: ${l.proficiency}`).join('\n')}` : ''}
 
 Genererat: ${new Date().toLocaleDateString('sv-SE')}
-Template: ${cvData.template || 'modern'}`;
+Template: Andervang Consulting`;
 }
 
 export const handler = async (event, context) => {
@@ -633,12 +720,56 @@ export const handler = async (event, context) => {
   try {
     // Parse the path to determine the route
     let path = event.path;
-    if (path.startsWith('/api')) {
+    if (path.startsWith('/.netlify/functions/api')) {
+      path = path.substring('/.netlify/functions/api'.length); // Remove netlify function prefix
+    } else if (path.startsWith('/api')) {
       path = path.substring(4); // Remove '/api' prefix
     }
     const method = event.httpMethod;
     
     console.log('Function called with path:', event.path, 'parsed to:', path);
+
+    // Main endpoint for consultant manager integration
+    if (path === '' && method === 'POST') {
+      // This is the main /api endpoint that the integration guide expects
+      const body = JSON.parse(event.body || '{}');
+      
+      // Check if it's the ConsultantCVPayload format
+      const format = body.format || 'pdf';
+      let fileContent = '';
+      let mimeType = '';
+      let filename = `CV_${body.personalInfo?.name?.replace(/\s+/g, '_') || 'Unknown'}`;
+      
+      if (format === 'html') {
+        const htmlContent = generateAndervangConsultingHTML(body);
+        fileContent = btoa(unescape(encodeURIComponent(htmlContent)));
+        mimeType = 'text/html';
+      } else if (format === 'pdf') {
+        const pdfContent = await generatePDFContent(body);
+        fileContent = pdfContent;
+        mimeType = 'application/pdf';
+      } else if (format === 'docx') {
+        const docContent = generateDOCXContent(body);
+        fileContent = btoa(unescape(encodeURIComponent(docContent)));
+        mimeType = 'text/plain';
+      }
+      
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          data: {
+            fileUrl: `data:${mimeType};base64,${fileContent}`,
+            format: format,
+            generatedAt: new Date().toISOString(),
+            template: body.template || 'andervang-consulting',
+            filename: `${filename}.${format}`,
+            note: 'Generated with ConsultantCVPayload format'
+          }
+        })
+      };
+    }
 
     // API key validation for protected routes
     const apiKey = event.headers['x-api-key'];
@@ -670,11 +801,11 @@ export const handler = async (event, context) => {
           success: true,
           data: [
             {
-              id: 'frank-digital',
-              name: 'Frank Digital',
-              description: 'Professional template based on Frank Digital CV design',
+              id: 'andervang-consulting',
+              name: 'Andervang Consulting',
+              description: 'Professional template with Apple-inspired design and orange accent colors',
               templateType: 'professional',
-              industryFocus: 'technology',
+              industryFocus: 'consulting',
               isPremium: false,
               isActive: true
             },
@@ -773,7 +904,7 @@ export const handler = async (event, context) => {
       let filename = `CV_${body.personalInfo?.name?.replace(/\s+/g, '_') || 'Unknown'}`;
       
       if (format === 'html') {
-        const htmlContent = generateHTMLContent(body);
+        const htmlContent = generateAndervangConsultingHTML(body);
         fileContent = btoa(unescape(encodeURIComponent(htmlContent)));
         mimeType = 'text/html';
       } else if (format === 'pdf') {
@@ -815,7 +946,7 @@ export const handler = async (event, context) => {
         let mimeType = '';
         
         if (format === 'html') {
-          const htmlContent = generateHTMLContent(body);
+          const htmlContent = generateAndervangConsultingHTML(body);
           fileContent = btoa(unescape(encodeURIComponent(htmlContent)));
           mimeType = 'text/html';
         } else if (format === 'pdf') {
@@ -856,7 +987,7 @@ export const handler = async (event, context) => {
       const body = JSON.parse(event.body || '{}');
       
       // Generate files for all templates and formats
-      const templates = ['frank-digital', 'modern', 'classic', 'creative'];
+      const templates = ['andervang-consulting', 'modern', 'classic', 'creative'];
       const formats = ['pdf', 'html', 'docx'];
       const results = {};
       
@@ -869,7 +1000,7 @@ export const handler = async (event, context) => {
           let mimeType = '';
           
           if (format === 'html') {
-            const htmlContent = generateHTMLContent(templateData);
+            const htmlContent = generateAndervangConsultingHTML(templateData);
             fileContent = btoa(unescape(encodeURIComponent(htmlContent)));
             mimeType = 'text/html';
           } else if (format === 'pdf') {

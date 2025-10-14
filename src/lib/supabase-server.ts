@@ -64,26 +64,5 @@ export interface CVGeneration {
   updated_at: string
 }
 
-// Database types for wiki system
-export interface WikiArticle {
-  id: string
-  title: string
-  content: object // Tiptap JSON content
-  category: string
-  tags: string[]
-  author_id: string
-  created_at: string
-  updated_at: string
-  published: boolean
-  slug: string
-  views: number
-  likes: number
-}
-
-export interface WikiCategory {
-  id: string
-  name: string
-  description: string
-  color: string
-  created_at: string
-}
+// Additional exports for consistency
+export type { User } from '@supabase/supabase-js'

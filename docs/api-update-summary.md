@@ -8,6 +8,8 @@
 
 ✅ **Ensured consistency** between the Netlify Functions implementation and documentation
 
+✅ **Added Andervang Consulting Template Specific Schemas** - All missing sections now documented
+
 ## Key Features of the OpenAPI Specification
 
 ### 🎯 **Complete API Coverage**
@@ -18,8 +20,9 @@
 ### 📋 **Detailed Schema Definitions**
 - **PersonalInfo**: All personal information fields with alternatives
 - **Experience/Employment**: Work history with flexible field names
-- **Skills/Competencies**: Technical and soft skills
+- **Skills/Competencies**: Technical and soft skills with structured format
 - **Education, Projects, Certifications, Languages**: Complete data models
+- **Andervang Consulting Specific**: Summary, Roles, Courses, Competencies, Closing sections
 - **Error Responses**: Standardized error handling
 
 ### 🔄 **Field Name Flexibility**
@@ -29,6 +32,15 @@ The spec documents all supported field name variations:
 - `skills` OR `competencies` OR `technicalSkills`
 - `title` OR `position`
 - `summary` OR `bio`
+
+### 🎨 **Andervang Consulting Template Sections**
+Complete support for all template-specific sections:
+- **`summary`**: Introduction text and specialties array
+- **`roles`**: Professional roles with associated skills
+- **`projects`**: Enhanced with `type` field for categorization
+- **`courses`**: Courses and continued education
+- **`competencies`**: Structured competency format with skill levels
+- **`closing`**: Closing section with contact information
 
 ### 📚 **Rich Documentation**
 - **Examples**: Multiple payload examples (minimal, consultant manager format, comprehensive)

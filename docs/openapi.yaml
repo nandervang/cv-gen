@@ -134,6 +134,97 @@ paths:
                     - category: "Frontend"
                       items: ["Vue.js", "React"]
                   format: "pdf"
+              andervang_consulting_full:
+                summary: Full Andervang Consulting template format
+                value:
+                  personalInfo:
+                    name: "Niklas Andervang"
+                    email: "niklas.andervang@frankdigital.se"
+                    phone: "+46702441323"
+                    location: "Stockholm, Sverige"
+                    website: "https://andervang.com"
+                    linkedin: "https://linkedin.com/in/niklasandervang"
+                    github: "https://github.com/nandervang"
+                    title: "Senior Frontend/Fullstack Utvecklare & Tillgänglighetsexpert"
+                  summary:
+                    introduction: "Niklas är en senior frontend/fullstack utvecklare som är bred med sin kompetens och kan röra sig i flera roller. Niklas har stor erfarenhet från flertalet frontend-ramverk, dev-ops teknik och moderna arkitekturlösningar under de ca 15 år som Niklas arbetat som utvecklare."
+                    specialties: ["React", "TypeScript", "Tillgänglighet", "DevOps", "Scrum Master", "Next.js"]
+                  roles:
+                    - title: "Frontend Specialist"
+                      skills: ["React", "TypeScript", "CSS", "HTML"]
+                    - title: "Accessibility Expert"
+                      skills: ["WCAG", "AXE", "Screen Readers", "Keyboard Navigation"]
+                    - title: "DevOps Engineer"
+                      skills: ["CI/CD", "Docker", "Azure", "GitHub Actions"]
+                  projects:
+                    - title: "Digitalidag.se"
+                      type: "Tillgänglig Webbplats"
+                      period: "mars 2024 - maj 2024"
+                      description: "Ny webbplats byggd från grunden med fokus på tillgänglighet och användarupplevelse för Post och telestyrelsen PTS."
+                      technologies: ["React", "TypeScript", "Next.js", "Contentful", "MongoDB"]
+                  experience:
+                    - company: "Cisco"
+                      title: "Front-end / Fullstack utvecklare / Tillgänglighetsexpert"
+                      period: "juni 2024 - pågående"
+                      description: "Stora delar av arbetet handlade om migrering och uppgradering av befintliga komponenter, sidor och mallar till en nyare teknisk plattform."
+                      achievements:
+                        - "Migrering och uppgradering av komponenter till nyare teknisk plattform"
+                        - "Utveckling av nya funktioner och förbättringar"
+                      technologies: ["DevOps", "TypeScript", "React", "Next.js", "MongoDB"]
+                  skills:
+                    - category: "Frontend Utveckling"
+                      items: ["React", "TypeScript", "JavaScript", "HTML & CSS", "Next.js"]
+                    - category: "Backend Utveckling"
+                      items: ["C#", ".NET Core", "Node.js", "Express", "PHP"]
+                    - category: "Tillgänglighet & Kvalitet"
+                      items: ["WCAG", "AXE", "Tillgänglighetstester", "BrowserStack"]
+                  competencies:
+                    - category: "Frontend Utveckling"
+                      skills:
+                        - name: "React"
+                          level: "Expert"
+                          yearsOfExperience: 8
+                        - name: "TypeScript"
+                          level: "Expert"
+                          yearsOfExperience: 6
+                    - category: "Tillgänglighet"
+                      skills:
+                        - name: "WCAG"
+                          level: "Expert"
+                          yearsOfExperience: 7
+                        - name: "AXE Testing"
+                          level: "Advanced"
+                          yearsOfExperience: 5
+                  education:
+                    - institution: "Blekinge Tekniska Högskola"
+                      degree: "Kandidatexamen"
+                      field: "Interaktionsdesign (MDA)"
+                      period: "2008-2011"
+                  courses:
+                    - name: "Certified Professional in Accessibility Core Competencies (CPACC)"
+                      provider: "IAAP"
+                      completionDate: "2022"
+                    - name: "Agile core competence and fundamentals course"
+                      provider: "Valtech"
+                      completionDate: "2021"
+                  certifications:
+                    - name: "CPACC Certification"
+                      issuer: "IAAP"
+                      date: "2022"
+                  languages:
+                    - language: "Svenska"
+                      proficiency: "Native"
+                    - language: "Engelska"
+                      proficiency: "Fluent"
+                  closing:
+                    text: "Tack för att du tog dig tid att läsa mitt CV. Jag ser fram emot möjligheten att diskutera hur jag kan bidra till ert team och hjälpa er att nå era mål med modern webbutveckling och tillgänglighet."
+                    contact:
+                      email: "niklas@andervang.com"
+                      phone: "+46 70 244 13 23"
+                      location: "Stockholm, Sverige"
+                      company: "Andervang Consulting"
+                  template: "andervang-consulting"
+                  format: "pdf"
               comprehensive:
                 summary: Full payload with all features
                 value:
@@ -426,6 +517,14 @@ components:
         name:
           type: string
           example: "E-Commerce Platform"
+        title:
+          type: string
+          description: Alternative to name
+          example: "E-Commerce Platform"
+        type:
+          type: string
+          description: Project type/category (required for Andervang Consulting template)
+          example: "Fullstack Development"
         description:
           type: string
           example: "Full-stack e-commerce solution with React and Node.js"
@@ -506,6 +605,100 @@ components:
         description:
           type: string
 
+    # Andervang Consulting Template Specific Schemas
+    Summary:
+      type: object
+      properties:
+        introduction:
+          type: string
+          description: Profile introduction text (different from personalInfo.summary)
+          example: "Senior frontend/fullstack utvecklare med bred kompetens och 15+ års erfarenhet"
+        specialties:
+          type: array
+          items:
+            type: string
+          description: Key competencies/specialties for header display
+          example: ["React", "TypeScript", "Tillgänglighet", "DevOps", "Scrum Master"]
+
+    Role:
+      type: object
+      properties:
+        title:
+          type: string
+          example: "Frontend Specialist"
+        skills:
+          type: array
+          items:
+            type: string
+          example: ["React", "TypeScript", "CSS"]
+
+    Course:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Advanced React Patterns"
+        provider:
+          type: string
+          example: "Frontend Masters"
+        completionDate:
+          type: string
+          example: "2023-06"
+        credentialId:
+          type: string
+          example: "FM-ARP-2023-001"
+        url:
+          type: string
+          format: uri
+
+    CompetencyCategory:
+      type: object
+      properties:
+        category:
+          type: string
+          example: "Frontend Utveckling"
+        skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompetencySkill'
+
+    CompetencySkill:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "React"
+        level:
+          type: string
+          enum: [Beginner, Intermediate, Advanced, Expert]
+          example: "Expert"
+        yearsOfExperience:
+          type: integer
+          example: 5
+
+    Closing:
+      type: object
+      properties:
+        text:
+          type: string
+          example: "Tack för att du tog dig tid att läsa mitt CV. Jag ser fram emot möjligheten att diskutera hur jag kan bidra till ert team."
+        contact:
+          type: object
+          properties:
+            email:
+              type: string
+              format: email
+              example: "niklas@andervang.com"
+            phone:
+              type: string
+              example: "+46 70 244 13 23"
+            location:
+              type: string
+              example: "Stockholm, Sverige"
+            company:
+              type: string
+              example: "Andervang Consulting"
+
     Customization:
       type: object
       properties:
@@ -536,6 +729,14 @@ components:
       properties:
         personalInfo:
           $ref: '#/components/schemas/PersonalInfo'
+        summary:
+          $ref: '#/components/schemas/Summary'
+          description: Summary section with introduction and specialties (Andervang Consulting template)
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+          description: Professional roles section (Andervang Consulting template)
         experience:
           type: array
           items:
@@ -559,8 +760,8 @@ components:
         competencies:
           type: array
           items:
-            $ref: '#/components/schemas/Skill'
-          description: Alternative to skills
+            $ref: '#/components/schemas/CompetencyCategory'
+          description: Alternative to skills with structured competency format (Andervang Consulting template)
         technicalSkills:
           type: array
           items:
@@ -574,6 +775,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Project'
+        courses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Course'
+          description: Courses and continued education (Andervang Consulting template)
         certifications:
           type: array
           items:
@@ -595,6 +801,9 @@ components:
           items:
             type: string
           example: ["Photography", "Hiking", "Open Source"]
+        closing:
+          $ref: '#/components/schemas/Closing'
+          description: Closing section with contact information (Andervang Consulting template)
         template:
           type: string
           enum: [andervang-consulting, modern, classic, creative]

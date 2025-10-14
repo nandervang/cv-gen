@@ -1,0 +1,796 @@
+openapi: 3.1.0
+info:
+  title: CV Generation Backend API
+  description: |
+    Professional CV generation API with multiple templates and export formats.
+    Designed for integration with consultant management systems and external applications.
+    
+    ## Features
+    - Multiple professional templates (Andervang Consulting, Modern, Classic, Creative)
+    - PDF, HTML, and DOCX export formats
+    - Flexible payload structure supporting multiple field naming conventions
+    - Authentication via API key
+    - Comprehensive error handling
+    - Rate limiting for production use
+  version: 2.0.0
+  contact:
+    name: Andervang Consulting
+    url: https://andervang.com
+    email: niklas@andervang.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3001
+    description: Development server
+  - url: https://andervang-cv.netlify.app/.netlify/functions
+    description: Production server (Netlify Functions)
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: Check API server health and status
+      operationId: healthCheck
+      security: []
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                success: true
+                message: "CV Generation API is running"
+                timestamp: "2025-10-14T08:44:13.217Z"
+                version: "1.0.0"
+                status:
+                  server: "healthy"
+                  puppeteer: "ready"
+                  templates: "loaded"
+
+  /api/templates:
+    get:
+      summary: List Available Templates
+      description: Retrieve all available CV templates with their metadata
+      operationId: listTemplates
+      responses:
+        '200':
+          description: List of available templates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplatesResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /api/generate/complete:
+    post:
+      summary: Generate Complete CV
+      description: |
+        Generate a CV in the specified format using provided data.
+        Supports multiple payload formats for compatibility with different client systems.
+        
+        ### Supported Field Name Variations
+        - `profilePhoto` OR `profileImage` - Profile image data
+        - `experience` OR `employment` OR `workExperience` - Work history
+        - `skills` OR `competencies` OR `technicalSkills` - Skills and competencies
+        - `title` OR `position` - Job title/position
+        - `summary` OR `bio` - Professional summary
+        - `website` OR `portfolio` - Personal website
+      operationId: generateCV
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CVGenerationRequest'
+            examples:
+              minimal:
+                summary: Minimal payload
+                value:
+                  personalInfo:
+                    name: "John Doe"
+                  format: "pdf"
+              consultant_manager_format:
+                summary: Consultant manager compatible format
+                value:
+                  personalInfo:
+                    name: "Jane Doe"
+                    email: "jane.doe@example.com"
+                    phone: "+1-555-0123"
+                    location: "New York, NY"
+                    profilePhoto: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+                  experience:
+                    - company: "TechCorp Inc"
+                      title: "Senior Developer"
+                      period: "2022-Present"
+                      description: "Lead development team"
+                  skills:
+                    - category: "Frontend"
+                      items: ["React", "TypeScript", "Vue.js"]
+                    - category: "Backend" 
+                      items: ["Node.js", "Python", "PostgreSQL"]
+                  format: "pdf"
+              alternative_format:
+                summary: Alternative field names format
+                value:
+                  personalInfo:
+                    name: "Jane Doe"
+                    email: "jane.doe@example.com"
+                    profileImage: "data:image/png;base64,test"
+                  employment:
+                    - company: "TechCorp"
+                      position: "Senior Developer"
+                      period: "2022-2025"
+                  competencies:
+                    - category: "Frontend"
+                      items: ["Vue.js", "React"]
+                  format: "pdf"
+              comprehensive:
+                summary: Full payload with all features
+                value:
+                  personalInfo:
+                    name: "Jane Alexandra Doe"
+                    email: "jane.doe@techcorp.com"
+                    phone: "+1 (555) 123-4567"
+                    location: "San Francisco, CA, USA"
+                    website: "https://janedoe.dev"
+                    linkedin: "https://linkedin.com/in/janedoe"
+                    github: "https://github.com/janedoe"
+                    summary: "Experienced Full-Stack Developer with 8+ years of expertise"
+                    profilePhoto: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+                  experience:
+                    - company: "TechCorp Inc"
+                      title: "Senior Full-Stack Developer"
+                      period: "2022 - Present"
+                      location: "San Francisco, CA"
+                      description: "Lead a team of 5 developers in building scalable web applications"
+                      achievements:
+                        - "Increased application performance by 40%"
+                        - "Led migration to microservices architecture"
+                  skills:
+                    - category: "Frontend Technologies"
+                      items: ["React", "Vue.js", "TypeScript", "Next.js"]
+                    - category: "Backend Technologies"
+                      items: ["Node.js", "Python", "PostgreSQL", "MongoDB"]
+                  education:
+                    - institution: "University of California, Berkeley"
+                      degree: "Bachelor of Science in Computer Science"
+                      period: "2014 - 2018"
+                      gpa: "3.8/4.0"
+                  projects:
+                    - name: "E-Commerce Platform"
+                      description: "Full-stack solution with React and Node.js"
+                      technologies: ["React", "Node.js", "PostgreSQL"]
+                      url: "https://github.com/janedoe/ecommerce"
+                  certifications:
+                    - name: "AWS Certified Solutions Architect"
+                      issuer: "Amazon Web Services"
+                      date: "2023"
+                  languages:
+                    - language: "English"
+                      proficiency: "Native"
+                    - language: "Spanish"
+                      proficiency: "Fluent"
+                  template: "andervang-consulting"
+                  format: "pdf"
+      responses:
+        '200':
+          description: CV generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CVGenerationResponse'
+              example:
+                success: true
+                data:
+                  fileUrl: "data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iago..."
+                  format: "pdf"
+                  generatedAt: "2025-10-14T08:44:13.217Z"
+                  template: "andervang-consulting"
+                  filename: "CV_Jane_Doe.pdf"
+                  note: "Generated with ConsultantCVPayload format"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: |
+        API key for authentication. 
+        Development key: `dev-api-key-12345`
+
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "CV Generation API is running"
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+          example: "1.0.0"
+        status:
+          type: object
+          properties:
+            server:
+              type: string
+              example: "healthy"
+            puppeteer:
+              type: string
+              example: "ready"
+            templates:
+              type: string
+              example: "loaded"
+
+    Template:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "andervang-consulting"
+        name:
+          type: string
+          example: "Andervang Consulting"
+        description:
+          type: string
+          example: "Apple-inspired professional template"
+        type:
+          type: string
+          enum: [professional, modern, executive, creative]
+        industryFocus:
+          type: string
+          example: "Consulting & Professional Services"
+        features:
+          type: array
+          items:
+            type: string
+        isPremium:
+          type: boolean
+          example: false
+        colorScheme:
+          type: object
+          properties:
+            primary:
+              type: string
+              example: "#003D82"
+            accent:
+              type: string
+              example: "#FF6B35"
+        previewUrl:
+          type: string
+          example: "/previews/andervang-consulting.jpg"
+
+    TemplatesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Template'
+        timestamp:
+          type: string
+          format: date-time
+
+    PersonalInfo:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Full name (required)
+          example: "Jane Alexandra Doe"
+        email:
+          type: string
+          format: email
+          example: "jane.doe@example.com"
+        phone:
+          type: string
+          example: "+1 (555) 123-4567"
+        location:
+          type: string
+          example: "San Francisco, CA, USA"
+        website:
+          type: string
+          format: uri
+          example: "https://janedoe.dev"
+        portfolio:
+          type: string
+          format: uri
+          description: Alternative to website
+        linkedin:
+          type: string
+          format: uri
+          example: "https://linkedin.com/in/janedoe"
+        github:
+          type: string
+          format: uri
+          example: "https://github.com/janedoe"
+        summary:
+          type: string
+          description: Professional summary/bio
+          example: "Experienced Full-Stack Developer with 8+ years of expertise"
+        bio:
+          type: string
+          description: Alternative to summary
+        profilePhoto:
+          type: string
+          description: Base64 encoded image data
+          example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+        profileImage:
+          type: string
+          description: Alternative to profilePhoto
+
+    Experience:
+      type: object
+      properties:
+        company:
+          type: string
+          example: "TechCorp Inc"
+        title:
+          type: string
+          example: "Senior Full-Stack Developer"
+        position:
+          type: string
+          description: Alternative to title
+        period:
+          type: string
+          example: "2022 - Present"
+        location:
+          type: string
+          example: "San Francisco, CA"
+        description:
+          type: string
+          example: "Lead a team of 5 developers in building scalable web applications"
+        achievements:
+          type: array
+          items:
+            type: string
+          example:
+            - "Increased application performance by 40%"
+            - "Led migration to microservices architecture"
+        technologies:
+          type: array
+          items:
+            type: string
+          example: ["React", "Node.js", "PostgreSQL"]
+
+    Skill:
+      type: object
+      properties:
+        category:
+          type: string
+          example: "Frontend Technologies"
+        items:
+          type: array
+          items:
+            type: string
+          example: ["React", "Vue.js", "TypeScript", "Next.js"]
+
+    Education:
+      type: object
+      properties:
+        institution:
+          type: string
+          example: "University of California, Berkeley"
+        degree:
+          type: string
+          example: "Bachelor of Science in Computer Science"
+        field:
+          type: string
+          example: "Computer Science"
+        period:
+          type: string
+          example: "2014 - 2018"
+        location:
+          type: string
+          example: "Berkeley, CA"
+        gpa:
+          type: string
+          example: "3.8/4.0"
+        achievements:
+          type: array
+          items:
+            type: string
+
+    Project:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "E-Commerce Platform"
+        description:
+          type: string
+          example: "Full-stack e-commerce solution with React and Node.js"
+        technologies:
+          type: array
+          items:
+            type: string
+          example: ["React", "Node.js", "PostgreSQL"]
+        url:
+          type: string
+          format: uri
+          example: "https://github.com/janedoe/ecommerce"
+        period:
+          type: string
+          example: "2023"
+        achievements:
+          type: array
+          items:
+            type: string
+
+    Certification:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "AWS Certified Solutions Architect"
+        issuer:
+          type: string
+          example: "Amazon Web Services"
+        date:
+          type: string
+          example: "2023"
+        credentialId:
+          type: string
+          example: "AWS-CSA-2023-JD001"
+        url:
+          type: string
+          format: uri
+
+    Language:
+      type: object
+      properties:
+        language:
+          type: string
+          example: "English"
+        proficiency:
+          type: string
+          enum: [Native, Fluent, Advanced, Intermediate, Beginner]
+          example: "Native"
+
+    Award:
+      type: object
+      properties:
+        title:
+          type: string
+          example: "Employee of the Year"
+        issuer:
+          type: string
+          example: "TechCorp Inc"
+        date:
+          type: string
+          example: "2023"
+        description:
+          type: string
+
+    Volunteer:
+      type: object
+      properties:
+        organization:
+          type: string
+          example: "Code for Good"
+        role:
+          type: string
+          example: "Volunteer Developer"
+        period:
+          type: string
+          example: "2020 - Present"
+        description:
+          type: string
+
+    Customization:
+      type: object
+      properties:
+        primaryColor:
+          type: string
+          example: "#2563eb"
+        accentColor:
+          type: string
+          example: "#3b82f6"
+        fontFamily:
+          type: string
+          enum: [Inter, Roboto, "Open Sans", Lato, Georgia, Times]
+          example: "Inter"
+        showProfileImage:
+          type: boolean
+          example: true
+        sectionsOrder:
+          type: array
+          items:
+            type: string
+          example: ["personalInfo", "summary", "experience", "skills"]
+
+    CVGenerationRequest:
+      type: object
+      required:
+        - personalInfo
+        - format
+      properties:
+        personalInfo:
+          $ref: '#/components/schemas/PersonalInfo'
+        experience:
+          type: array
+          items:
+            $ref: '#/components/schemas/Experience'
+          description: Work experience (can also use 'employment' or 'workExperience')
+        employment:
+          type: array
+          items:
+            $ref: '#/components/schemas/Experience'
+          description: Alternative to experience
+        workExperience:
+          type: array
+          items:
+            $ref: '#/components/schemas/Experience'
+          description: Alternative to experience
+        skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/Skill'
+          description: Skills and competencies (can also use 'competencies' or 'technicalSkills')
+        competencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Skill'
+          description: Alternative to skills
+        technicalSkills:
+          type: array
+          items:
+            $ref: '#/components/schemas/Skill'
+          description: Alternative to skills
+        education:
+          type: array
+          items:
+            $ref: '#/components/schemas/Education'
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+        certifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Certification'
+        languages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Language'
+        awards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Award'
+        volunteer:
+          type: array
+          items:
+            $ref: '#/components/schemas/Volunteer'
+        interests:
+          type: array
+          items:
+            type: string
+          example: ["Photography", "Hiking", "Open Source"]
+        template:
+          type: string
+          enum: [andervang-consulting, modern, classic, creative]
+          default: andervang-consulting
+          example: "andervang-consulting"
+        format:
+          type: string
+          enum: [pdf, html, docx]
+          example: "pdf"
+        customization:
+          $ref: '#/components/schemas/Customization'
+
+    CVGenerationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            fileUrl:
+              type: string
+              description: Base64 data URL or signed URL for the generated file
+              example: "data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iago..."
+            format:
+              type: string
+              example: "pdf"
+            generatedAt:
+              type: string
+              format: date-time
+              example: "2025-10-14T08:44:13.217Z"
+            template:
+              type: string
+              example: "andervang-consulting"
+            filename:
+              type: string
+              example: "CV_Jane_Doe.pdf"
+            note:
+              type: string
+              example: "Generated with ConsultantCVPayload format"
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: "VALIDATION_ERROR"
+            message:
+              type: string
+              example: "Invalid request data"
+        timestamp:
+          type: string
+          format: date-time
+
+  responses:
+    Unauthorized:
+      description: Authentication required or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "UNAUTHORIZED"
+              message: "Valid API key required"
+            timestamp: "2025-10-14T08:44:13.217Z"
+
+    ValidationError:
+      description: Invalid request data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "VALIDATION_ERROR"
+              message: "personalInfo.name is required"
+            timestamp: "2025-10-14T08:44:13.217Z"
+
+    RateLimited:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "RATE_LIMIT_EXCEEDED"
+              message: "Too many requests. Please try again later."
+            timestamp: "2025-10-14T08:44:13.217Z"
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "INTERNAL_SERVER_ERROR"
+              message: "An unexpected error occurred"
+            timestamp: "2025-10-14T08:44:13.217Z"
+
+tags:
+  - name: Health
+    description: API health and status endpoints
+  - name: Templates
+    description: Template management and listing
+  - name: Generation
+    description: CV generation endpoints
+  - name: Preview
+    description: Template preview endpoints
+
+x-code-samples:
+  - lang: curl
+    label: "Generate CV with cURL"
+    source: |
+      curl -X POST https://andervang-cv.netlify.app/.netlify/functions/api/generate/complete \
+        -H "Content-Type: application/json" \
+        -H "X-API-Key: dev-api-key-12345" \
+        -d '{
+          "personalInfo": {
+            "name": "Jane Doe",
+            "email": "jane@example.com"
+          },
+          "experience": [
+            {
+              "company": "TechCorp",
+              "title": "Developer",
+              "period": "2022-Present"
+            }
+          ],
+          "format": "pdf"
+        }'
+
+  - lang: javascript
+    label: "Generate CV with JavaScript"
+    source: |
+      const response = await fetch('https://andervang-cv.netlify.app/.netlify/functions/api/generate/complete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': 'dev-api-key-12345'
+        },
+        body: JSON.stringify({
+          personalInfo: {
+            name: 'Jane Doe',
+            email: 'jane@example.com'
+          },
+          experience: [{
+            company: 'TechCorp',
+            title: 'Developer',
+            period: '2022-Present'
+          }],
+          format: 'pdf'
+        })
+      });
+      
+      const result = await response.json();
+      console.log(result);
+
+  - lang: python
+    label: "Generate CV with Python"
+    source: |
+      import requests
+      
+      response = requests.post(
+          'https://andervang-cv.netlify.app/.netlify/functions/api/generate/complete',
+          headers={
+              'Content-Type': 'application/json',
+              'X-API-Key': 'dev-api-key-12345'
+          },
+          json={
+              'personalInfo': {
+                  'name': 'Jane Doe',
+                  'email': 'jane@example.com'
+              },
+              'experience': [{
+                  'company': 'TechCorp',
+                  'title': 'Developer',
+                  'period': '2022-Present'
+              }],
+              'format': 'pdf'
+          }
+      )
+      
+      result = response.json()
+      print(result)

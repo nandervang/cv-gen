@@ -2,12 +2,40 @@
 
 ## Version: 2.0.0 - Andervang Consulting
 
+> **📋 OpenAPI Specification**: For machine-readable API documentation, see [openapi.yaml](./openapi.yaml)
+
 ### Base Information
-- **Base URL**: `http://localhost:3001` (development) / `https://your-domain.com` (production)
+- **Base URL**: `http://localhost:3001` (development) / `https://andervang-cv.netlify.app/.netlify/functions` (production)
 - **Authentication**: API Key via `X-API-Key` header
 - **Content Type**: `application/json`
 - **Rate Limiting**: Yes (see sections below)
 - **Primary Purpose**: Backend API for integration with external consultant management systems
+
+### OpenAPI Documentation
+The complete API specification is available in OpenAPI 3.1 format:
+
+- **File**: [openapi.yaml](./openapi.yaml)
+- **JSON Format**: [openapi.json](./openapi.json)
+- **Interactive Documentation**: Import the OpenAPI file into tools like Swagger UI, Postman, or Insomnia
+- **Code Generation**: Use the OpenAPI spec to generate client SDKs in various languages
+
+#### Using with API Tools
+
+**Swagger UI:**
+```bash
+# Serve with swagger-ui
+npx swagger-ui-serve docs/openapi.yaml
+```
+
+**Postman:**
+1. Open Postman
+2. Import → Upload Files → Select `docs/openapi.yaml`
+3. All endpoints will be imported with examples
+
+**Insomnia:**
+1. Create New → Import From → File
+2. Select `docs/openapi.yaml`
+3. API collection ready for testing
 
 ---
 

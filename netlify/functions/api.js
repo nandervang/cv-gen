@@ -4,7 +4,10 @@ const chromium = require('@sparticuz/chromium');
 
 // Helper functions for content generation
 function generateAndervangConsultingHTML(cvData) {
-  const { personalInfo, summary, employment, projects, education, certifications, competencies, languages, company, styling } = cvData;
+  // Handle different payload formats - consultant manager vs direct API
+  const { personalInfo, summary, projects, education, certifications, languages, company, styling } = cvData;
+  const employment = cvData.employment || cvData.experience; // Handle both field names
+  const competencies = cvData.competencies || cvData.skills; // Handle both field names
   
   // Use Andervang Consulting colors and styling
   const primaryColor = styling?.primaryColor || '#003D82'; // Darker blue for better contrast
@@ -461,8 +464,8 @@ function generateAndervangConsultingHTML(cvData) {
 
     <!-- Profile Section -->
     <div class="profile-section">
-        ${personalInfo?.profileImage ? 
-            `<img class="profile-image" src="${personalInfo.profileImage}" alt="Profile" />` : 
+        ${(personalInfo?.profileImage || personalInfo?.profilePhoto) ? 
+            `<img class="profile-image" src="${personalInfo.profileImage || personalInfo.profilePhoto}" alt="Profile" />` : 
             `<div class="profile-image" style="background: #f5f5f7; display: flex; align-items: center; justify-content: center; color: #86868b; font-size: 11px;">No Image</div>`
         }
         <div class="profile-content">
@@ -480,15 +483,15 @@ function generateAndervangConsultingHTML(cvData) {
                 <div class="employment-item">
                     <div class="employment-header">
                         <div>
-                            <div class="employment-position">${job.position}</div>
-                            <div class="employment-company">${job.company}</div>
+                            <div class="employment-position">${job.position || job.title || job.role || 'N/A'}</div>
+                            <div class="employment-company">${job.company || job.employer || 'N/A'}</div>
                         </div>
-                        <div class="employment-period">${job.period}</div>
+                        <div class="employment-period">${job.period || job.duration || 'N/A'}</div>
                     </div>
-                    <div class="employment-description">${job.description}</div>
-                    ${job.technologies?.length ? `
+                    <div class="employment-description">${job.description || job.summary || ''}</div>
+                    ${(job.technologies || job.skills || job.tech)?.length ? `
                         <div class="technology-tags">
-                            ${job.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+                            ${(job.technologies || job.skills || job.tech).map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
                         </div>
                     ` : ''}
                 </div>
@@ -636,7 +639,10 @@ async function generatePDFContent(cvData) {
 }
 
 function generateDOCXContent(cvData) {
-  const { personalInfo, summary, employment, projects, education, certifications, competencies, languages, company } = cvData;
+  // Handle different payload formats - consultant manager vs direct API
+  const { personalInfo, summary, projects, education, certifications, languages, company } = cvData;
+  const employment = cvData.employment || cvData.experience; // Handle both field names
+  const competencies = cvData.competencies || cvData.skills; // Handle both field names
   const companyName = company || 'Andervang Consulting';
   
   return `${companyName}

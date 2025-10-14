@@ -245,15 +245,15 @@ export default function EnhancedCVTest() {
     }));
   };
 
-  const updateSummary = (field: string, value: string) => {
-    setCustomData((prev) => ({
-      ...prev,
-      summary: {
-        ...prev.summary,
-        [field]: value
-      }
-    }));
-  };
+  // const updateSummary = (field: string, value: string) => {
+  //   setCustomData((prev) => ({
+  //     ...prev,
+  //     summary: {
+  //       ...prev.summary,
+  //       [field]: value
+  //     }
+  //   }));
+  // };
 
   const downloadFile = (base64Content: string, filename: string, format: string) => {
     try {

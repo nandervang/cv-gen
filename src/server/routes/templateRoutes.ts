@@ -3,7 +3,7 @@ import type { Request, Response } from 'express'
 
 export const templateRoutes = Router()
 
-templateRoutes.get('/', (req: Request, res: Response) => {
+templateRoutes.get('/', (_req: Request, res: Response) => {
   try {
     const templates = [
       {

@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3001
 app.use(cors())
 app.use(express.json({ limit: '10mb' }))
 
-app.get('/health', (req: any, res: any) => {
+app.get('/health', (_req: express.Request, res: express.Response) => {
   res.json({
     success: true,
     message: 'CV Generation API is running',
@@ -21,7 +21,7 @@ app.get('/health', (req: any, res: any) => {
   })
 })
 
-app.get('/api/templates', (req: any, res: any) => {
+app.get('/api/templates', (_req: express.Request, res: express.Response) => {
   const templates = [
     {
       id: 'andervang-consulting',
@@ -40,7 +40,7 @@ app.get('/api/templates', (req: any, res: any) => {
 })
 
 // Download endpoint for generated files
-app.get('/api/download/:filename', (req: any, res: any) => {
+app.get('/api/download/:filename', (req: express.Request, res: express.Response) => {
   try {
     const filename = req.params.filename;
     const filepath = path.join(__dirname, '../downloads', filename);
@@ -53,7 +53,7 @@ app.get('/api/download/:filename', (req: any, res: any) => {
       });
     }
 
-    res.download(filepath, filename, (err) => {
+    res.download(filepath, filename, (err: Error | null) => {
       if (err) {
         console.error('Download error:', err);
         res.status(404).json({
@@ -72,7 +72,7 @@ app.get('/api/download/:filename', (req: any, res: any) => {
 })
 
 // Test endpoint with full CV data - now uses frontend data!
-app.post('/api/generate-real', async (req: any, res: any) => {
+app.post('/api/generate-real', async (req: express.Request, res: express.Response) => {
   try {
     console.log('🎯 Generating CV with uploaded data...')
     
@@ -120,7 +120,7 @@ app.post('/api/generate-real', async (req: any, res: any) => {
   }
 })
 
-app.post('/api/generate', async (req: any, res: any) => {
+app.post('/api/generate', async (req: express.Request, res: express.Response) => {
   try {
     console.log('🎯 CV generation request received')
     const { templateId = 'andervang-consulting', format = 'pdf', ...cvData } = req.body

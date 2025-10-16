@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>John Doe - CV</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            line-height: 1.4;
+            color: #1d1d1f;
+            background: #fafafa;
+            padding: 25px;
+            font-size: 13px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #003D82;
+            position: relative;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: #FF6B35;
+        }
+
+        .company-brand {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 4px;
+            letter-spacing: -0.2px;
+        }
+
+        .company-tagline {
+            font-size: 13px;
+            color: #86868b;
+            font-weight: 400;
+            letter-spacing: -0.05px;
+        }
+
+        .contact-info {
+            text-align: right;
+            font-size: 13px;
+            line-height: 1.3;
+            color: #1d1d1f;
+        }
+
+        .contact-info strong {
+            color: #003D82;
+            font-weight: 600;
+        }
+
+        .profile-section {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 24px;
+            margin-bottom: 30px;
+            align-items: start;
+        }
+
+        .profile-image {
+            width: 90px;
+            height: 90px;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .profile-content {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+
+        .profile-title {
+            font-size: 16px;
+            color: #003D82;
+            font-weight: 600;
+            margin-bottom: 16px;
+            letter-spacing: -0.1px;
+        }
+
+        .profile-intro {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #1d1d1f;
+            letter-spacing: -0.05px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 0;
+            width: 30px;
+            height: 2px;
+            background: #FF6B35;
+            opacity: 0.6;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #003D82;
+            margin-bottom: 12px;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, #003D82, #FF6B35, transparent);
+            margin-left: 16px;
+            opacity: 0.3;
+        }
+
+        .project-item {
+            margin-bottom: 18px;
+            padding: 18px;
+            background: #ffffff;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .project-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #003D82;
+            border-radius: 10px 0 0 10px;
+        }
+
+        .employment-item {
+            margin-bottom: 22px;
+            padding: 24px;
+            background: linear-gradient(135deg, #FF6B35, #E85A20);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.25);
+            color: white;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .employment-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
+        }
+
+        .employment-item::after {
+            content: '💼';
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            font-size: 24px;
+            opacity: 0.3;
+        }
+
+        .project-header, .employment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .project-type {
+            font-size: 11px;
+            color: #003D82;
+            font-weight: 500;
+            letter-spacing: -0.02px;
+        }
+
+        .employment-position {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+        }
+
+        .project-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 12px;
+            letter-spacing: -0.2px;
+        }
+
+        .employment-company {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+            letter-spacing: -0.2px;
+        }
+
+        .project-period, .employment-period {
+            font-size: 11px;
+            color: #86868b;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .employment-period {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .project-description, .employment-description {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #1d1d1f;
+            margin-bottom: 12px;
+        }
+
+        .employment-description {
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .technology-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .tech-tag {
+            background: rgba(255, 255, 255, 0.9);
+            color: #003D82;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 500;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .employment-item .tech-tag {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .education-item, .certification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            margin-bottom: 6px;
+            border-radius: 8px;
+            font-size: 13px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            position: relative;
+            transition: all 0.1s ease;
+        }
+
+        .education-item::before, .certification-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #003D82;
+            border-radius: 8px 0 0 8px;
+        }
+
+        .education-content, .certification-content {
+            flex: 1;
+        }
+
+        .education-degree, .certification-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 3px;
+            letter-spacing: -0.1px;
+        }
+
+        .education-institution, .certification-issuer {
+            font-size: 11px;
+            color: #86868b;
+            letter-spacing: -0.02px;
+        }
+
+        .education-period, .certification-year {
+            font-size: 11px;
+            color: #003D82;
+            font-weight: 500;
+            letter-spacing: -0.02px;
+        }
+
+        .competency-category {
+            margin-bottom: 18px;
+            position: relative;
+        }
+
+        .competency-title {
+            display: flex;
+            align-items: center;
+            font-size: 15px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 12px;
+            letter-spacing: -0.15px;
+        }
+
+        .competency-icon {
+            width: 22px;
+            height: 22px;
+            background: linear-gradient(135deg, #003D82, #FF6B35);
+            color: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .competency-skills {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+        }
+
+        .competency-skill {
+            padding: 6px 12px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 8px;
+            font-size: 12px;
+            color: #1d1d1f;
+            font-weight: 500;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .languages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .language-item {
+            padding: 12px 16px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .language-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 4px;
+        }
+
+        .language-proficiency {
+            font-size: 11px;
+            color: #003D82;
+            font-weight: 500;
+        }
+
+        /* Print styles */
+        @media print {
+            body { 
+                margin: 0; 
+                padding: 15px;
+                font-size: 12px;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .employment-item {
+                break-inside: avoid;
+            }
+            .project-item {
+                break-inside: avoid;
+            }
+        }
+
+        @page {
+            margin: 0.5in;
+            size: A4;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div>
+            <div class="company-brand">Andervang Consulting</div>
+            <div class="company-tagline">Professional Consulting Services</div>
+        </div>
+        <div class="contact-info">
+            <div><strong>John Doe</strong></div>
+            <div>john.doe@example.com</div>
+            <div>+46 70 123 4567</div>
+            <div>Stockholm, Sweden</div>
+        </div>
+    </div>
+
+    <!-- Profile Section -->
+    <div class="profile-section">
+        <div class="profile-image" style="background: #f5f5f7; display: flex; align-items: center; justify-content: center; color: #86868b; font-size: 11px;">No Image</div>
+        <div class="profile-content">
+            <h1 class="profile-name">John Doe</h1>
+            <h2 class="profile-title">Senior Software Engineer</h2>
+            <div class="profile-intro">Experienced software engineer with expertise in full-stack development and team leadership.</div>
+        </div>
+    </div>
+
+    <!-- Employment Section (Orange gradient) -->
+    
+        <div class="section">
+            <h2 class="section-title">Anställningar och roller</h2>
+            
+                <div class="employment-item">
+                    <div class="employment-header">
+                        <div>
+                            <div class="employment-position">Senior Software Engineer</div>
+                            <div class="employment-company">Tech Corp AB</div>
+                        </div>
+                        <div class="employment-period">jan 2020 - pågående</div>
+                    </div>
+                    <div class="employment-description">Leading frontend development team and architecting scalable solutions.</div>
+                    
+                        <div class="technology-tags">
+                            <span class="tech-tag">React</span><span class="tech-tag">TypeScript</span><span class="tech-tag">Node.js</span><span class="tech-tag">AWS</span>
+                        </div>
+                    
+                </div>
+            
+        </div>
+    
+
+    <!-- Projects Section -->
+    
+        <div class="section">
+            <h2 class="section-title">Projekt och uppdrag</h2>
+            
+                <div class="project-item">
+                    <div class="project-header">
+                        <div>
+                            <div class="project-type">Tech Lead</div>
+                            <div class="project-title">E-commerce Platform Redesign</div>
+                        </div>
+                        <div class="project-period">mar 2023 - sep 2023</div>
+                    </div>
+                    <div class="project-description">Complete overhaul of legacy e-commerce platform using modern React patterns.</div>
+                    
+                        <div class="technology-tags">
+                            <span class="tech-tag">React</span><span class="tech-tag">Next.js</span><span class="tech-tag">Stripe</span><span class="tech-tag">PostgreSQL</span>
+                        </div>
+                    
+                </div>
+            
+        </div>
+    
+
+    <!-- Education Section -->
+    
+
+    <!-- Certifications Section -->
+    
+
+    <!-- Competencies Section -->
+    
+
+    <!-- Languages Section -->
+    
+</body>
+</html>

@@ -14,7 +14,10 @@ export interface ExtendedCVData extends CompleteCVData {
   courses?: {
     name: string;                    // "Course name"
     provider: string;                // "Course provider"
-    completionDate: string;          // "2023"
+    completionDate: string;          // "2023-08-15"
+    duration?: string;               // "40 hours"
+    credentialId?: string;           // "FM-2023-ARP-001"
+    url?: string;                    // Certificate URL
     description?: string;            // Additional details
   }[];
 
@@ -32,6 +35,9 @@ export interface ExtendedCVData extends CompleteCVData {
 
 // Enhanced CV Data Structure for comprehensive CV generation
 export interface CompleteCVData {
+  // Company/Organization (Required for consultant manager)
+  company?: string;                  // "Andervang Consulting"
+
   // Basic Information (Required)
   personalInfo: {
     name: string;                    // "Niklas Andervang"
@@ -39,6 +45,9 @@ export interface CompleteCVData {
     email: string;                   // "niklas.andervang@frankdigital.se"
     phone?: string;                  // "+46 70 993 17 94"
     location?: string;               // Location if relevant
+    linkedIn?: string;               // LinkedIn profile URL
+    github?: string;                 // GitHub profile URL
+    website?: string;                // Personal website URL
     profileImage?: string;           // Base64 encoded image or URL
   };
 
@@ -46,6 +55,8 @@ export interface CompleteCVData {
   summary: {
     introduction: string;            // Main introduction paragraph
     highlights: string[];            // Key professional highlights/bullet points
+    keyStrengths?: string[];         // Alternative to highlights
+    careerObjective?: string;        // Career objective statement
     specialties?: string[];          // Special focus areas
   };
 
@@ -91,12 +102,23 @@ export interface CompleteCVData {
     description?: string;            // Additional details
   }[];
 
-  // Competencies with Levels
+  // Competencies with Levels (supports both consultant manager and internal formats)
   competencies?: {
     category: string;                // "Expert inom området", "Mycket hög kompetens", "Hög kompetens"
-    skills: {
+    skills?: {                       // Internal format
       name: string;                  // "CSS", "HTML", etc.
       level?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+    }[];
+    items?: string[];                // Consultant manager format - simple string array
+  }[];
+
+  // Enhanced Competency Categories with Experience
+  competencyCategories?: {
+    category: string;                // "Frontend Development", "Backend Development"
+    skills: {
+      name: string;                  // "React", "Node.js"
+      level: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
+      yearsOfExperience?: number;    // Years of experience with this skill
     }[];
   }[];
 
@@ -106,6 +128,18 @@ export interface CompleteCVData {
     proficiency: string;             // "Modersmål", "Flytande"
   }[];
 
+  // Template Settings
+  templateSettings?: {
+    template?: string;               // Template identifier
+    theme?: string;                  // Color theme
+    showPhoto?: boolean;             // Whether to show profile photo
+    showReferences?: boolean;        // Whether to show references
+    language?: string;               // Language setting ("en", "sv")
+    fontSize?: string;               // Font size setting
+    margins?: string;                // Margin setting
+    colorScheme?: string;            // Color scheme identifier
+  };
+
   // Template and Format Options
   template?: 'frank-digital' | 'andervang-consulting' | 'modern' | 'classic' | 'creative' | 'technical';
   format?: 'pdf' | 'docx' | 'html';
@@ -113,7 +147,7 @@ export interface CompleteCVData {
   // Styling Options
   styling?: {
     primaryColor?: string;           // Hex color for accents
-    accentColor?: string;           // Secondary color
+    accentColor?: string;           // Secondary color  
     highlightColor?: string;        // Highlight color for creative templates
     fontFamily?: string;            // Font preference
     fontSize?: 'small' | 'medium' | 'large';  // Font size preference

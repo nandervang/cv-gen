@@ -1,22 +1,31 @@
 // Import Puppeteer and Chromium for PDF generation
-const puppeteer = require('puppeteer');
-const chromium = require('@sparticuz/chromium');
+import puppeteer from 'puppeteer';
+import chromium from '@sparticuz/chromium';
+
+// Import DOCX library and Packer for Word document generation
+import { Document, Paragraph, TextRun, AlignmentType, Packer } from 'docx';
 
 // Helper functions for content generation
 function generateAndervangConsultingHTML(cvData) {
   // Handle different payload formats - consultant manager vs direct API
-  const { personalInfo, summary, company, styling } = cvData;
+  const { personalInfo, summary, company, styling, templateSettings } = cvData;
   const employment = cvData.employment || cvData.experience || []; // Handle both field names with fallback
   const competencies = cvData.competencies || cvData.skills || []; // Handle both field names with fallback
+  const competencyCategories = cvData.competencyCategories || []; // Enhanced competencies
   const projects = cvData.projects || []; // Ensure array
   const education = cvData.education || []; // Ensure array
   const certifications = cvData.certifications || []; // Ensure array
+  const courses = cvData.courses || []; // Courses with enhanced fields
   const languages = cvData.languages || []; // Ensure array
+  const roles = cvData.roles || []; // Professional roles
+  const closing = cvData.closing; // Closing section
   
-  // Use Andervang Consulting colors and styling
-  const primaryColor = styling?.primaryColor || '#003D82'; // Darker blue for better contrast
-  const orangeAccent = '#FF6B35'; // New orange accent color
+  // Enhanced styling with templateSettings support
+  const primaryColor = styling?.primaryColor || templateSettings?.colorScheme || '#003D82'; // Darker blue for better contrast
+  const orangeAccent = styling?.accentColor || '#FF6B35'; // Orange accent color
   const fontFamily = styling?.fontFamily || '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif';
+  const fontSize = styling?.fontSize || templateSettings?.fontSize || 'medium';
+  const spacing = styling?.spacing || templateSettings?.margins || 'normal';
   const companyName = company || 'Andervang Consulting';
   return `<!DOCTYPE html>
 <html lang="sv">
@@ -602,58 +611,466 @@ async function generatePDFContent(cvData) {
     // Generate the HTML content first using Andervang Consulting template
     const htmlContent = generateAndervangConsultingHTML(cvData);
     
-    // Launch Puppeteer with Netlify-compatible settings
+    // Launch Puppeteer with enhanced Netlify-compatible settings
     const browser = await puppeteer.launch({
-      args: chromium.args,
+      args: [
+        ...chromium.args,
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu'
+      ],
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
       headless: chromium.headless,
       ignoreHTTPSErrors: true,
+      timeout: 30000,
     });
 
     const page = await browser.newPage();
     
-    // Set the HTML content
+    // Set viewport for consistent rendering
+    await page.setViewport({ width: 1200, height: 800 });
+    
+    // Set the HTML content with proper wait conditions
     await page.setContent(htmlContent, {
-      waitUntil: 'networkidle0',
+      waitUntil: ['networkidle0', 'domcontentloaded'],
+      timeout: 30000,
     });
+
+    // Wait a bit more for fonts and styles to load
+    await page.waitForTimeout(1000);
 
     // Generate PDF with proper settings for CV
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
+      preferCSSPageSize: false,
       margin: {
         top: '0.4in',
         right: '0.4in',
         bottom: '0.4in',
         left: '0.4in',
       },
+      timeout: 30000,
     });
 
     await browser.close();
+
+    // Validate PDF buffer
+    if (!pdfBuffer || pdfBuffer.length === 0) {
+      throw new Error('Generated PDF buffer is empty');
+    }
 
     // Return base64 encoded PDF
     return Buffer.from(pdfBuffer).toString('base64');
   } catch (error) {
     console.error('PDF generation error:', error);
-    // Fallback to HTML content if PDF generation fails
-    const htmlContent = generateAndervangConsultingHTML(cvData);
-    return btoa(unescape(encodeURIComponent(htmlContent)));
+    
+    // Check if this is a local development environment issue
+    if (error.code === 'ENOEXEC' || error.message.includes('spawn ENOEXEC')) {
+      throw new Error('PDF generation not available in local development environment. Puppeteer/Chromium cannot execute in Netlify Dev. This will work in production deployment.');
+    }
+    
+    // Re-throw the error so the calling function can handle it properly
+    throw new Error(`PDF generation failed: ${error.message}`);
   }
 }
 
-function generateDOCXContent(cvData) {
-  // Handle different payload formats - consultant manager vs direct API
-  const { personalInfo, summary, company } = cvData;
-  const employment = cvData.employment || cvData.experience || []; // Handle both field names with fallback
-  const competencies = cvData.competencies || cvData.skills || []; // Handle both field names with fallback
-  const projects = cvData.projects || []; // Ensure array
-  const education = cvData.education || []; // Ensure array
-  const certifications = cvData.certifications || []; // Ensure array
-  const languages = cvData.languages || []; // Ensure array
-  const companyName = company || 'Andervang Consulting';
-  
-  return `${companyName}
+async function generateDOCXContent(cvData) {
+  try {
+    // Document, Paragraph, TextRun, AlignmentType are already imported at the top
+    
+    // Handle different payload formats - consultant manager vs direct API
+    const { personalInfo, summary, company } = cvData;
+    const employment = cvData.employment || cvData.experience || []; // Handle both field names with fallback
+    const competencies = cvData.competencies || cvData.skills || []; // Handle both field names with fallback
+    const projects = cvData.projects || []; // Ensure array
+    const education = cvData.education || []; // Ensure array
+    const certifications = cvData.certifications || []; // Ensure array
+    const languages = cvData.languages || []; // Ensure array
+    const companyName = company || 'Andervang Consulting';
+    
+    const children = [];
+    
+    // Header - Company Brand
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: companyName,
+            size: 28,
+            bold: true,
+            font: "Arial",
+            color: "003D82"
+          })
+        ],
+        alignment: AlignmentType.LEFT,
+        spacing: { after: 300 }
+      })
+    );
+    
+    // Contact Info
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `${personalInfo?.name || 'N/A'}\n${personalInfo?.email || ''}\n${personalInfo?.phone || ''}\n${personalInfo?.location || ''}`,
+            size: 20,
+            font: "Arial"
+          })
+        ],
+        alignment: AlignmentType.RIGHT,
+        spacing: { after: 400 }
+      })
+    );
+    
+    // Name and Title
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: personalInfo?.name || 'N/A',
+            size: 32,
+            bold: true,
+            font: "Arial"
+          })
+        ],
+        spacing: { after: 200 }
+      })
+    );
+    
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: personalInfo?.title || 'N/A',
+            size: 18,
+            font: "Arial",
+            color: "003D82"
+          })
+        ],
+        spacing: { after: 400 }
+      })
+    );
+    
+    // Introduction
+    if (summary?.introduction) {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: summary.introduction,
+              size: 20,
+              font: "Arial"
+            })
+          ],
+          spacing: { after: 400 }
+        })
+      );
+    }
+    
+    // Employment
+    if (employment && employment.length > 0) {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "ANSTÄLLNINGAR OCH ROLLER",
+              size: 24,
+              bold: true,
+              font: "Arial",
+              color: "FF6B35"
+            })
+          ],
+          spacing: { before: 400, after: 300 }
+        })
+      );
+      
+      employment.forEach(job => {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `${job.company || 'N/A'}`,
+                size: 22,
+                bold: true,
+                font: "Arial",
+                color: "FF6B35"
+              })
+            ],
+            spacing: { before: 300, after: 100 }
+          })
+        );
+        
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `${job.position || 'N/A'} | ${job.period || 'N/A'}`,
+                size: 18,
+                bold: true,
+                font: "Arial"
+              })
+            ],
+            spacing: { after: 150 }
+          })
+        );
+        
+        if (job.description) {
+          children.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: job.description,
+                  size: 18,
+                  font: "Arial"
+                })
+              ],
+              spacing: { after: 250 }
+            })
+          );
+        }
+      });
+    }
+    
+    // Projects
+    if (projects && projects.length > 0) {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "PROJEKT OCH UPPDRAG",
+              size: 24,
+              bold: true,
+              font: "Arial",
+              color: "003D82"
+            })
+          ],
+          spacing: { before: 400, after: 300 }
+        })
+      );
+      
+      projects.forEach(project => {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `${project.title || 'N/A'} (${project.period || 'N/A'})`,
+                size: 20,
+                bold: true,
+                font: "Arial"
+              })
+            ],
+            spacing: { before: 200, after: 100 }
+          })
+        );
+        
+        if (project.description) {
+          children.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: project.description,
+                  size: 18,
+                  font: "Arial"
+                })
+              ],
+              spacing: { after: 200 }
+            })
+          );
+        }
+      });
+    }
+    
+    // Education
+    if (education && education.length > 0) {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "UTBILDNING",
+              size: 24,
+              bold: true,
+              font: "Arial",
+              color: "003D82"
+            })
+          ],
+          spacing: { before: 400, after: 300 }
+        })
+      );
+      
+      education.forEach(edu => {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `${edu.degree || 'N/A'} - ${edu.institution || 'N/A'} (${edu.period || 'N/A'})`,
+                size: 18,
+                font: "Arial"
+              })
+            ],
+            spacing: { after: 150 }
+          })
+        );
+      });
+    }
+    
+    // Certifications
+    if (certifications && certifications.length > 0) {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "CERTIFIERINGAR",
+              size: 24,
+              bold: true,
+              font: "Arial",
+              color: "003D82"
+            })
+          ],
+          spacing: { before: 400, after: 300 }
+        })
+      );
+      
+      certifications.forEach(cert => {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `${cert.title || 'N/A'} - ${cert.issuer || 'N/A'} (${cert.year || 'N/A'})`,
+                size: 18,
+                font: "Arial"
+              })
+            ],
+            spacing: { after: 100 }
+          })
+        );
+        
+        if (cert.description) {
+          children.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: cert.description,
+                  size: 16,
+                  font: "Arial",
+                  color: "666666"
+                })
+              ],
+              spacing: { after: 150 }
+            })
+          );
+        }
+      });
+    }
+    
+    // Competencies
+    if (competencies && competencies.length > 0) {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "KOMPETENSER",
+              size: 24,
+              bold: true,
+              font: "Arial",
+              color: "003D82"
+            })
+          ],
+          spacing: { before: 400, after: 300 }
+        })
+      );
+      
+      competencies.forEach(category => {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: category.category || category.name || 'N/A',
+                size: 20,
+                bold: true,
+                font: "Arial"
+              })
+            ],
+            spacing: { before: 200, after: 100 }
+          })
+        );
+        
+        const skills = category.items || category.skills || [];
+        const skillNames = skills.map(skill => typeof skill === 'string' ? skill : skill.name).join(', ');
+        
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: skillNames,
+                size: 18,
+                font: "Arial"
+              })
+            ],
+            spacing: { after: 200 }
+          })
+        );
+      });
+    }
+    
+    // Languages
+    if (languages && languages.length > 0) {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "SPRÅKKUNSKAPER",
+              size: 24,
+              bold: true,
+              font: "Arial",
+              color: "003D82"
+            })
+          ],
+          spacing: { before: 400, after: 300 }
+        })
+      );
+      
+      languages.forEach(lang => {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `${lang.language}: ${lang.proficiency}`,
+                size: 18,
+                font: "Arial"
+              })
+            ],
+            spacing: { after: 100 }
+          })
+        );
+      });
+    }
+    
+    // Create and pack the document
+    const doc = new Document({
+      sections: [{
+        children: children
+      }]
+    });
+    
+    // Generate the DOCX buffer
+    const buffer = await Packer.toBuffer(doc);
+    return Buffer.from(buffer).toString('base64');
+    
+  } catch (error) {
+    console.error('DOCX generation error:', error);
+    // Fallback to simple text format
+    const { personalInfo, summary, company } = cvData;
+    const employment = cvData.employment || cvData.experience || [];
+    const companyName = company || 'Andervang Consulting';
+    
+    const simpleContent = `${companyName}
 CV - ${personalInfo?.name || 'N/A'}
 ${personalInfo?.title || 'N/A'}
 
@@ -665,56 +1082,14 @@ ${personalInfo?.location ? `Plats: ${personalInfo.location}` : ''}
 PROFESSIONELL SAMMANFATTNING
 ${summary?.introduction || ''}
 
-${summary?.highlights ? `HÖJDPUNKTER:
-${summary.highlights.map(h => `• ${h}`).join('\n')}` : ''}
-
-${summary?.specialties ? `SPECIALITETER:
-${summary.specialties.map(s => `• ${s}`).join('\n')}` : ''}
-
-${employment ? `ANSTÄLLNINGAR OCH ROLLER
-${employment.map(job => `
-${job.position} - ${job.company} (${job.period})
-${job.description}
-${job.technologies ? `Teknologier: ${job.technologies.join(', ')}` : ''}
-${job.achievements ? `Framgångar:\n${job.achievements.map(a => `• ${a}`).join('\n')}` : ''}
-`).join('\n')}` : ''}
-
-${projects ? `PROJEKT OCH UPPDRAG
-${projects.map(p => `
-${p.title || 'N/A'} (${p.period || 'N/A'})
-${p.type || ''}
-${p.description || ''}
-${p.technologies ? `Teknologier: ${p.technologies.join(', ')}` : ''}
-`).join('\n')}` : ''}
-
-${education ? `UTBILDNING
-${education.map(e => `
-${e.degree || 'N/A'} (${e.period || 'N/A'})
-${e.institution || 'N/A'}
-${e.specialization ? `Specialisering: ${e.specialization}` : ''}
-`).join('\n')}` : ''}
-
-${certifications ? `CERTIFIERINGAR
-${certifications.map(c => `
-${c.title || 'N/A'} (${c.year || 'N/A'})
-${c.issuer || 'N/A'}
-${c.description ? `Beskrivning: ${c.description}` : ''}
-`).join('\n')}` : ''}
-
-${competencies?.length ? `KOMPETENSER
-${competencies.map(cat => `
-${cat.category || cat.name || 'N/A'}:
-${(cat.skills || cat.items || []).map(s => `• ${typeof s === 'string' ? s : s.name}${s.level ? ` (${s.level})` : ''}`).join('\n')}
-`).join('\n')}` : ''}
-
-${languages ? `SPRÅKKUNSKAPER
-${languages.map(l => `• ${l.language}: ${l.proficiency}`).join('\n')}` : ''}
-
 Genererat: ${new Date().toLocaleDateString('sv-SE')}
 Template: Andervang Consulting`;
+    
+    return btoa(unescape(encodeURIComponent(simpleContent)));
+  }
 }
 
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   // CORS headers for all responses
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*', // Allow all origins
@@ -756,7 +1131,7 @@ exports.handler = async (event, context) => {
       const body = JSON.parse(event.body || '{}');
       
       // Check if it's the ConsultantCVPayload format
-      const format = body.format || 'pdf';
+      let format = body.format || 'pdf'; // Use let instead of const so we can reassign on fallback
       let fileContent = '';
       let mimeType = '';
       let filename = `CV_${body.personalInfo?.name?.replace(/\s+/g, '_') || 'Unknown'}`;
@@ -766,13 +1141,34 @@ exports.handler = async (event, context) => {
         fileContent = btoa(unescape(encodeURIComponent(htmlContent)));
         mimeType = 'text/html';
       } else if (format === 'pdf') {
-        const pdfContent = await generatePDFContent(body);
-        fileContent = pdfContent;
-        mimeType = 'application/pdf';
+        try {
+          const pdfContent = await generatePDFContent(body);
+          fileContent = pdfContent;
+          mimeType = 'application/pdf';
+        } catch (pdfError) {
+          console.error('PDF generation failed, falling back to HTML:', pdfError);
+          // Fall back to HTML if PDF generation fails
+          const htmlContent = generateAndervangConsultingHTML(body);
+          fileContent = btoa(unescape(encodeURIComponent(htmlContent)));
+          mimeType = 'text/html';
+          // Update filename and format in response
+          filename = filename.replace('.pdf', '.html');
+          format = 'html'; // Update format so response is consistent
+        }
       } else if (format === 'docx') {
-        const docContent = generateDOCXContent(body);
-        fileContent = btoa(unescape(encodeURIComponent(docContent)));
-        mimeType = 'text/plain';
+        try {
+          const docContent = await generateDOCXContent(body);
+          fileContent = docContent;
+          mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        } catch (docxError) {
+          console.error('DOCX generation failed, falling back to text:', docxError);
+          // Fall back to simple text if DOCX generation fails
+          const { personalInfo, company } = body;
+          const simpleContent = `${company || 'Andervang Consulting'}\nCV - ${personalInfo?.name || 'N/A'}\n${personalInfo?.title || 'N/A'}\n\nGenererat: ${new Date().toLocaleDateString('sv-SE')}`;
+          fileContent = btoa(unescape(encodeURIComponent(simpleContent)));
+          mimeType = 'text/plain';
+          filename = filename.replace('.docx', '.txt'); // Update filename
+        }
       }
       
       return {
@@ -786,7 +1182,9 @@ exports.handler = async (event, context) => {
             generatedAt: new Date().toISOString(),
             template: body.template || 'andervang-consulting',
             filename: `${filename}.${format}`,
-            note: 'Generated with ConsultantCVPayload format'
+            note: body.format === 'pdf' && format === 'html' ? 
+              'PDF generation not available in local development. Falling back to HTML format.' : 
+              'Generated with ConsultantCVPayload format'
           }
         })
       };

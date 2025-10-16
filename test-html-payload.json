@@ -1,0 +1,100 @@
+{
+  "personalInfo": {
+    "name": "John Doe",
+    "title": "Senior Software Engineer",
+    "email": "john.doe@example.com",
+    "phone": "+46 70 123 4567",
+    "location": "Stockholm, Sweden",
+    "linkedIn": "https://linkedin.com/in/johndoe",
+    "github": "https://github.com/johndoe",
+    "website": "https://johndoe.dev"
+  },
+  "company": "Andervang Consulting",
+  "summary": {
+    "introduction": "Experienced software engineer with expertise in full-stack development and team leadership.",
+    "highlights": [
+      "10+ years of software development experience",
+      "Led teams of 5-10 developers",
+      "Expert in React, Node.js, and cloud technologies"
+    ],
+    "specialties": [
+      "Frontend Architecture",
+      "Team Leadership", 
+      "DevOps & Cloud"
+    ]
+  },
+  "employment": [
+    {
+      "period": "jan 2020 - pågående",
+      "position": "Senior Software Engineer",
+      "company": "Tech Corp AB",
+      "description": "Leading frontend development team and architecting scalable solutions.",
+      "technologies": ["React", "TypeScript", "Node.js", "AWS"],
+      "achievements": [
+        "Reduced application load time by 40%",
+        "Implemented CI/CD pipeline increasing deployment frequency by 300%"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "period": "mar 2023 - sep 2023",
+      "type": "Tech Lead",
+      "title": "E-commerce Platform Redesign",
+      "description": "Complete overhaul of legacy e-commerce platform using modern React patterns.",
+      "technologies": ["React", "Next.js", "Stripe", "PostgreSQL"],
+      "achievements": [
+        "Increased conversion rate by 25%",
+        "Improved mobile performance by 60%"
+      ]
+    }
+  ],
+  "courses": [
+    {
+      "name": "Advanced React Patterns",
+      "provider": "Frontend Masters",
+      "completionDate": "2023-08-15",
+      "duration": "40 hours",
+      "credentialId": "FM-2023-ARP-001",
+      "url": "https://frontendmasters.com/certificate/abc123"
+    }
+  ],
+  "competencyCategories": [
+    {
+      "category": "Frontend Development",
+      "skills": [
+        {
+          "name": "React",
+          "level": "Expert",
+          "yearsOfExperience": 6
+        },
+        {
+          "name": "Vue.js",
+          "level": "Advanced",
+          "yearsOfExperience": 3
+        }
+      ]
+    }
+  ],
+  "roles": [
+    {
+      "title": "Tech Lead",
+      "skills": ["Team Leadership", "Architecture Design", "Code Review"]
+    }
+  ],
+  "closing": {
+    "text": "Thank you for taking the time to review my CV. I look forward to discussing how I can contribute to your team.",
+    "contact": {
+      "email": "john.doe@example.com",
+      "phone": "+46 70 123 4567",
+      "location": "Stockholm, Sweden",
+      "company": "Andervang Consulting"
+    }
+  },
+  "template": "andervang-consulting",
+  "format": "html",
+  "styling": {
+    "primaryColor": "#003D82",
+    "accentColor": "#FF6B35"
+  }
+}

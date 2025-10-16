@@ -3,7 +3,6 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
-import { getApiUrl } from '@/lib/api-config'
 
 interface Template {
   id: string
@@ -25,6 +24,7 @@ interface CVData {
 }
 
 const API_KEY = import.meta.env.VITE_CV_API_KEY || 'dev-api-key-12345'
+const API_URL = import.meta.env.VITE_CV_API_URL || 'http://localhost:3001'
 
 export default function CVGeneratorTest() {
   const [templates, setTemplates] = useState<Template[]>([])
@@ -47,7 +47,7 @@ export default function CVGeneratorTest() {
       setError(null)
       
       try {
-        const response = await fetch('/api/templates', {
+        const response = await fetch(`${API_URL}/api/templates`, {
           headers: {
             'X-API-Key': API_KEY,
             'Content-Type': 'application/json'
@@ -81,18 +81,15 @@ export default function CVGeneratorTest() {
     setResult(null)
     
     try {
-      const response = await fetch('/api/generate/complete', {
+      const response = await fetch(`${API_URL}/api/generate`, {
         method: 'POST',
         headers: {
           'X-API-Key': API_KEY,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          personalInfo: {
-            name: cvData.name,
-            title: cvData.title,
-            email: 'test@example.com'
-          },
+          name: cvData.name,
+          title: cvData.title,
           template: cvData.template,
           format: cvData.format
         })
@@ -235,7 +232,7 @@ export default function CVGeneratorTest() {
                     type="radio"
                     value={format}
                     checked={cvData.format === format}
-                    onChange={(e) => setCvData(prev => ({ ...prev, format: e.target.value as 'pdf' | 'docx' | 'html' }))}
+                    onChange={(e) => setCvData(prev => ({ ...prev, format: e.target.value as any }))}
                     className="w-4 h-4 text-blue-600"
                   />
                   <span className="uppercase">{format}</span>
@@ -291,7 +288,7 @@ export default function CVGeneratorTest() {
         <CardContent className="p-4">
           <h3 className="font-semibold mb-2">API Configuration</h3>
           <div className="text-sm text-gray-600 space-y-1">
-            <p><strong>API URL:</strong> {getApiUrl('')}</p>
+            <p><strong>API URL:</strong> {API_URL}</p>
             <p><strong>API Key:</strong> {API_KEY ? '***configured***' : 'not configured'}</p>
             <p><strong>Templates Loaded:</strong> {templates.length}</p>
           </div>

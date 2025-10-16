@@ -74,13 +74,10 @@ generateRoutes.post('/', async (req: Request, res: Response) => {
 generateRoutes.post('/test', async (_req: Request, res: Response) => {
   try {
     console.log('🧪 Test CV generation requested')
-    // Remove call to non-existent method
-    // const result = await cvGenerationService.testGeneration()
     
     res.json({
       success: true,
-      message: 'Test endpoint - generation service available'.data,
-      metadata: result.metadata,
+      message: 'Test endpoint - generation service available',
       timestamp: new Date().toISOString()
     })
   } catch (error) {

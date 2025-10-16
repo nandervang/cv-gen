@@ -979,7 +979,7 @@ export function generateAndervangConsultingHTML(data: ExtendedCVData): string {
         <div class="profile-content">
             <h1 class="profile-name">${data.personalInfo.name}</h1>
             <div class="profile-title">${data.personalInfo.title}</div>
-            <div class="profile-intro">${data.summary.introduction}</div>
+            ${data.summary.introduction ? `<div class="profile-intro">${data.summary.introduction}</div>` : ''}
             
             ${data.summary.careerObjective ? `
                 <div class="career-objective">
@@ -1088,11 +1088,14 @@ export function generateAndervangConsultingHTML(data: ExtendedCVData): string {
                         </div>
                     ` : ''}
                     ${job.achievements && job.achievements.length > 0 ? `
-                        <ul style="margin-top: 15px; padding-left: 20px;">
-                            ${job.achievements.map(achievement => 
-                                `<li style="margin-bottom: 5px; color: #555;">${achievement}</li>`
-                            ).join('')}
-                        </ul>
+                        <div class="achievements-section">
+                            <div class="achievements-title">Resultat & Framgångar:</div>
+                            <ul class="achievements-list">
+                                ${job.achievements.map(achievement => 
+                                    `<li class="achievement-item">${achievement}</li>`
+                                ).join('')}
+                            </ul>
+                        </div>
                     ` : ''}
                 </div>
             `).join('')}
@@ -1584,19 +1587,27 @@ export function generateAndervangConsultingDOCX(data: ExtendedCVData): Document 
         })
       );
       
-      const skillNames = category.skills.map(skill => skill.name).join(', ');
-      children.push(
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: skillNames,
-              size: 20,
-              font: "Arial"
-            })
-          ],
-          spacing: { after: 200 }
-        })
-      );
+      // Handle both consultant manager format (items) and internal format (skills)
+      const skillNames = category.items ? 
+        category.items.join(', ') : 
+        category.skills ? category.skills.map((skill) => 
+          typeof skill === 'string' ? skill : skill.name
+        ).join(', ') : '';
+      
+      if (skillNames) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: skillNames,
+                size: 20,
+                font: "Arial"
+              })
+            ],
+            spacing: { after: 200 }
+          })
+        );
+      }
     });
   }
   

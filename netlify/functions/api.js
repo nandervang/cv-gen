@@ -1348,7 +1348,7 @@ async function generatePDFContent(cvData) {
   return await Promise.race([
     generatePDFContentInternal(cvData),
     new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('PDF generation timed out after 22 seconds')), 22000)
+      setTimeout(() => reject(new Error('PDF generation timed out after 24 seconds')), 24000)
     )
   ]);
 }
@@ -1380,7 +1380,9 @@ async function generatePDFContentInternal(cvData) {
         '--disable-features=VizDisplayCompositor',
         '--disable-background-timer-throttling',
         '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding'
+        '--disable-renderer-backgrounding',
+        '--memory-pressure-off',
+        '--max_old_space_size=512'
       ],
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
@@ -1403,7 +1405,7 @@ async function generatePDFContentInternal(cvData) {
     // Set the HTML content with optimized wait conditions
     await page.setContent(htmlContent, {
       waitUntil: 'domcontentloaded', // Fastest option
-      timeout: 18000, // Increased timeout for large payloads
+      timeout: 25000, // Maximum timeout for large payloads
     });
     console.log('HTML content set on page, time:', Date.now() - startTime, 'ms');
 
@@ -1422,7 +1424,9 @@ async function generatePDFContentInternal(cvData) {
         bottom: '0.4in',
         left: '0.4in',
       },
-      timeout: 18000, // Increased timeout for large payloads
+      timeout: 25000, // Increased to maximum timeout
+      omitBackground: false,
+      tagged: false, // Disable accessibility tags to reduce memory
     });
     console.log('PDF generated, buffer size:', pdfBuffer.length, 'time:', Date.now() - startTime, 'ms');
 

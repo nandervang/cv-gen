@@ -164,6 +164,9 @@ function generateAndervangConsultingHTML(cvData) {
         .section {
             margin-bottom: 30px;
             position: relative;
+            /* Ensure minimum content stays together */
+            orphans: 3;
+            widows: 3;
         }
 
         .section::before {
@@ -677,11 +680,112 @@ function generateAndervangConsultingHTML(cvData) {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
+            
+            /* Prevent sections from being cut off */
+            .section {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            
             .employment-item {
                 break-inside: avoid;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
             }
+            
             .project-item {
                 break-inside: avoid;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+            }
+            
+            .education-item {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+            }
+            
+            .certification-item {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                margin-bottom: 15px;
+            }
+            
+            .course-item {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                margin-bottom: 15px;
+            }
+            
+            .skill-category {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+            }
+            
+            .competency-category {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+            }
+            
+            .language-item {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            
+            .role-item {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+            }
+            
+            /* Ensure section headers stay with content */
+            .section-title {
+                break-after: avoid;
+                page-break-after: avoid;
+            }
+            
+            /* Keep headers with following content */
+            h1, h2, h3, h4 {
+                break-after: avoid;
+                page-break-after: avoid;
+            }
+            
+            /* Closing section should not be split */
+            .closing-section {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            
+            /* Profile section should stay together */
+            .profile-section {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            
+            /* Summary sections should not break */
+            .summary-section {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            
+            /* For very long sections that must break, ensure proper spacing */
+            .employment-section,
+            .projects-section {
+                orphans: 2;
+                widows: 2;
+            }
+            
+            /* Ensure section titles have space after page breaks */
+            .section-title {
+                margin-top: 20px;
+                margin-bottom: 15px;
+            }
+            
+            /* First section on a page should have less top margin */
+            .section:first-of-type .section-title {
+                margin-top: 10px;
             }
         }
 

@@ -28,3 +28,8 @@
 [functions]
   external_node_modules = ["puppeteer", "@sparticuz/chromium"]
   node_bundler = "esbuild"
+
+# Function-specific configuration
+[functions."api"]
+  # Increase timeout for PDF generation (max 26 seconds on Pro plan)
+  timeout = 26

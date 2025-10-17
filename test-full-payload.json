@@ -1,0 +1,64 @@
+{
+    "personalInfo": {
+        "name": "Niklas Andervang",
+        "title": "Senior front-end/fullstack utvecklare & tillgänglighetsexpert",
+        "email": "niklas.andervang@frankdigital.se",
+        "phone": "+46702441323",
+        "location": "Stockholm, Sverige",
+        "profileImage": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+        "linkedIn": "https://linkedin.com/in/niklasandervang",
+        "github": "https://github.com/nandervang",
+        "website": "https://andervang.com"
+    },
+    "company": "Frank Digital AB",
+    "summary": {
+        "introduction": "Niklas är en senior frontend/fullstack utvecklare som är bred med sin kompetens och kan röra sig i flera roller.",
+        "highlights": [
+            "Senior frontend/fullstack utvecklare med 15+ års erfarenhet",
+            "Tillgänglighetsexpert med IAAP CPACC certifiering",
+            "Erfaren inom UX och design för förbättring av flöden och interaktion"
+        ]
+    },
+    "employment": [
+        {
+            "period": "juni 2024 - pågående",
+            "position": "Front-end / Fullstack utvecklare / Tillgänglighetsexpert",
+            "company": "Cisco",
+            "description": "Niklas jobbade i teamet för deras externa webbplats cisco.com/se.",
+            "technologies": [
+                "React",
+                "TypeScript",
+                "Next.js"
+            ]
+        }
+    ],
+    "education": [
+        {
+            "period": "2008-2011",
+            "degree": "Kandidatexamen",
+            "institution": "Blekinge Tekniska Högskola",
+            "specialization": "Interaktionsdesign (MDA)"
+        }
+    ],
+    "skills": [
+        {
+            "category": "Frontend Utveckling",
+            "items": [
+                {
+                    "name": "React",
+                    "level": 5
+                },
+                {
+                    "name": "TypeScript",
+                    "level": 5
+                }
+            ]
+        }
+    ],
+    "template": "andervang-consulting",
+    "format": "pdf",
+    "styling": {
+        "primaryColor": "#003D82",
+        "accentColor": "#FF6B35"
+    }
+}

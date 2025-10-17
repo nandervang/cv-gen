@@ -1344,16 +1344,28 @@ function generateAndervangConsultingHTML(cvData) {
 }
 
 async function generatePDFContent(cvData) {
+  // Add overall timeout wrapper to prevent Netlify function timeout
+  return await Promise.race([
+    generatePDFContentInternal(cvData),
+    new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('PDF generation timed out after 22 seconds')), 22000)
+    )
+  ]);
+}
+
+async function generatePDFContentInternal(cvData) {
+  let browser;
   try {
     console.log('Starting PDF generation...');
+    const startTime = Date.now();
     
     // Generate the HTML content first using Andervang Consulting template
     const htmlContent = generateAndervangConsultingHTML(cvData);
-    console.log('HTML content generated, length:', htmlContent.length);
+    console.log('HTML content generated, length:', htmlContent.length, 'time:', Date.now() - startTime, 'ms');
 
     // Launch Puppeteer with enhanced Netlify-compatible settings
     console.log('Launching Puppeteer browser...');
-    const browser = await puppeteer.launch({
+    browser = await puppeteer.launch({
       args: [
         ...chromium.args,
         '--no-sandbox',
@@ -1365,35 +1377,38 @@ async function generatePDFContent(cvData) {
         '--single-process',
         '--disable-gpu',
         '--disable-web-security',
-        '--disable-features=VizDisplayCompositor'
+        '--disable-features=VizDisplayCompositor',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding'
       ],
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
       headless: chromium.headless,
       ignoreHTTPSErrors: true,
-      timeout: 20000, // Reduced timeout to prevent Netlify function timeout
+      timeout: 15000, // Reduced timeout for browser launch
     });
-    console.log('Browser launched successfully');
+    console.log('Browser launched successfully, time:', Date.now() - startTime, 'ms');
 
     const page = await browser.newPage();
-    console.log('New page created');
+    console.log('New page created, time:', Date.now() - startTime, 'ms');
     
     // Set viewport for consistent rendering
     await page.setViewport({ width: 1200, height: 800 });
-    console.log('Viewport set');
+    console.log('Viewport set, time:', Date.now() - startTime, 'ms');
     
-    // Set the HTML content with simplified wait conditions for better compatibility
+    // Set the HTML content with optimized wait conditions
     await page.setContent(htmlContent, {
-      waitUntil: 'domcontentloaded',
-      timeout: 15000, // Reduced timeout
+      waitUntil: 'domcontentloaded', // Fastest option
+      timeout: 10000, // Further reduced timeout
     });
-    console.log('HTML content set on page');
+    console.log('HTML content set on page, time:', Date.now() - startTime, 'ms');
 
-    // Wait a bit more for fonts and styles to load using modern approach
-    await new Promise(resolve => setTimeout(resolve, 500)); // Reduced wait time
-    console.log('Wait completed, generating PDF...');
+    // Minimal wait for fonts and styles - optimized for speed
+    await new Promise(resolve => setTimeout(resolve, 200)); // Minimal wait time
+    console.log('Wait completed, generating PDF, time:', Date.now() - startTime, 'ms');
 
-    // Generate PDF with proper settings for CV
+    // Generate PDF with optimized settings for speed
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
@@ -1404,12 +1419,12 @@ async function generatePDFContent(cvData) {
         bottom: '0.4in',
         left: '0.4in',
       },
-      timeout: 15000, // Reduced timeout to fit within Netlify limits
+      timeout: 10000, // Further reduced timeout
     });
-    console.log('PDF generated, buffer size:', pdfBuffer.length);
+    console.log('PDF generated, buffer size:', pdfBuffer.length, 'time:', Date.now() - startTime, 'ms');
 
     await browser.close();
-    console.log('Browser closed');
+    console.log('Browser closed, total time:', Date.now() - startTime, 'ms');
 
     // Validate PDF buffer
     if (!pdfBuffer || pdfBuffer.length === 0) {
@@ -1418,7 +1433,7 @@ async function generatePDFContent(cvData) {
 
     // Return base64 encoded PDF
     const base64PDF = Buffer.from(pdfBuffer).toString('base64');
-    console.log('PDF conversion to base64 completed, length:', base64PDF.length);
+    console.log('PDF conversion to base64 completed, length:', base64PDF.length, 'total time:', Date.now() - startTime, 'ms');
     return base64PDF;
   } catch (error) {
     console.error('PDF generation error details:', {
@@ -1427,6 +1442,16 @@ async function generatePDFContent(cvData) {
       code: error.code,
       name: error.name
     });
+    
+    // Ensure browser is closed even on error
+    try {
+      if (browser) {
+        await browser.close();
+        console.log('Browser closed after error');
+      }
+    } catch (closeError) {
+      console.error('Error closing browser:', closeError.message);
+    }
     
     // Check if this is a local development environment issue
     if (error.code === 'ENOEXEC' || error.message.includes('spawn ENOEXEC')) {

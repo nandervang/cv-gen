@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CV API Test</title>
+</head>
+<body>
+    <h1>CV Generation API Test</h1>
+    <button onclick="testSmallPayload()">Test Small Payload</button>
+    <button onclick="testLargePayload()">Test Large Payload</button>
+    <div id="result"></div>
+
+    <script>
+        async function testSmallPayload() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing small payload...';
+            
+            try {
+                const response = await fetch('https://andervang-cv.netlify.app/.netlify/functions/api', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'https://consultant-time-track.netlify.app'
+                    },
+                    body: JSON.stringify({
+                        personalInfo: {
+                            name: "Test User",
+                            title: "Developer",
+                            email: "test@example.com"
+                        },
+                        format: "pdf",
+                        template: "andervang-consulting"
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    result.innerHTML = `✅ Small payload success: ${data.success}`;
+                } else {
+                    result.innerHTML = `❌ Small payload failed: ${response.status} ${response.statusText}`;
+                }
+            } catch (error) {
+                result.innerHTML = `❌ Small payload error: ${error.message}`;
+            }
+        }
+
+        async function testLargePayload() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing large payload...';
+            
+            const largeEmployment = [];
+            for (let i = 0; i < 20; i++) {
+                largeEmployment.push({
+                    period: `202${i % 10} - 202${(i+1) % 10}`,
+                    position: `Developer ${i+1}`,
+                    company: `Company ${i+1}`,
+                    description: "Long description ".repeat(50),
+                    technologies: ["React", "TypeScript", "Node.js"],
+                    achievements: ["Achievement 1", "Achievement 2", "Achievement 3"]
+                });
+            }
+            
+            try {
+                const response = await fetch('https://andervang-cv.netlify.app/.netlify/functions/api', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'https://consultant-time-track.netlify.app'
+                    },
+                    body: JSON.stringify({
+                        personalInfo: {
+                            name: "Niklas Andervang",
+                            title: "Senior Developer",
+                            email: "niklas@test.com"
+                        },
+                        employment: largeEmployment,
+                        format: "pdf",
+                        template: "andervang-consulting"
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    result.innerHTML = `✅ Large payload success: ${data.success}`;
+                } else {
+                    result.innerHTML = `❌ Large payload failed: ${response.status} ${response.statusText}`;
+                }
+            } catch (error) {
+                result.innerHTML = `❌ Large payload error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

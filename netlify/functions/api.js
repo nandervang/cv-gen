@@ -10,12 +10,12 @@ function generateAndervangConsultingHTML(cvData) {
   // Handle different payload formats - consultant manager vs direct API
   const { personalInfo, summary, company, styling, templateSettings } = cvData;
   const employment = cvData.employment || cvData.experience || []; // Handle both field names with fallback
-  const competencies = cvData.competencies || cvData.skills || []; // Handle both field names with fallback
-  const competencyCategories = cvData.competencyCategories || []; // Enhanced competencies
+  const competencies = cvData.competencies || []; // Enhanced competencies with levels
+  const skills = cvData.skills || []; // New skills section with ratings
   const projects = cvData.projects || []; // Ensure array
-  const education = cvData.education || []; // Ensure array
-  const certifications = cvData.certifications || []; // Ensure array
-  const courses = cvData.courses || []; // Courses with enhanced fields
+  const education = cvData.education || []; // Enhanced education with honors/location
+  const certifications = cvData.certifications || []; // Enhanced with URLs/expiration
+  const courses = cvData.courses || []; // Enhanced with status/grades
   const languages = cvData.languages || []; // Ensure array
   const roles = cvData.roles || []; // Professional roles
   const closing = cvData.closing; // Closing section
@@ -94,6 +94,22 @@ function generateAndervangConsultingHTML(cvData) {
         .contact-info strong {
             color: ${primaryColor};
             font-weight: 600;
+        }
+
+        .social-links {
+            margin-top: 8px;
+            font-size: 11px;
+        }
+
+        .social-link {
+            color: ${primaryColor};
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .social-link:hover {
+            color: ${orangeAccent};
+            text-decoration: underline;
         }
 
         .profile-section {
@@ -328,6 +344,48 @@ function generateAndervangConsultingHTML(cvData) {
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
+        /* Achievements sections */
+        .achievements-section, .project-achievements {
+            margin-top: 16px;
+            margin-bottom: 12px;
+        }
+
+        .achievements-title {
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .employment-item .achievements-title {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .project-item .achievements-title {
+            color: ${primaryColor};
+        }
+
+        .achievements-list {
+            margin: 0;
+            padding-left: 16px;
+            list-style-type: disc;
+        }
+
+        .achievement-item {
+            font-size: 12px;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .employment-item .achievement-item {
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .project-item .achievement-item {
+            color: #1d1d1f;
+        }
+
         .education-item, .certification-item {
             display: flex;
             justify-content: space-between;
@@ -378,6 +436,44 @@ function generateAndervangConsultingHTML(cvData) {
             font-weight: 500;
             margin-top: 2px;
             letter-spacing: -0.02px;
+        }
+
+        .certification-description {
+            font-size: 10px;
+            color: #86868b;
+            margin-top: 2px;
+            letter-spacing: -0.02px;
+        }
+
+        .education-honors {
+            font-size: 10px;
+            color: ${orangeAccent};
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .education-location {
+            font-size: 10px;
+            color: #86868b;
+            margin-top: 2px;
+        }
+
+        .certification-expiration {
+            font-size: 10px;
+            color: ${primaryColor};
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .cert-link {
+            color: ${primaryColor};
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .cert-link:hover {
+            color: ${orangeAccent};
+            text-decoration: underline;
         }
 
         .education-period, .certification-year {
@@ -435,6 +531,109 @@ function generateAndervangConsultingHTML(cvData) {
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
 
+        .more-skills {
+            background: ${orangeAccent} !important;
+            color: white !important;
+            font-style: italic;
+        }
+
+        /* Skills Section with Ratings */
+        .skills-category {
+            margin-bottom: 24px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+
+        .skills-category-title {
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 16px;
+            letter-spacing: -0.1px;
+        }
+
+        .skills-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, ${primaryColor}, ${orangeAccent});
+            color: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+        }
+
+        .skill-item {
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .skill-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .skill-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .skill-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1d1d1f;
+        }
+
+        .skill-rating {
+            display: flex;
+            gap: 2px;
+        }
+
+        .star {
+            color: #e0e0e0;
+            font-size: 12px;
+            transition: color 0.2s ease;
+        }
+
+        .star.filled {
+            color: ${orangeAccent};
+        }
+
+        .skill-progress {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .skill-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, ${primaryColor}, ${orangeAccent});
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
         .languages-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -480,6 +679,318 @@ function generateAndervangConsultingHTML(cvData) {
             }
         }
 
+        /* Career Objective */
+        .career-objective {
+            margin-top: 16px;
+        }
+
+        .career-objective-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: ${primaryColor};
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .career-objective-text {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #2d2d2d;
+            font-style: italic;
+        }
+
+        /* Summary Highlights */
+        .summary-highlights {
+            margin-top: 16px;
+        }
+
+        .highlights-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: ${primaryColor};
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .highlights-list {
+            margin: 0;
+            padding-left: 16px;
+            list-style-type: disc;
+        }
+
+        .highlight-item {
+            font-size: 12px;
+            line-height: 1.4;
+            margin-bottom: 4px;
+            color: #1d1d1f;
+        }
+
+        /* Summary Specialties */
+        .summary-specialties {
+            margin-top: 16px;
+        }
+
+        .specialties-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: ${primaryColor};
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .specialties-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .specialty-tag {
+            background: rgba(255, 255, 255, 0.9);
+            color: ${primaryColor};
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 500;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Professional Roles */
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .role-card {
+            background: #ffffff;
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+
+        .role-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 12px;
+            letter-spacing: -0.1px;
+        }
+
+        .role-description {
+            font-size: 12px;
+            color: #86868b;
+            margin-bottom: 8px;
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .skill-tag {
+            background: rgba(255, 255, 255, 0.9);
+            color: ${primaryColor};
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: -0.02px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Courses */
+        .course-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 16px 24px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            margin-bottom: 10px;
+            border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        }
+
+        .course-content {
+            flex: 1;
+        }
+
+        .course-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 3px;
+            letter-spacing: -0.1px;
+        }
+
+        .course-provider {
+            font-size: 13px;
+            color: #86868b;
+            letter-spacing: -0.05px;
+        }
+
+        .course-meta {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .course-date {
+            font-size: 13px;
+            color: ${primaryColor};
+            font-weight: 500;
+            letter-spacing: -0.05px;
+        }
+
+        .course-credits {
+            font-size: 11px;
+            color: #86868b;
+            font-weight: 400;
+        }
+
+        .course-duration {
+            font-size: 11px;
+            color: #86868b;
+            margin-top: 2px;
+        }
+
+        .course-status {
+            font-size: 10px;
+            margin-top: 4px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-in-progress {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-planned {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .course-grade {
+            font-size: 11px;
+            color: ${orangeAccent};
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        /* Closing Section */
+        .closing-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            margin-top: 35px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .closing-text {
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            letter-spacing: -0.1px;
+            opacity: 0.95;
+        }
+
+        .closing-signature {
+            margin-top: 20px;
+            opacity: 0.8;
+        }
+
+        .signature-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .signature-date, .signature-location {
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .signature-timestamp {
+            font-size: 10px;
+            opacity: 0.7;
+            font-style: italic;
+            margin-top: 8px;
+        }
+
+        /* Closing Contact Section */
+        .closing-contact {
+            margin: 24px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .closing-contact-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-align: center;
+            opacity: 0.9;
+        }
+
+        .closing-contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .closing-contact-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .closing-contact-item:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .contact-icon {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        .contact-link {
+            color: white;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            transition: opacity 0.2s ease;
+        }
+
+        .contact-link:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
         @page {
             margin: 0.5in;
             size: A4;
@@ -498,6 +1009,16 @@ function generateAndervangConsultingHTML(cvData) {
             <div>${personalInfo?.email || ''}</div>
             <div>${personalInfo?.phone || ''}</div>
             ${personalInfo?.location ? `<div>${personalInfo.location}</div>` : ''}
+            ${personalInfo?.linkedIn || personalInfo?.github || personalInfo?.website || personalInfo?.twitter || personalInfo?.instagram || personalInfo?.facebook ? `
+                <div class="social-links">
+                    ${personalInfo?.website ? `<div><a href="${personalInfo.website}" target="_blank" class="social-link">🌐 Website</a></div>` : ''}
+                    ${personalInfo?.linkedIn ? `<div><a href="${personalInfo.linkedIn}" target="_blank" class="social-link">💼 LinkedIn</a></div>` : ''}
+                    ${personalInfo?.github ? `<div><a href="${personalInfo.github}" target="_blank" class="social-link">🔗 GitHub</a></div>` : ''}
+                    ${personalInfo?.twitter ? `<div><a href="${personalInfo.twitter}" target="_blank" class="social-link">🐦 Twitter</a></div>` : ''}
+                    ${personalInfo?.instagram ? `<div><a href="${personalInfo.instagram}" target="_blank" class="social-link">📷 Instagram</a></div>` : ''}
+                    ${personalInfo?.facebook ? `<div><a href="${personalInfo.facebook}" target="_blank" class="social-link">👥 Facebook</a></div>` : ''}
+                </div>
+            ` : ''}
         </div>
     </div>
 
@@ -511,8 +1032,53 @@ function generateAndervangConsultingHTML(cvData) {
             <h1 class="profile-name">${personalInfo?.name || 'N/A'}</h1>
             <h2 class="profile-title">${personalInfo?.title || 'N/A'}</h2>
             <div class="profile-intro">${summary?.introduction || ''}</div>
+            
+            ${summary?.highlights?.length ? `
+                <div class="summary-highlights">
+                    <div class="highlights-title">Nyckelkompetenser:</div>
+                    <ul class="highlights-list">
+                        ${summary.highlights.map(highlight => `<li class="highlight-item">${highlight}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+            
+            ${summary?.specialties?.length ? `
+                <div class="summary-specialties">
+                    <div class="specialties-title">Specialiteter:</div>
+                    <div class="specialties-tags">
+                        ${summary.specialties.map(specialty => `<span class="specialty-tag">${specialty}</span>`).join('')}
+                    </div>
+                </div>
+            ` : ''}
+            
+            ${cvData.careerObjective ? `
+                <div class="career-objective">
+                    <div class="career-objective-title">Karriärmål</div>
+                    <div class="career-objective-text">${cvData.careerObjective}</div>
+                </div>
+            ` : ''}
         </div>
     </div>
+
+    <!-- Professional Roles Section -->
+    ${roles?.length ? `
+        <div class="section">
+            <h2 class="section-title">Professionella roller</h2>
+            <div class="roles-grid">
+                ${roles.map(role => `
+                    <div class="role-card">
+                        <div class="role-title">${role.name || role.title || 'N/A'}</div>
+                        ${role.description ? `<div class="role-description">${role.description}</div>` : ''}
+                        <div class="skills-list">
+                            ${(role.responsibilities || role.skills || []).map(skill => 
+                                `<span class="skill-tag">${skill}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    ` : ''}
 
     <!-- Employment Section (Orange gradient) -->
     ${employment?.length ? `
@@ -528,6 +1094,14 @@ function generateAndervangConsultingHTML(cvData) {
                         <div class="employment-period">${job.period || job.duration || 'N/A'}</div>
                     </div>
                     <div class="employment-description">${job.description || job.summary || ''}</div>
+                    ${job.achievements?.length ? `
+                        <div class="achievements-section">
+                            <div class="achievements-title">Viktiga resultat:</div>
+                            <ul class="achievements-list">
+                                ${job.achievements.map(achievement => `<li class="achievement-item">${achievement}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
                     ${(job.technologies || job.skills || job.tech)?.length ? `
                         <div class="technology-tags">
                             ${(job.technologies || job.skills || job.tech).map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
@@ -552,6 +1126,14 @@ function generateAndervangConsultingHTML(cvData) {
                         <div class="project-period">${project.period}</div>
                     </div>
                     <div class="project-description">${project.description}</div>
+                    ${project.achievements?.length ? `
+                        <div class="project-achievements">
+                            <div class="achievements-title">Viktiga resultat:</div>
+                            <ul class="achievements-list">
+                                ${project.achievements.map(achievement => `<li class="achievement-item">${achievement}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
                     ${project.url ? `
                         <div class="project-url">
                             <strong>Projekt URL:</strong> <a href="${project.url}" target="_blank" rel="noopener noreferrer" class="project-link">${project.url}</a>
@@ -577,6 +1159,8 @@ function generateAndervangConsultingHTML(cvData) {
                         <div class="education-degree">${edu.degree}</div>
                         <div class="education-institution">${edu.institution}</div>
                         ${edu.specialization ? `<div class="education-specialization">${edu.specialization}</div>` : ''}
+                        ${edu.honors ? `<div class="education-honors">🏆 ${edu.honors}</div>` : ''}
+                        ${edu.location ? `<div class="education-location">📍 ${edu.location}</div>` : ''}
                     </div>
                     <div class="education-period">${edu.period}</div>
                 </div>
@@ -591,10 +1175,73 @@ function generateAndervangConsultingHTML(cvData) {
             ${certifications.map(cert => `
                 <div class="certification-item">
                     <div class="certification-content">
-                        <div class="certification-title">${cert.title}</div>
+                        <div class="certification-title">
+                            ${cert.url ? `<a href="${cert.url}" target="_blank" class="cert-link">${cert.title}</a>` : cert.title}
+                        </div>
                         <div class="certification-issuer">${cert.issuer}</div>
+                        ${cert.description ? `<div class="certification-description">${cert.description}</div>` : ''}
+                        ${cert.expiration ? `<div class="certification-expiration">🗓️ Upphör: ${cert.expiration}</div>` : ''}
                     </div>
                     <div class="certification-year">${cert.year}</div>
+                </div>
+            `).join('')}
+        </div>
+    ` : ''}
+
+    <!-- Courses Section -->
+    ${courses?.length ? `
+        <div class="section">
+            <h2 class="section-title">Kurser och vidareutbildning</h2>
+            ${courses.map(course => `
+                <div class="course-item">
+                    <div class="course-content">
+                        <div class="course-name">${course.name || course.title || 'N/A'}</div>
+                        <div class="course-provider">${course.institution || course.provider || course.issuer || ''}</div>
+                        ${course.description ? `<div class="course-duration">⏱️ ${course.description}</div>` : ''}
+                        ${course.duration ? `<div class="course-duration">⏱️ ${course.duration}</div>` : ''}
+                        ${course.status ? `<div class="course-status status-${course.status}">📋 Status: ${course.status}</div>` : ''}
+                    </div>
+                    <div class="course-meta">
+                        <div class="course-date">${course.year || course.completionDate || course.date || ''}</div>
+                        ${course.grade ? `<div class="course-grade">🎯 ${course.grade}</div>` : ''}
+                        ${course.credits ? `<div class="course-credits">${course.credits} hp</div>` : ''}
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    ` : ''}
+
+    <!-- Skills Section with Ratings -->
+    ${skills?.length ? `
+        <div class="section">
+            <h2 class="section-title">Tekniska färdigheter</h2>
+            ${skills.map((category, index) => `
+                <div class="skills-category">
+                    <div class="skills-category-title">
+                        <div class="skills-icon">${index + 1}</div>
+                        ${category.category}
+                    </div>
+                    <div class="skills-grid">
+                        ${(category.items || []).map(skill => `
+                            <div class="skill-item">
+                                <div class="skill-header">
+                                    <span class="skill-name">${typeof skill === 'string' ? skill : skill.name}</span>
+                                    ${typeof skill === 'object' && skill.level ? `
+                                        <div class="skill-rating">
+                                            ${Array.from({length: 5}, (_, i) => 
+                                                `<span class="star ${i < skill.level ? 'filled' : ''}">★</span>`
+                                            ).join('')}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                ${typeof skill === 'object' && skill.level ? `
+                                    <div class="skill-progress">
+                                        <div class="skill-progress-bar" style="width: ${(skill.level / 5) * 100}%"></div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
             `).join('')}
         </div>
@@ -604,19 +1251,25 @@ function generateAndervangConsultingHTML(cvData) {
     ${competencies?.length ? `
         <div class="section">
             <h2 class="section-title">Kompetenser</h2>
-            ${competencies.map((category, index) => `
+            ${competencies.map((category, index) => {
+                // Get skills/items and limit to prevent too large output
+                const skills = category.items || category.skills || [];
+                const skillsToShow = skills.slice(0, 50); // Limit to first 50 skills to prevent truncation
+                return `
                 <div class="competency-category">
                     <div class="competency-title">
                         <div class="competency-icon">${index + 1}</div>
                         ${category.category || category.name || `Kategori ${index + 1}`}
                     </div>
                     <div class="competency-skills">
-                        ${(category.skills || category.items || []).map(skill => 
-                            `<span class="competency-skill">${typeof skill === 'string' ? skill : skill.name}</span>`
+                        ${skillsToShow.map(skill => 
+                            `<span class="competency-skill">${typeof skill === 'string' ? skill : skill.name || skill}</span>`
                         ).join('')}
+                        ${skills.length > 50 ? `<span class="competency-skill more-skills">+${skills.length - 50} mer...</span>` : ''}
                     </div>
                 </div>
-            `).join('')}
+                `;
+            }).join('')}
         </div>
     ` : ''}
 
@@ -632,6 +1285,52 @@ function generateAndervangConsultingHTML(cvData) {
                     </div>
                 `).join('')}
             </div>
+        </div>
+    ` : ''}
+
+    <!-- Closing Section -->
+    ${cvData.closing ? `
+        <div class="closing-section">
+            <div class="closing-text">${cvData.closing.statement || cvData.closing.text || ''}</div>
+            
+            <div class="closing-contact">
+                <div class="closing-contact-title">Kontakta mig gärna:</div>
+                <div class="closing-contact-grid">
+                    ${personalInfo?.email ? `
+                        <div class="closing-contact-item">
+                            <span class="contact-icon">📧</span>
+                            <a href="mailto:${personalInfo.email}" class="contact-link">${personalInfo.email}</a>
+                        </div>
+                    ` : ''}
+                    ${personalInfo?.phone ? `
+                        <div class="closing-contact-item">
+                            <span class="contact-icon">📱</span>
+                            <a href="tel:${personalInfo.phone}" class="contact-link">${personalInfo.phone}</a>
+                        </div>
+                    ` : ''}
+                    ${personalInfo?.linkedIn ? `
+                        <div class="closing-contact-item">
+                            <span class="contact-icon">💼</span>
+                            <a href="${personalInfo.linkedIn}" target="_blank" class="contact-link">LinkedIn</a>
+                        </div>
+                    ` : ''}
+                    ${personalInfo?.website ? `
+                        <div class="closing-contact-item">
+                            <span class="contact-icon">🌐</span>
+                            <a href="${personalInfo.website}" target="_blank" class="contact-link">Portfolio</a>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+
+            ${cvData.closing.signature || cvData.closing.date || cvData.closing.location || personalInfo?.location ? `
+                <div class="closing-signature">
+                    ${cvData.closing.signature ? `<div class="signature-name">${cvData.closing.signature}</div>` : ''}
+                    ${cvData.closing.date ? `<div class="signature-date">${cvData.closing.date}</div>` : ''}
+                    <div class="signature-location">${cvData.closing.location || personalInfo?.location || ''}</div>
+                    <div class="signature-timestamp">Genererat: ${new Date().toLocaleDateString('sv-SE')}</div>
+                </div>
+            ` : ''}
         </div>
     ` : ''}
 </body>
@@ -1178,14 +1877,32 @@ export const handler = async (event, context) => {
           fileContent = pdfContent;
           mimeType = 'application/pdf';
         } catch (pdfError) {
-          console.error('PDF generation failed, falling back to HTML:', pdfError);
-          // Fall back to HTML if PDF generation fails
-          const htmlContent = generateAndervangConsultingHTML(body);
-          fileContent = btoa(unescape(encodeURIComponent(htmlContent)));
-          mimeType = 'text/html';
-          // Update filename and format in response
-          filename = filename.replace('.pdf', '.html');
-          format = 'html'; // Update format so response is consistent
+          console.error('PDF generation failed:', pdfError);
+          
+          // Only fall back to HTML in local development environment
+          if (pdfError.message.includes('local development environment') || 
+              pdfError.message.includes('Puppeteer/Chromium cannot execute in Netlify Dev')) {
+            console.log('Local development detected, falling back to HTML');
+            const htmlContent = generateAndervangConsultingHTML(body);
+            fileContent = btoa(unescape(encodeURIComponent(htmlContent)));
+            mimeType = 'text/html';
+            filename = filename.replace('.pdf', '.html');
+            format = 'html';
+          } else {
+            // In production, return the error instead of falling back
+            return {
+              statusCode: 500,
+              headers,
+              body: JSON.stringify({
+                success: false,
+                error: {
+                  code: 'PDF_GENERATION_FAILED',
+                  message: `PDF generation failed: ${pdfError.message}`,
+                  fallbackAvailable: true
+                }
+              })
+            };
+          }
         }
       } else if (format === 'docx') {
         try {
@@ -1216,7 +1933,7 @@ export const handler = async (event, context) => {
             filename: `${filename}.${format}`,
             note: body.format === 'pdf' && format === 'html' ? 
               'PDF generation not available in local development. Falling back to HTML format.' : 
-              'Generated with ConsultantCVPayload format'
+              undefined
           }
         })
       };

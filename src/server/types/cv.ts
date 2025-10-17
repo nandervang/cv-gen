@@ -74,6 +74,7 @@ export interface CompleteCVData {
     description: string;             // Project description
     technologies: string[];          // ["CICD", "Docker", "TypeScript", etc.]
     achievements?: string[];         // Key achievements or deliverables
+    url?: string;                    // Project URL/website
   }[];
 
   // Employment History

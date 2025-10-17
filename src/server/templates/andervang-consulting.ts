@@ -403,6 +403,24 @@ export function generateAndervangConsultingHTML(data: ExtendedCVData): string {
             letter-spacing: -0.05px;
         }
 
+        .project-url {
+            font-size: 12px;
+            margin-bottom: 12px;
+            color: #1d1d1f;
+        }
+
+        .project-link {
+            color: ${primaryColor};
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .project-link:hover {
+            color: ${orangeAccent};
+            text-decoration: underline;
+        }
+
         .achievements-section {
             margin-top: 12px;
         }
@@ -539,6 +557,14 @@ export function generateAndervangConsultingHTML(data: ExtendedCVData): string {
         .education-institution, .certification-issuer {
             font-size: 11px;
             color: #86868b;
+            letter-spacing: -0.02px;
+        }
+
+        .education-specialization {
+            font-size: 10px;
+            color: #003D82;
+            font-weight: 500;
+            margin-top: 2px;
             letter-spacing: -0.02px;
         }
 
@@ -1044,6 +1070,11 @@ export function generateAndervangConsultingHTML(data: ExtendedCVData): string {
                         <div class="project-period">${project.period}</div>
                     </div>
                     <div class="project-description">${project.description}</div>
+                    ${project.url ? `
+                        <div class="project-url">
+                            <strong>Projekt URL:</strong> <a href="${project.url}" target="_blank" rel="noopener noreferrer" class="project-link">${project.url}</a>
+                        </div>
+                    ` : ''}
                     ${project.technologies && project.technologies.length > 0 ? `
                         <div class="technology-tags">
                             ${project.technologies.map(tech => 
@@ -1111,6 +1142,7 @@ export function generateAndervangConsultingHTML(data: ExtendedCVData): string {
                     <div class="education-content">
                         <div class="education-degree">${edu.degree}</div>
                         <div class="education-institution">${edu.institution}</div>
+                        ${edu.specialization ? `<div class="education-specialization">${edu.specialization}</div>` : ''}
                     </div>
                     <div class="education-period">${edu.period}</div>
                 </div>

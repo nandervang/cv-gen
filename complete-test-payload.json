@@ -1,0 +1,101 @@
+{
+    "personalInfo": {
+        "name": "Niklas Andervang",
+        "title": "Senior front-end/fullstack utvecklare & tillgänglighetsexpert",
+        "email": "niklas.andervang@frankdigital.se",
+        "phone": "+46702441323",
+        "location": "Stockholm, Sverige"
+    },
+    "company": "Frank Digital AB",
+    "summary": {
+        "introduction": "Niklas är en senior frontend/fullstack utvecklare som är bred med sin kompetens och kan röra sig i flera roller. Niklas har stor erfarenhet från flertalet frontend-ramverk, dev-ops teknik och moderna arkitekturlösningar under de ca 15 år som Niklas arbetat som utvecklare.",
+        "highlights": [
+            "Senior frontend/fullstack utvecklare med 15+ års erfarenhet",
+            "Bred kompetens inom flera frontend-ramverk och arkitekturlösningar",
+            "Tillgänglighetsexpert med IAAP CPACC certifiering",
+            "Erfaren inom UX och design för förbättring av flöden och interaktion"
+        ],
+        "specialties": [
+            "React",
+            "TypeScript",
+            "Tillgänglighet",
+            "DevOps",
+            "Scrum Master",
+            "Next.js"
+        ]
+    },
+    "employment": [
+        {
+            "period": "juni 2024 - pågående",
+            "position": "Front-end / Fullstack utvecklare / Tillgänglighetsexpert",
+            "company": "Cisco",
+            "description": "Niklas jobbade i teamet för deras externa webbplats cisco.com/se. Stora delar av arbetet handlade om migrering och uppgradering av befintliga komponenter, sidor och mallar till en nyare teknisk plattform.",
+            "technologies": ["React", "TypeScript", "Next.js", "DevOps", "WCAG"],
+            "achievements": [
+                "Migrering och uppgradering av komponenter till nyare teknisk plattform",
+                "Utveckling av nya funktioner och förbättringar",
+                "Säkerställande av hög tillgänglighetsnivå för alla komponenter"
+            ]
+        }
+    ],
+    "projects": [
+        {
+            "period": "mars 2024 - maj 2024",
+            "type": "Tillgänglig Webbplats",
+            "title": "Digitalidag.se - Tillgänglig Webbplats",
+            "description": "Ny webbplats byggd från grunden med fokus på tillgänglighet och användarupplevelse för Post och telestyrelsen PTS.",
+            "technologies": ["React", "TypeScript", "Next.js", "Contentful", "MongoDB", "WCAG"]
+        }
+    ],
+    "education": [
+        {
+            "period": "2008-2011",
+            "degree": "Kandidatexamen",
+            "institution": "Blekinge Tekniska Högskola",
+            "specialization": "Interaktionsdesign (MDA)"
+        }
+    ],
+    "certifications": [
+        {
+            "year": "2022",
+            "title": "Certified Professional in Accessibility Core Competencies (CPACC)",
+            "issuer": "IAAP",
+            "description": "Credential ID: CPACC-2022-NA-001"
+        }
+    ],
+    "competencies": [
+        {
+            "category": "Expert inom området",
+            "items": ["React", "TypeScript", "JavaScript", "HTML & CSS", "Next.js", "WCAG", "Tillgänglighetstester"]
+        },
+        {
+            "category": "Mycket hög kompetens", 
+            "items": ["CI/CD", "Docker", "Azure", "Git", "Optimizely", "Contentful", "SEO"]
+        }
+    ],
+    "languages": [
+        {
+            "language": "Svenska",
+            "proficiency": "Modersmål"
+        },
+        {
+            "language": "Engelska",
+            "proficiency": "Flytande (C2)"
+        }
+    ],
+    "closing": {
+        "text": "Tack för ditt intresse! Kontakta mig gärna för att diskutera hur vi kan arbeta tillsammans.",
+        "contact": {
+            "email": "niklas.andervang@frankdigital.se",
+            "phone": "+46702441323",
+            "location": "Stockholm, Sverige",
+            "company": "Frank Digital AB"
+        }
+    },
+    "template": "andervang-consulting",
+    "format": "html",
+    "styling": {
+        "primaryColor": "#003D82",
+        "accentColor": "#FF6B35"
+    }
+}

@@ -1339,10 +1339,14 @@ function generateAndervangConsultingHTML(cvData) {
 
 async function generatePDFContent(cvData) {
   try {
+    console.log('Starting PDF generation...');
+    
     // Generate the HTML content first using Andervang Consulting template
     const htmlContent = generateAndervangConsultingHTML(cvData);
-    
+    console.log('HTML content generated, length:', htmlContent.length);
+
     // Launch Puppeteer with enhanced Netlify-compatible settings
+    console.log('Launching Puppeteer browser...');
     const browser = await puppeteer.launch({
       args: [
         ...chromium.args,
@@ -1361,20 +1365,25 @@ async function generatePDFContent(cvData) {
       ignoreHTTPSErrors: true,
       timeout: 30000,
     });
+    console.log('Browser launched successfully');
 
     const page = await browser.newPage();
+    console.log('New page created');
     
     // Set viewport for consistent rendering
     await page.setViewport({ width: 1200, height: 800 });
+    console.log('Viewport set');
     
-    // Set the HTML content with proper wait conditions
+    // Set the HTML content with simplified wait conditions for better compatibility
     await page.setContent(htmlContent, {
-      waitUntil: ['networkidle0', 'domcontentloaded'],
+      waitUntil: 'domcontentloaded',
       timeout: 30000,
     });
+    console.log('HTML content set on page');
 
-    // Wait a bit more for fonts and styles to load
-    await page.waitForTimeout(1000);
+    // Wait a bit more for fonts and styles to load using modern approach
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log('Wait completed, generating PDF...');
 
     // Generate PDF with proper settings for CV
     const pdfBuffer = await page.pdf({
@@ -1389,8 +1398,10 @@ async function generatePDFContent(cvData) {
       },
       timeout: 30000,
     });
+    console.log('PDF generated, buffer size:', pdfBuffer.length);
 
     await browser.close();
+    console.log('Browser closed');
 
     // Validate PDF buffer
     if (!pdfBuffer || pdfBuffer.length === 0) {
@@ -1398,16 +1409,23 @@ async function generatePDFContent(cvData) {
     }
 
     // Return base64 encoded PDF
-    return Buffer.from(pdfBuffer).toString('base64');
+    const base64PDF = Buffer.from(pdfBuffer).toString('base64');
+    console.log('PDF conversion to base64 completed, length:', base64PDF.length);
+    return base64PDF;
   } catch (error) {
-    console.error('PDF generation error:', error);
+    console.error('PDF generation error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      name: error.name
+    });
     
     // Check if this is a local development environment issue
     if (error.code === 'ENOEXEC' || error.message.includes('spawn ENOEXEC')) {
       throw new Error('PDF generation not available in local development environment. Puppeteer/Chromium cannot execute in Netlify Dev. This will work in production deployment.');
     }
     
-    // Re-throw the error so the calling function can handle it properly
+    // Re-throw the error with more context
     throw new Error(`PDF generation failed: ${error.message}`);
   }
 }

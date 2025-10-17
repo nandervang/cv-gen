@@ -1014,6 +1014,13 @@ export function generateAndervangConsultingHTML(data: ExtendedCVData): string {
                 </div>
             ` : ''}
             
+            ${data.careerObjective ? `
+                <div class="career-objective">
+                    <div class="career-objective-title">Karriärmål</div>
+                    <div class="career-objective-text">${data.careerObjective}</div>
+                </div>
+            ` : ''}
+            
             ${(data.summary.highlights && data.summary.highlights.length > 0) || (data.summary.keyStrengths && data.summary.keyStrengths.length > 0) ? `
                 <div class="highlights-section">
                     <div class="highlights-title">${data.summary.highlights ? 'Höjdpunkter' : 'Nyckelstyrkor'}</div>
@@ -1044,9 +1051,10 @@ export function generateAndervangConsultingHTML(data: ExtendedCVData): string {
             <div class="roles-grid">
                 ${data.roles.map(role => `
                     <div class="role-card">
-                        <div class="role-title">${role.title}</div>
+                        <div class="role-title">${role.name}</div>
+                        ${role.description ? `<div class="role-description">${role.description}</div>` : ''}
                         <div class="skills-list">
-                            ${role.skills.map(skill => 
+                            ${role.responsibilities.map((skill: string) => 
                                 `<span class="skill-tag">${skill}</span>`
                             ).join('')}
                         </div>
@@ -1174,13 +1182,13 @@ export function generateAndervangConsultingHTML(data: ExtendedCVData): string {
                 <div class="course-item">
                     <div class="course-content">
                         <div class="course-name">${course.name}</div>
-                        <div class="course-provider">${course.provider}</div>
+                        <div class="course-provider">${course.institution || course.provider || ''}</div>
+                        ${course.description ? `<div class="course-duration">Längd: ${course.description}</div>` : ''}
                         ${course.duration ? `<div class="course-duration">Längd: ${course.duration}</div>` : ''}
                         ${course.credentialId ? `<div class="course-credential">ID: ${course.credentialId}</div>` : ''}
-                        ${course.description ? `<div class="course-description">${course.description}</div>` : ''}
                     </div>
                     <div class="course-meta">
-                        <div class="course-date">${course.completionDate}</div>
+                        <div class="course-date">${course.year || course.completionDate || ''}</div>
                         ${course.url ? `<a href="${course.url}" target="_blank" class="course-link">Visa certifikat</a>` : ''}
                     </div>
                 </div>
@@ -1260,25 +1268,46 @@ export function generateAndervangConsultingHTML(data: ExtendedCVData): string {
 
     ${data.closing ? `
         <div class="closing-section">
-            <div class="closing-text">${data.closing.text}</div>
-            <div class="closing-contact">
-                <div class="closing-contact-item">
-                    <strong>Email</strong>
-                    ${data.closing.contact.email}
+            <div class="closing-text">${data.closing.statement || data.closing.text || ''}</div>
+            ${data.closing.contact ? `
+                <div class="closing-contact">
+                    <div class="closing-contact-item">
+                        <strong>Email</strong>
+                        ${data.closing.contact.email}
+                    </div>
+                    <div class="closing-contact-item">
+                        <strong>Telefon</strong>
+                        ${data.closing.contact.phone}
+                    </div>
+                    <div class="closing-contact-item">
+                        <strong>Plats</strong>
+                        ${data.closing.contact.location}
+                    </div>
+                    <div class="closing-contact-item">
+                        <strong>Företag</strong>
+                        ${data.closing.contact.company}
+                    </div>
                 </div>
-                <div class="closing-contact-item">
-                    <strong>Telefon</strong>
-                    ${data.closing.contact.phone}
+            ` : `
+                <div class="closing-contact">
+                    <div class="closing-contact-item">
+                        <strong>Email</strong>
+                        ${data.personalInfo.email}
+                    </div>
+                    <div class="closing-contact-item">
+                        <strong>Telefon</strong>
+                        ${data.personalInfo.phone || ''}
+                    </div>
+                    <div class="closing-contact-item">
+                        <strong>Plats</strong>
+                        ${data.closing.location || data.personalInfo.location || ''}
+                    </div>
+                    <div class="closing-contact-item">
+                        <strong>Företag</strong>
+                        ${companyName}
+                    </div>
                 </div>
-                <div class="closing-contact-item">
-                    <strong>Plats</strong>
-                    ${data.closing.contact.location}
-                </div>
-                <div class="closing-contact-item">
-                    <strong>Företag</strong>
-                    ${data.closing.contact.company}
-                </div>
-            </div>
+            `}
         </div>
     ` : ''}
 </body>
@@ -1682,7 +1711,7 @@ export function generateAndervangConsultingDOCX(data: ExtendedCVData): Document 
       new Paragraph({
         children: [
           new TextRun({
-            text: data.closing.text,
+            text: data.closing.statement || data.closing.text || '',
             size: 20,
             font: "Arial"
           })
@@ -1691,11 +1720,15 @@ export function generateAndervangConsultingDOCX(data: ExtendedCVData): Document 
       })
     );
     
+    const contactInfo = data.closing.contact ? 
+      `Kontakt: ${data.closing.contact.email} | ${data.closing.contact.phone} | ${data.closing.contact.company}` :
+      `Kontakt: ${data.personalInfo.email} | ${data.personalInfo.phone || ''} | ${companyName}`;
+    
     children.push(
       new Paragraph({
         children: [
           new TextRun({
-            text: `Kontakt: ${data.closing.contact.email} | ${data.closing.contact.phone} | ${data.closing.contact.company}`,
+            text: contactInfo,
             size: 18,
             font: "Arial",
             color: `${primaryRgb.r.toString(16).padStart(2, '0')}${primaryRgb.g.toString(16).padStart(2, '0')}${primaryRgb.b.toString(16).padStart(2, '0')}`

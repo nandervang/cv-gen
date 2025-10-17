@@ -10,11 +10,13 @@ export interface SimpleCVData {
 export interface ExtendedCVData extends CompleteCVData {
   company?: string;                  // "Andervang Consulting"
   
-  // Courses and continuing education
+  // Override courses to support extended format
   courses?: {
     name: string;                    // "Course name"
-    provider: string;                // "Course provider"
-    completionDate: string;          // "2023-08-15"
+    provider?: string;               // "Course provider" (legacy support)
+    institution?: string;            // "Institution" (new format)
+    completionDate?: string;         // "2023-08-15" (legacy support)  
+    year?: string;                   // "2023-08-15" (new format)
     duration?: string;               // "40 hours"
     credentialId?: string;           // "FM-2023-ARP-001"
     url?: string;                    // Certificate URL
@@ -23,8 +25,12 @@ export interface ExtendedCVData extends CompleteCVData {
 
   // Closing section
   closing?: {
-    text: string;                    // Closing statement
-    contact: {
+    statement?: string;              // "Tack för att du tog dig tid att läsa mitt CV..."
+    text?: string;                   // Legacy support
+    signature?: string;              // Signature if needed
+    date?: string;                   // Date if needed
+    location?: string;               // "Stockholm, Sverige"
+    contact?: {                      // Legacy contact format
       email: string;
       phone: string;
       location: string;
@@ -36,15 +42,15 @@ export interface ExtendedCVData extends CompleteCVData {
 // Enhanced CV Data Structure for comprehensive CV generation
 export interface CompleteCVData {
   // Company/Organization (Required for consultant manager)
-  company?: string;                  // "Andervang Consulting"
+  company?: string;                  // "Frank Digital AB"
 
   // Basic Information (Required)
   personalInfo: {
     name: string;                    // "Niklas Andervang"
     title: string;                   // "Senior front-end/fullstack utvecklare & tillgänglighetsexpert"
     email: string;                   // "niklas.andervang@frankdigital.se"
-    phone?: string;                  // "+46 70 993 17 94"
-    location?: string;               // Location if relevant
+    phone?: string;                  // "+46702441323"
+    location?: string;               // "Stockholm, Sverige"
     linkedIn?: string;               // LinkedIn profile URL
     github?: string;                 // GitHub profile URL
     website?: string;                // Personal website URL
@@ -56,14 +62,17 @@ export interface CompleteCVData {
     introduction: string;            // Main introduction paragraph
     highlights: string[];            // Key professional highlights/bullet points
     keyStrengths?: string[];         // Alternative to highlights
-    careerObjective?: string;        // Career objective statement
-    specialties?: string[];          // Special focus areas
+    specialties?: string[];          // Special focus areas ["React", "TypeScript", etc.]
   };
+
+  // Career Objective (separate from summary)
+  careerObjective?: string;          // Career objective statement
 
   // Role/Skills Highlights
   roles?: {
-    title: string;                   // "Senior utvecklare FE/Fullstack"
-    skills: string[];               // ["Test och kvalitetssäkring", "Teamlead / mentor", etc.]
+    name: string;                    // "Frontend Specialist"
+    description?: string;            // Role description
+    responsibilities: string[];      // ["React", "TypeScript", "CSS", etc.]
   }[];
 
   // Projects and Experience
@@ -99,8 +108,16 @@ export interface CompleteCVData {
   certifications?: {
     year: string;                    // "2022"
     title: string;                   // "Certified Professional in Accessibility Core Competencies"
-    issuer: string;                  // "IAAP, CPACC"
-    description?: string;            // Additional details
+    issuer: string;                  // "IAAP"
+    description?: string;            // "Credential ID: CPACC-2022-NA-001"
+  }[];
+
+  // Courses and continuing education
+  courses?: {
+    name: string;                    // "Advanced React Performance Optimization"
+    institution?: string;            // "Frontend Masters"
+    year?: string;                   // "2023-08-15"
+    description?: string;            // "8 hours"
   }[];
 
   // Competencies with Levels (supports both consultant manager and internal formats)

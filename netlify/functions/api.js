@@ -1386,12 +1386,15 @@ async function generatePDFContentInternal(cvData) {
       executablePath: await chromium.executablePath(),
       headless: chromium.headless,
       ignoreHTTPSErrors: true,
-      timeout: 15000, // Reduced timeout for browser launch
+      timeout: 20000, // Increased timeout for browser launch
     });
     console.log('Browser launched successfully, time:', Date.now() - startTime, 'ms');
 
     const page = await browser.newPage();
     console.log('New page created, time:', Date.now() - startTime, 'ms');
+    
+    // Set default timeout for all page operations
+    page.setDefaultTimeout(20000);
     
     // Set viewport for consistent rendering
     await page.setViewport({ width: 1200, height: 800 });
@@ -1400,7 +1403,7 @@ async function generatePDFContentInternal(cvData) {
     // Set the HTML content with optimized wait conditions
     await page.setContent(htmlContent, {
       waitUntil: 'domcontentloaded', // Fastest option
-      timeout: 10000, // Further reduced timeout
+      timeout: 18000, // Increased timeout for large payloads
     });
     console.log('HTML content set on page, time:', Date.now() - startTime, 'ms');
 
@@ -1419,7 +1422,7 @@ async function generatePDFContentInternal(cvData) {
         bottom: '0.4in',
         left: '0.4in',
       },
-      timeout: 10000, // Further reduced timeout
+      timeout: 18000, // Increased timeout for large payloads
     });
     console.log('PDF generated, buffer size:', pdfBuffer.length, 'time:', Date.now() - startTime, 'ms');
 

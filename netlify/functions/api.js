@@ -1,9 +1,15 @@
 // Import Puppeteer and Chromium for PDF generation
+console.log('Loading Puppeteer dependencies...');
 import puppeteer from 'puppeteer';
 import chromium from '@sparticuz/chromium';
+console.log('Puppeteer loaded successfully');
 
 // Import DOCX library and Packer for Word document generation
+console.log('Loading DOCX dependencies...');
 import { Document, Paragraph, TextRun, AlignmentType, Packer } from 'docx';
+console.log('DOCX loaded successfully');
+
+console.log('CV Generation API loaded and ready');
 
 // Helper functions for content generation
 function generateAndervangConsultingHTML(cvData) {
@@ -1357,13 +1363,15 @@ async function generatePDFContent(cvData) {
         '--no-first-run',
         '--no-zygote',
         '--single-process',
-        '--disable-gpu'
+        '--disable-gpu',
+        '--disable-web-security',
+        '--disable-features=VizDisplayCompositor'
       ],
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
       headless: chromium.headless,
       ignoreHTTPSErrors: true,
-      timeout: 30000,
+      timeout: 20000, // Reduced timeout to prevent Netlify function timeout
     });
     console.log('Browser launched successfully');
 
@@ -1377,12 +1385,12 @@ async function generatePDFContent(cvData) {
     // Set the HTML content with simplified wait conditions for better compatibility
     await page.setContent(htmlContent, {
       waitUntil: 'domcontentloaded',
-      timeout: 30000,
+      timeout: 15000, // Reduced timeout
     });
     console.log('HTML content set on page');
 
     // Wait a bit more for fonts and styles to load using modern approach
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 500)); // Reduced wait time
     console.log('Wait completed, generating PDF...');
 
     // Generate PDF with proper settings for CV
@@ -1396,7 +1404,7 @@ async function generatePDFContent(cvData) {
         bottom: '0.4in',
         left: '0.4in',
       },
-      timeout: 30000,
+      timeout: 15000, // Reduced timeout to fit within Netlify limits
     });
     console.log('PDF generated, buffer size:', pdfBuffer.length);
 
@@ -1839,6 +1847,13 @@ Template: Andervang Consulting`;
 }
 
 export const handler = async (event, context) => {
+  console.log('Function invoked:', {
+    httpMethod: event.httpMethod,
+    path: event.path,
+    origin: event.headers?.origin || 'unknown',
+    userAgent: event.headers['user-agent'] || 'unknown'
+  });
+
   // CORS headers for all responses
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*', // Allow all origins
@@ -1849,6 +1864,7 @@ export const handler = async (event, context) => {
 
   // Handle preflight requests
   if (event.httpMethod === 'OPTIONS') {
+    console.log('Handling OPTIONS request');
     return {
       statusCode: 200,
       headers: corsHeaders,
@@ -1873,6 +1889,27 @@ export const handler = async (event, context) => {
     const method = event.httpMethod;
     
     console.log('Function called with path:', event.path, 'parsed to:', path);
+
+    // Health check endpoint
+    if (path === '/health' && method === 'GET') {
+      console.log('Health check requested');
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          status: 'healthy',
+          timestamp: new Date().toISOString(),
+          version: '1.0.0',
+          environment: process.env.NODE_ENV || 'production',
+          dependencies: {
+            puppeteer: 'loaded',
+            chromium: 'loaded',
+            docx: 'loaded'
+          }
+        })
+      };
+    }
 
     // Main endpoint for consultant manager integration
     if (path === '' && method === 'POST') {
